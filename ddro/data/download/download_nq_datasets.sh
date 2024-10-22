@@ -9,3 +9,6 @@ cd resources/datasets/raw/nq-data
 # gcloud auth login
 gsutil cp gs://natural_questions/v1.0-simplified/simplified-nq-train.jsonl.gz .
 gsutil cp gs://natural_questions/v1.0-simplified/nq-dev-all.jsonl.gz .
+
+
+

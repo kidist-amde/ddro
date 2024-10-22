@@ -1,7 +1,7 @@
-#!/bin/bash
+!/bin/bash
 
-# MS MARCO  Document ranking dataset
-# (https://microsoft.github.io/msmarco/Datasets.html#document-ranking-dataset)
+MS MARCO  Document ranking dataset
+(https://microsoft.github.io/msmarco/Datasets.html#document-ranking-dataset)
 
 
 # Create a directory for raw datasets if it doesn't exist
