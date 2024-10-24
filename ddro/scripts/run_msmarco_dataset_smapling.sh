@@ -10,7 +10,4 @@
 source /home/kmekonn/.bashrc
 conda activate ddro
 
-python data/data_preprocessing/sample_msmarco_datase.py \
-                --doc_file  /resources/datasets/raw/msmarco-data/msmarco-docs.tsv.gz \
-                --qrels_train resources/datasets/raw/msmarco-data/msmarco-doctrain-qrels.tsv.gz \
-                --scale "300k"
+python data/data_preprocessing/sample_msmarco_dataset.py

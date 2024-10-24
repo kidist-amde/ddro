@@ -62,6 +62,14 @@ def prepare_dataset(data_file, tokenizer, max_length=512):
     
     return tokenized_dataset
 
+def split_dataset(dataset, split_ratio=0.2):
+    # Use the Hugging Face `train_test_split` method for splitting
+    split_data = dataset.train_test_split(test_size=split_ratio)
+    train_dataset = split_data['train']
+    eval_dataset = split_data['test']
+    
+    return train_dataset, eval_dataset
+
 
 if __name__ == "__main__":
     # Step 1: Extract query-document pairs from nq_merged.tsv.gz (including document IDs for later tracking)
@@ -72,35 +80,39 @@ if __name__ == "__main__":
     model = T5ForConditionalGeneration.from_pretrained("castorini/doc2query-t5-large-msmarco", cache_dir=args.cache_dir)
 
     # Step 3: Prepare the dataset for training (passing only query and doc_tac)
-    train_dataset = prepare_dataset(args.output_file, tokenizer)
+    full_dataset = prepare_dataset(args.output_file, tokenizer)
 
-    # Step 4: Define training arguments
+    # Step 4: Split the dataset into training and evaluation sets (80/20 split)
+    train_dataset, eval_dataset = split_dataset(full_dataset, split_ratio=0.2)
+
+    # Step 5: Define training arguments
     training_args = TrainingArguments(
         output_dir="resources/transformer_models",              # Directory to save the model
-        evaluation_strategy="steps",
-        per_device_train_batch_size=2,     # Adjust based on your hardware
+        evaluation_strategy="steps",          # Evaluate during training
+        per_device_train_batch_size=2,        # Adjust based on your hardware
         per_device_eval_batch_size=2,
         learning_rate=3e-4,
-        num_train_epochs=3,                 # Adjust for your needs
+        num_train_epochs=3,                   # Adjust for your needs
         weight_decay=0.01,
         save_total_limit=2,
-        save_steps=500,                     # Adjust based on the dataset size
-        logging_dir="logs",                 # Directory to save logs
+        save_steps=500,                       # Adjust based on the dataset size
+        logging_dir="logs",                   # Directory to save logs
         logging_steps=100,
-        load_best_model_at_end=True,        # Load the best model at the end of training
-        report_to="none"                    # Avoid logging to WandB or Hugging Face
+        load_best_model_at_end=True,          # Load the best model at the end of training
+        report_to="none"                      # Avoid logging to WandB or Hugging Face
     )
 
-    # Step 5: Create Trainer instance
+    # Step 6: Create Trainer instance with evaluation dataset
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=train_dataset
+        train_dataset=train_dataset,  # Training dataset
+        eval_dataset=eval_dataset     # Evaluation dataset
     )
 
-    # Step 6: Fine-tune the model
+    # Step 7: Fine-tune the model
     trainer.train()
 
-    # Step 7: Save the fine-tuned model
+    # Step 8: Save the fine-tuned model
     trainer.save_model("resources/transformer_models/finetuned_doc2query_t5_large_msmarco")
     print(f"Model fine-tuned and saved to resources/transformer_models/finetuned_doc2query_t5_large_msmarco")

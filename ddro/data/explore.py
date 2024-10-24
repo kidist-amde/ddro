@@ -1,8 +1,8 @@
 import argparse
 import pandas as pd
 import gzip
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
 # Argument parser for command-line inputs
 parser = argparse.ArgumentParser(description="Explore and summarize the nq_merged.tsv.gz file")
@@ -37,48 +37,53 @@ def explore_data(df):
     # print("\nSummary Statistics:")
     # print(df.describe(include='all'))
 
-    print("\nSample Data:")
-    print(df.head(2))
+    # print("\nSample Data:")
+    # print(df.head(2))
 
-def plot_missing_values(df):
-    """
-    Plot missing values as a heatmap.
-    """
-    plt.figure(figsize=(12, 8))
-    sns.heatmap(df.isna(), cbar=False, cmap="viridis")
-    plt.title('Missing Values Heatmap')
-    plt.show()
+# def plot_missing_values(df):
+#     """
+#     Plot missing values as a heatmap.
+#     """
+#     plt.figure(figsize=(12, 8))
+#     sns.heatmap(df.isna(), cbar=False, cmap="viridis")
+#     plt.title('Missing Values Heatmap')
+#     plt.show()
 
-def plot_column_distributions(df):
-    """
-    Plot distributions for columns to understand the spread of data.
-    """
-    # Plot for 'id' column (check if it's unique)
-    plt.figure(figsize=(10, 6))
-    sns.histplot(df['id'].astype(str), kde=False, bins=50)
-    plt.title('Document ID Distribution')
-    plt.xticks(rotation=45)
-    plt.show()
+# def plot_column_distributions(df):
+#     """
+#     Plot distributions for columns to understand the spread of data.
+#     """
+#     # Plot for 'id' column (check if it's unique)
+#     plt.figure(figsize=(10, 6))
+#     sns.histplot(df['id'].astype(str), kde=False, bins=50)
+#     plt.title('Document ID Distribution')
+#     plt.xticks(rotation=45)
+#     plt.show()
 
-    # Plot for the 'language' column (categorical data)
-    plt.figure(figsize=(6, 4))
-    sns.countplot(df['language'])
-    plt.title('Language Distribution')
-    plt.show()
+#     # Plot for the 'language' column (categorical data)
+#     plt.figure(figsize=(6, 4))
+#     sns.countplot(df['language'])
+#     plt.title('Language Distribution')
+#     plt.show()
 
-    # Plot for the 'title' column (missing vs non-missing)
-    plt.figure(figsize=(6, 4))
-    df['title_missing'] = df['title'].isna()
-    sns.countplot(df['title_missing'])
-    plt.title('Missing Titles Count')
-    plt.show()
+#     # Plot for the 'title' column (missing vs non-missing)
+#     plt.figure(figsize=(6, 4))
+#     df['title_missing'] = df['title'].isna()
+#     sns.countplot(df['title_missing'])
+#     plt.title('Missing Titles Count')
+#     plt.show()
 
 def main():
-    # Load the file
-    df = load_file(args.file_path)
+    path = "resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json"
+    with open(path, 'r') as f:
+        for line in f:
+            print(line)
+            break 
+    # # Load the file
+    # df = load_file(args.file_path)
 
-    # Explore the dataset
-    explore_data(df)
+    # # Explore the dataset
+    # explore_data(df)
 
 #     # Plot missing values heatmap
 #     plot_missing_values(df)

@@ -59,6 +59,17 @@ bash ./scripts/generate_nq_t5_encoded_ids.sh
 ```bash
 bash ./scripts/run_finetune_docTTTTTquery.sh
 ```
+- For sampling the negative docs for the NQ-Dataset
+- [Pyserini: Detailed Installation Guide](https://github.com/castorini/pyserini/blob/master/docs/installation.md)
+
+For three-stage training, we generate training data by:
+cd starter_script
+python gen_train_data.py --encoding pq --scale top_300k --cur_data general_pretrain
+python gen_train_data.py --encoding pq --scale top_300k --cur_data search_pretrain
+python gen_train_data.py --encoding pq --scale top_300k --cur_data finetune
+
+
 #### Datasets:
 - [MS MARCO](https://microsoft.github.io/msmarco/Datasets.html#document-ranking-dataset)
 - [Natural Questions](https://ai.google.com/research/NaturalQuestions)
+
