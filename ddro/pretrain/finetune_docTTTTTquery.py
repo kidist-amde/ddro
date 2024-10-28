@@ -73,7 +73,7 @@ def split_dataset(dataset, split_ratio=0.2):
 
 if __name__ == "__main__":
     # Step 1: Extract query-document pairs from nq_merged.tsv.gz (including document IDs for later tracking)
-    # extract_query_document_pairs(args.dataset_path, args.output_file)
+    extract_query_document_pairs(args.dataset_path, args.output_file)
 
     # Step 2: Load pre-trained doc2query-t5-large-msmarco model and tokenizer
     tokenizer = T5TokenizerFast.from_pretrained("castorini/doc2query-t5-large-msmarco", cache_dir=args.cache_dir, legacy=False)
@@ -89,15 +89,15 @@ if __name__ == "__main__":
     training_args = TrainingArguments(
         output_dir="resources/transformer_models",              # Directory to save the model
         evaluation_strategy="steps",          # Evaluate during training
-        per_device_train_batch_size=2,        # Adjust based on your hardware
-        per_device_eval_batch_size=2,
+        per_device_train_batch_size=4,        # Adjust based on your hardware
+        per_device_eval_batch_size=4,
         learning_rate=3e-4,
-        num_train_epochs=3,                   # Adjust for your needs
+        num_train_epochs=2,                   # Adjust for your needs
         weight_decay=0.01,
         save_total_limit=2,
-        save_steps=500,                       # Adjust based on the dataset size
+        save_steps=2000,                       # Adjust based on the dataset size
         logging_dir="logs",                   # Directory to save logs
-        logging_steps=100,
+        logging_steps=500,
         load_best_model_at_end=True,          # Load the best model at the end of training
         report_to="none"                      # Avoid logging to WandB or Hugging Face
     )
@@ -114,5 +114,5 @@ if __name__ == "__main__":
     trainer.train()
 
     # Step 8: Save the fine-tuned model
-    trainer.save_model("resources/transformer_models/finetuned_doc2query_t5_large_msmarco")
+    trainer.save_model("resources/transformer_models/docTTTTTquery_finetuned/finetuned_doc2query_t5_large_msmarco")
     print(f"Model fine-tuned and saved to resources/transformer_models/finetuned_doc2query_t5_large_msmarco")

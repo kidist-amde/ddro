@@ -22,13 +22,13 @@ OUTPUT_DEV=resources/datasets/processed/nq-data/nq_msmarco_format/nq_dev_bm25tun
 OUTPUT_TRAIN=resources/datasets/processed/nq-data/nq_msmarco_format/nq_train_bm25tuned.txt
 
 
-# python -m pyserini.index.lucene \
-#   --collection JsonCollection \
-#   --input $INPUT \
-#   --index $INDEX \
-#   --generator DefaultLuceneDocumentGenerator \
-#   --threads 16 \
-#   --storePositions --storeDocvectors --storeRaw
+python -m pyserini.index.lucene \
+  --collection JsonCollection \
+  --input $INPUT \
+  --index $INDEX \
+  --generator DefaultLuceneDocumentGenerator \
+  --threads 16 \
+  --storePositions --storeDocvectors --storeRaw
 
 python -m pyserini.search.lucene \
   --index  $INDEX \

@@ -1,7 +1,5 @@
 import os
 import json
-import random
-import pickle
 import argparse
 import collections
 import numpy as np
@@ -9,21 +7,23 @@ from tqdm import tqdm
 from collections import Counter
 from collections import defaultdict
 from transformers import T5Tokenizer
+import gzip
 
 MaskedLmInstance = collections.namedtuple("MaskedLmInstance", ["index", "label"])
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--max_seq_length", default=512, type=int, help="max sequence length of model. default to 512.")
-parser.add_argument("--pretrain_model_path", default="resources/transformer_models/t5-base", type=str, help='bert model path')
-parser.add_argument("--data_path", default="../dataset/msmarco-data/msmarco-docs-sents.top.300k.json", type=str, help='data path')
+parser.add_argument("--pretrain_model_path", default="transformer_models/t5-base", type=str, help='bert model path')
+parser.add_argument("--data_path", default="dataset/msmarco-data/msmarco-docs-sents.top.300k.json", type=str, help='data path')
 parser.add_argument("--docid_path", default=None, type=str, help='docid path')
 parser.add_argument("--source_docid_path", default=None, type=str, help='train docid path')
-parser.add_argument("--query_path", default="../dataset/msmarco-data/msmarco-doctrain-queries.tsv", type=str, help='data path')
-parser.add_argument("--qrels_path", default="/../dataset/msmarco-data/msmarco-doctrain-qrels.tsv", type=str, help='data path')
-parser.add_argument("--output_path", default="../dataset/msmarco-data/train_data/msmarco.top.300k.json", type=str, help='output path')
+parser.add_argument("--query_path", default="../data/raw/msmarco-doctrain-queries.tsv.gz", type=str, help='data path')
+parser.add_argument("--qrels_path", default="../data/raw/msmarco-doctrain-qrels.tsv.gz", type=str, help='data path')
+parser.add_argument("--output_path", default="dataset/msmarco-data/train_data/msmarco.top.300k.json", type=str, help='output path')
 parser.add_argument("--fake_query_path", default="", type=str, help='fake query path')
 parser.add_argument("--sample_for_one_doc", default=10, type=int, help="max number of passages sampled for one document.")
 parser.add_argument("--current_data", default=None, type=str, help="current generating data.")
+
 
 args = parser.parse_args()
 
@@ -62,7 +62,7 @@ def add_docid_to_vocab(doc_file_path):
     with open(doc_file_path) as fin:
         for i, line in tqdm(enumerate(fin), desc='constructing all_documents list'):
             data = json.loads(line)
-            docid = data['docid'].lower()
+            docid = data['id']
             new_tokens.append("[{}]".format(docid))
     id_to_token = {vocab[k]:k for k in vocab}
     token_to_id = {id_to_token[k]:k for k in id_to_token}
@@ -90,17 +90,17 @@ def get_encoded_docid(docid_path, all_docid=None, token_to_id=None):
 def build_idf(doc_file_path):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
     vocab = tokenizer.get_vocab()
-
+    
     doc_count = 0
     idf_dict = {key: 0 for key in vocab}
     with open(doc_file_path) as fin:
         for doc_index, line in tqdm(enumerate(fin), desc='building term idf dict'):
             doc_count += 1
             doc_item = json.loads(line)
-            docid = doc_item['docid'].lower()
+            docid = doc_item['id']
             docid = "[{}]".format(docid)
-            title, url, body = doc_item["title"], doc_item["url"], doc_item["body"]
-            all_terms = set(tokenizer.tokenize((title + ' ' + body).lstrip().lower()))
+            title, url, contents = doc_item["title"], doc_item["url"], doc_item["contents"]
+            all_terms = set(tokenizer.tokenize((title + ' ' + contents).lstrip().lower()))
 
             for term in all_terms:
                 if term not in idf_dict:
@@ -112,8 +112,7 @@ def build_idf(doc_file_path):
 
     return idf_dict
 
-# 生成各种预训练任务的训练样本
-# 任务1.1：passage --> docid
+# passage --> docid
 def gen_passage_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
     
@@ -124,9 +123,9 @@ def gen_passage_instance(id_to_token, token_to_id, all_docid, encoded_docid):
             max_num_tokens = args.max_seq_length - 1
 
             doc_item = json.loads(line)
-            docid = doc_item['docid'].lower()
+            docid = doc_item['id']
             docid = "[{}]".format(docid)
-            sents_list = doc_item['sents']
+            sents_list = doc_item['contents']
             title = doc_item['title'].lower().strip()
             head_terms = tokenizer.tokenize(title)
             current_chunk = head_terms[:]
@@ -170,10 +169,8 @@ def gen_sample_terms_instance(id_to_token, token_to_id, all_docid, encoded_docid
     
     sample_count = 0
     fw = open(args.output_path, "w")
-    _, top_or_rand, scale, _ = os.path.split(args.data_path)[1].split(".")
-
-    if os.path.exists(os.path.join(os.path.split(args.output_path)[0], f"sampled_terms.t5_128_1.share.{scale}.json")):
-        with open(os.path.join(os.path.split(args.output_path)[0], f"sampled_terms.t5_128_1.share.{scale}.json"), "r") as fr:
+    if os.path.exists(os.path.join(os.path.split(args.output_path)[0], f"sampled_terms.t5_128_1.share.json")):
+        with open(os.path.join(os.path.split(args.output_path)[0], f"sampled_terms.t5_128_1.share.json"), "r") as fr:
             for line in fr:
                 line = json.loads(line)
                 line["doc_id"] = encoded_docid[line["query_id"]]
@@ -187,11 +184,11 @@ def gen_sample_terms_instance(id_to_token, token_to_id, all_docid, encoded_docid
                 max_num_tokens = args.max_seq_length - 1
 
                 doc_item = json.loads(line)
-                docid = doc_item['docid'].lower()
+                docid = doc_item['id']
                 docid = "[{}]".format(docid)
                 title = doc_item['title'].lower().strip()
-                body = doc_item['body'].lower().strip()
-                all_terms = tokenizer.tokenize(title + ' ' + body)[:1024]
+                contents = doc_item['contents'].lower().strip()
+                all_terms = tokenizer.tokenize(title + ' ' + contents)[:1024]
                 
                 temp_tfidf = []
                 all_valid_terms = []
@@ -223,12 +220,12 @@ def gen_sample_terms_instance(id_to_token, token_to_id, all_docid, encoded_docid
                 sample_count += 1
 
     fw.close()
-    if not os.path.exists(os.path.join(os.path.split(args.output_path)[0], f"sampled_terms.t5_128_1.share.{scale}.json")):
-        target_path = os.path.join(os.path.split(args.output_path)[0], f"sampled_terms.t5_128_1.share.{scale}.json")
-        os.system(f"cp {args.output_path}, {target_path}")
+    if not os.path.exists(os.path.join(os.path.split(args.output_path)[0], f"sampled_terms.t5_128_1.share.json")):
+        target_path = os.path.join(os.path.split(args.output_path)[0], f"sampled_terms.t5_128_1.share.json")
+        os.system(f"cp {args.output_path} {target_path}")
     print("total count of samples: ", sample_count)
 
-# 任务1.3：source docid --> target docid
+# 1.3：source docid --> target docid
 def gen_enhanced_docid_instance(label_filename, train_filename):
     fw = open(args.output_path, "w")
     label_dict = get_encoded_docid(label_filename)
@@ -239,19 +236,24 @@ def gen_enhanced_docid_instance(label_filename, train_filename):
         fw.write(json.dumps(training_instance, ensure_ascii=False)+"\n")
     fw.close()
  
-# 任务2：pseudo query --> docid
+# 2：pseudo query --> docid
 def gen_fake_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
-         
-    # 从ms-marco数据集中检索出点击了docid的对应query 
     fw = open(args.output_path, "w")   
-    max_num_tokens = args.max_seq_length - 1
-        
-    _, top_or_rand, scale, _ = os.path.split(args.data_path)[1].split(".")
+    max_num_tokens = args.max_seq_length - 1    
     
     with open(args.fake_query_path, "r") as fr:
         for line in tqdm(fr, desc="load all fake queries"):
-            docid, query = line.strip("\n").split("\t")
+            # Parse the JSON line
+            try:
+                fake_query = json.loads(line)
+                docid = "[{}]".format(fake_query["doc_id"])
+                query = fake_query["query"]
+            except (json.JSONDecodeError, KeyError) as e:
+                print(f"Skipping malformed line or missing key in line: {line}")
+                continue
+
+            # Ensure the docid is valid
             if docid not in token_to_id:
                 continue
 
@@ -259,8 +261,8 @@ def gen_fake_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
             tokens = query_terms[:max_num_tokens] + ["</s>"]
 
             training_instance = {
-                "doc_index":docid,
-                "encoded_docid":encoded_docid[docid],
+                "doc_index": docid,
+                "encoded_docid": encoded_docid[docid],
                 "tokens": tokens,
             }
             training_instance = add_padding(training_instance, tokenizer, id_to_token, token_to_id)
@@ -268,21 +270,24 @@ def gen_fake_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
 
     fw.close()
 
-# 任务3：query --> docid,  finetune
+#3：query --> docid,  finetune
 def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
-         
-    # 从ms-marco数据集中检索出点击了docid的对应query 
+    
+    # From ms-marco dataset, retrieve the query that clicked on docid
     fw = open(args.output_path, "w")
     qid_2_query = {}
-    docid_2_qid = defaultdict(list)  # 点击了某个doc的queryid
-    with open(args.query_path) as fin:
+    docid_2_qid = defaultdict(list)  # Queries that clicked on a specific docid
+
+    # Open query_path with 'rt' for text mode, and specify encoding
+    with gzip.open(args.query_path, 'rt', encoding='utf-8') as fin:
         for line in tqdm(fin, desc="reading all queries"):
             qid, query = line.strip().split("\t")
             qid_2_query[qid] = query
     
     count = 0
-    with open(args.qrels_path) as fin:
+    # Open qrels_path with 'rt' for text mode, and specify encoding
+    with gzip.open(args.qrels_path, 'rt', encoding='utf-8') as fin:
         for line in tqdm(fin, desc="reading all click samples"):
             qid, _, docid, _ = line.strip().split()
             
@@ -303,15 +308,15 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
             tokens = query_terms[:max_num_tokens] + ["</s>"]
 
             training_instance = {
-                "doc_index":docid,
-                "encoded_docid":encoded_docid[docid],
+                "doc_index": docid,
+                "encoded_docid": encoded_docid[docid],
                 "tokens": tokens,
             }
             training_instance = add_padding(training_instance, tokenizer, id_to_token, token_to_id)
-            fw.write(json.dumps(training_instance, ensure_ascii=False)+"\n")
-      
+            fw.write(json.dumps(training_instance, ensure_ascii=False) + "\n")
+    
     fw.close()
-
+    
 if __name__ == "__main__":
     id_to_token, token_to_id, all_docid, all_term = add_docid_to_vocab(args.data_path)
     dir_path = os.path.split(args.output_path)[0]

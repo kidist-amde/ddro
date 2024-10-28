@@ -1,25 +1,22 @@
 import os
 import json
-import random
-import pickle
 import argparse
 import collections
-import numpy as np
 from tqdm import tqdm
-from collections import Counter
 from collections import defaultdict
 from transformers import T5Tokenizer
+import gzip
 
 MaskedLmInstance = collections.namedtuple("MaskedLmInstance", ["index", "label"])
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--max_seq_length", default=512, type=int, help="max sequence length of model. default to 512.")
-parser.add_argument("--pretrain_model_path", default="../transformer_models/t5-base", type=str, help='bert model path')
-parser.add_argument("--data_path", default="../dataset/msmarco-data/msmarco-docs-sents.top.300k.json", type=str, help='data path')
-parser.add_argument("--docid_path", default=None, type=str, help='docid path')
-parser.add_argument("--query_path", default="../dataset/msmarco-data/msmarco-doctrain-queries.tsv", type=str, help='data path')
-parser.add_argument("--qrels_path", default="/../dataset/msmarco-data/msmarco-doctrain-qrels.tsv", type=str, help='data path')
-parser.add_argument("--output_path", default="../dataset/msmarco-data/train_data/msmarco.top.300k.json", type=str, help='output path')
+parser.add_argument("--pretrain_model_path", default="transformer_models/t5-base", type=str, help='bert model path')
+parser.add_argument("--data_path", default=None, type=str, help='data path')
+parser.add_argument("--docid_path", default="dataset/encoded_docid/t5_pq_msmarco.txt", type=str, help='docid path')
+parser.add_argument("--query_path", default="../data/raw/msmarco-docdev-queries.tsv.gz", type=str, help='data path')
+parser.add_argument("--qrels_path", default="../data/raw/msmarco-docdev-qrels.tsv.gz", type=str, help='data path')
+parser.add_argument("--output_path", default="", type=str, help='output path')
 parser.add_argument("--current_data", default=None, type=str, help="current generating data.")
 
 args = parser.parse_args()
@@ -83,19 +80,19 @@ def get_encoded_docid(docid_path, all_docid=None, token_to_id=None):
                 encoded_docid[docid] = encode
     return encoded_docid
 
-# 测试任务：query -- docid
+# Generate evaluation instances for T5 model
 def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
 
     qid_2_query = {}
-    docid_2_qid = defaultdict(list)  # 点击了某个doc的queryid
-    with open(args.query_path) as fin:
+    docid_2_qid = defaultdict(list)  
+    with gzip.open(args.query_path,"rt") as fin:
         for line in tqdm(fin):
             qid, query = line.strip().split("\t")
             qid_2_query[qid] = query
     
     count = 0
-    with open(args.qrels_path) as fin:
+    with gzip.open(args.qrels_path,"rt") as fin:
         for line in tqdm(fin):
             qid, _, docid, _ = line.strip().split()
             docid = "[{}]".format(docid.lower())
@@ -110,14 +107,19 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     fw = open(args.output_path, "w")
 
     for docid, qids in tqdm(docid_2_qid.items()):
+        if docid not in encoded_docid:
+            # Log a warning and continue if docid is missing from encoded_docid
+            print(f"Warning: docid {docid} not found in encoded_docid. Skipping.")
+            continue
+        
         for qid in qids:
             query = qid_2_query[qid].lower()
             query_terms = tokenizer.tokenize(query)
             tokens = query_terms[:max_num_tokens] + ["</s>"]
 
             evaluation_instance = {
-                "doc_index":docid,
-                "encoded_docid":encoded_docid[docid],
+                "doc_index": docid,
+                "encoded_docid": encoded_docid[docid],
                 "tokens": tokens,
             }
             evaluation_instance = add_padding(evaluation_instance, tokenizer, id_to_token, token_to_id)
