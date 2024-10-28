@@ -61,6 +61,24 @@ bash ./scripts/run_finetune_docTTTTTquery.sh
 ```
 - For sampling the negative docs for the NQ-Dataset
 - [Pyserini: Detailed Installation Guide](https://github.com/castorini/pyserini/blob/master/docs/installation.md)
+Here’s a more concise version:
+Or simply 
+## Setup for BM25 Retrieval
+
+1. **Create Environment**:
+   ```bash
+   conda env create -f pysinir.yml
+   conda activate pyserini
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   pip install -r pysinir.txt
+   ```
+
+Now you’re ready to run the BM25 retrieval task.
+
+--- 
 
 For three-stage training, we generate training data by:
 cd starter_script
@@ -68,6 +86,18 @@ python gen_train_data.py --encoding pq --scale top_300k --cur_data general_pretr
 python gen_train_data.py --encoding pq --scale top_300k --cur_data search_pretrain
 python gen_train_data.py --encoding pq --scale top_300k --cur_data finetune
 
+Train your model
+
+#MS-MARCO
+
+1. sanple 300k top docs 
+2. generate embedding for msmarco all collection  (compute embeding)
+3. generate encodded docid 
+- pq 
+- url
+- atomic 
+4. generate  three-stage training, for SFT
+5. generate triples for DPO
 
 #### Datasets:
 - [MS MARCO](https://microsoft.github.io/msmarco/Datasets.html#document-ranking-dataset)
