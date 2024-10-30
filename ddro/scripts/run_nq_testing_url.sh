@@ -8,7 +8,7 @@
 #SBATCH --time=4-00:00:00 # d-h:m:s
 #SBATCH --mem=64gb # memory per GPU 
 #SBATCH -c 16 # number of CPUs
-#SBATCH --output=logs-slurm/Eval_pretrain_search_url-%j.out # %j is the job ID
+#SBATCH --output=logs-slurm/eval-logs/url/Eval_pretrain_search_url-%j.out # %j is the job ID
 # Set up the environment.
 
 source /home/kmekonn/.bashrc

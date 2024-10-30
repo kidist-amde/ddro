@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH --job-name=pretrain_search_finetune_pq_nq
+#SBATCH --job-name=pretrain_search_finetune_pq_nq_30epoch
 #SBATCH --partition=gpu 
 #SBATCH --gres=gpu:nvidia_rtx_a6000:2
 ##SBATCH --gres=gpu:nvidia_l40:2
