@@ -36,7 +36,7 @@ top_or_rand, scale = args.scale.split("_")
 #     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
 #     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
 #     --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_${encoding}_docids.txt \
-#     --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/{cur_data}.{model}.url_nq.json \
+#     --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/{cur_data}.{model}.{encoding}_nq.json \
 #     --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.{encoding}_nq.json \
 #     --dataset_script_dir {code_dir}/data/data_scripts \
 #     --dataset_cache_dir {code_dir}/negs_tutorial_cache \
@@ -70,7 +70,7 @@ top_or_rand, scale = args.scale.split("_")
 #     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
 #     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
 #     --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_${encoding}_docids.txt \
-#     --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/{cur_data}.{model}.url_nq.json \
+#     --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/{cur_data}.{model}.{encoding}_nq.json \
 #     --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.{encoding}_nq.json \
 #     --dataset_script_dir {code_dir}/data/data_scripts \
 #     --dataset_cache_dir {code_dir}/negs_tutorial_cache \
@@ -95,19 +95,18 @@ stage = "finetune"  # pretrain / post_pretrain / finetune
 load_ckpt = "True"  # True if load checkpoint, go to load_ckpt_path
 operation = "training"  # training / pair_training
 max_seq_length = 64
-epoch = 10
-# --learning_rate 1e-3 \
+epoch = 30
 
-os.system(f"cd {code_dir}/utils && python runT5_test.py \
+os.system(f"cd {code_dir}/utils && python runT5.py \
     --epoch {epoch} \
     --per_gpu_batch_size 128 \
-    --learning_rate 5e-5 \
-    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_new/ \
+    --learning_rate 1e-3 \
+    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_30epoch/ \
     --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
     --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_${encoding}_docids.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/{cur_data}.{model}.url_nq.json \
+    --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/{cur_data}.{model}.{encoding}_nq.json \
     --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.{encoding}_nq.json \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir {code_dir}/negs_tutorial_cache \

@@ -18,6 +18,7 @@ cd /ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimizati
 nvidia-smi 
 FILE_PATH=resources/datasets/processed/nq-data
 
+
 # Run the Python training script
 python pretrain/train_dpo_model.py \
     --train_file $FILE_PATH/nq_hard_negatives_format/nq_train_triples_with_hard_negatives.txt \
@@ -28,4 +29,5 @@ python pretrain/train_dpo_model.py \
     --use_origin_head False \
     --checkpoint_path outputs-nq/t5_128_1_pq_pretrain_search_finetune/model_final.pkl \
     --max_prompt_length 64 \
+    --log_path logs-nq-dpo/dpo_ckp_7epoch_lr5e-6_beta_049.log \
   

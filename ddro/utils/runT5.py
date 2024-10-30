@@ -162,112 +162,11 @@ def fit(model, X_train):
         if (epoch+1) % args.save_every_n_epoch == 0:
             torch.save(model.state_dict(), os.path.join(args.save_path, f"model_{epoch}.pkl"))
             print(f"Save the model in {args.save_path}")
-    torch.save(model.state_dict(), os.path.join(args.save_path, f"model_final.pkl"))
     logger.close()
-
-# def evaluate_beamsearch():
-#     '''
-#         function: Generate the document identifiers with constrained beam search, and evaluate the ranking results.
-#     '''
-#     pretrain_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
-#     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + args.add_doc_num)
-#     model = T5ForPretrain(pretrain_model, args)
-#     save_model = load_model(args.save_path)
-#     model.load_state_dict(save_model)
-#     model = model.to(device)
-#     model.eval()
-#     myevaluator = evaluator()
-
-#     encoded_docid, encode_2_docid = load_encoded_docid(args.docid_path)
-#     docid_trie = Trie([[0] + item for item in encoded_docid])
-
-#     def prefix_allowed_tokens_fn(batch_id, sent): 
-#         return docid_trie.get(sent.tolist())
-
-#     def docid2string(docid):
-#         # x_list = []
-#         x_list = ['0']  # Add leading '0' for alignment, I add this for the url encoding
-#         for x in docid:
-#             if x != 0:
-#                 x_list.append(str(x))
-#             if x == 1:
-#                 break
-#         return ",".join(x_list)
-
-#     if os.path.exists(args.test_file_path):
-#         localtime = time.asctime(time.localtime(time.time()))
-#         print(f"Evaluate on the {args.test_file_path}.")
-#         logger.write(f"{localtime} Evaluate on the {args.test_file_path}.\n")
-#         test_data = load_data(args.test_file_path)
-#         test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args) # 构建训练集
-#         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
-#         truth, prediction, inputs = [], [], []
-
-#         for i, testing_data in tqdm(enumerate(test_dataloader)):
-#             with torch.no_grad():
-#                 for key in testing_data.keys():
-#                     if key in ["query_id", "doc_id"]:
-#                         continue
-#                     testing_data[key] = testing_data[key].to(device)
-            
-#             input_ids = testing_data["input_ids"]
-#             if args.use_docid_rank == "False":
-#                 labels = testing_data["docid_labels"] # encoded docid
-#                 truth.extend([[docid2string(docid)] for docid in labels.cpu().numpy().tolist()])
-#             else:
-#                 labels = testing_data["query_id"] # docid
-#                 truth.extend([[docid] for docid in labels])
-            
-#             inputs.extend(input_ids)
-
-#             outputs = model.generate(input_ids, max_length=args.max_docid_length+1, num_return_sequences=args.num_beams, num_beams=args.num_beams, do_sample=False, prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
-
-#             for j in range(input_ids.shape[0]):
-#                 query_term = tokenizer.decode(input_ids[j], skip_special_tokens=True).split()
-#                 doc_rank = []
-#                 batch_output = outputs[j*args.num_beams:(j+1)*args.num_beams].cpu().numpy().tolist()
-#                 for docid in batch_output:
-#                     if args.use_docid_rank == "False":
-#                         doc_rank.append(docid2string(docid))
-#                     else:
-#                         docid_list = encode_2_docid[docid2string(docid)]
-#                         if len(docid_list) > 1:
-#                             random.shuffle(docid_list)
-#                             doc_rank.extend(docid_list)
-#                         else:
-#                             doc_rank.extend(docid_list)                           
-#                 prediction.append(doc_rank)
-             
-#         result_df = myevaluator.evaluate_ranking(truth, prediction)
-
-#         # Extracting metrics from the DataFrame's first row
-#         _mrr10 = result_df['MRR@10'][0]
-#         _mrr = result_df['MRR'][0]
-#         _ndcg10 = result_df['NDCG@10'][0]
-#         _ndcg20 = result_df['NDCG@20'][0]
-#         _ndcg100 = result_df['NDCG@100'][0]
-#         _map20 = result_df['MAP@20'][0]
-#         _p1 = result_df['P@1'][0]
-#         _p10 = result_df['P@10'][0]
-#         _p20 = result_df['P@20'][0]
-#         _p100 = result_df['P@100'][0]
-#         _r1 = result_df['R@1'][0]
-#         _r10 = result_df['R@10'][0]
-#         _r100 = result_df['R@100'][0]
-#         _r1000 = result_df['R@1000'][0]
-#         _hit1 = result_df['Hit@1'][0]
-#         _hit5 = result_df['Hit@5'][0]
-#         _hit10 = result_df['Hit@10'][0]
-#         _hit100 = result_df['Hit@100'][0]
-
-#         localtime = time.asctime(time.localtime(time.time()))
-#         print(f"mrr@10:{_mrr10}, mrr:{_mrr}, p@1:{_p1}, p@10:{_p10}, p@20:{_p20}, p@100:{_p100}, r@1:{_r1}, r@10:{_r10}, r@100:{_r100}, r@1000:{_r1000}, hit@1:{_hit1}, hit@5:{_hit5}, hit@10:{_hit10}, hit@100:{_hit100}")
-#         logger.write(f"mrr@10:{_mrr10}, mrr:{_mrr}, p@1:{_p1}, p@10:{_p10}, p@20:{_p20}, p@100:{_p100}, r@1:{_r1}, r@10:{_r10}, r@100:{_r100}, r@1000:{_r1000}, hit@1:{_hit1}, hit@5:{_hit5}, hit@10:{_hit10}, hit@100:{_hit100}\n")
-# dor the URL TESTING I USE THE BELOW CODE
 
 def evaluate_beamsearch():
     '''
-    Function to perform document identifier generation and evaluate ranking results using constrained beam search.
+        function: Generate the document identifiers with constrained beam search, and evaluate the ranking results.
     '''
     pretrain_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + args.add_doc_num)
@@ -280,52 +179,19 @@ def evaluate_beamsearch():
 
     encoded_docid, encode_2_docid = load_encoded_docid(args.docid_path)
     docid_trie = Trie([[0] + item for item in encoded_docid])
-
-    # def prefix_allowed_tokens_fn(batch_id, sent): 
-    #     return docid_trie.get(sent.tolist())
-
-    # def prefix_allowed_tokens_fn(batch_id, sent): 
-    #     allowed_tokens = docid_trie.get(sent.tolist())
-    #     if not allowed_tokens:
-    #         print(f"Warning: Empty allowed tokens for batch {batch_id}, sent {sent.tolist()}")
-    #         logger.write(f"Warning: Empty allowed tokens for batch {batch_id}, sent {sent.tolist()}\n")
-    #         # For debugging, allow all tokens as fallback
-    #         return list(range(tokenizer.vocab_size))  # Temporarily return all tokens if empty
-    #     return allowed_tokens
-
-    # def prefix_allowed_tokens_fn(batch_id, sent): 
-    #     allowed_tokens = docid_trie.get(sent.tolist())
-    #     print(f"Batch {batch_id}, Sent {sent.tolist()}, Allowed tokens: {allowed_tokens}")  # Debugging print
-    #     if not allowed_tokens:
-    #         print(f"Warning: Empty allowed tokens for batch {batch_id}, sent {sent.tolist()}")
-    #         logger.write(f"Warning: Empty allowed tokens for batch {batch_id}, sent {sent.tolist()}\n")
-    #         # Temporary fallback to allow all tokens if Trie fails
-    #         return list(range(tokenizer.vocab_size))  # Debugging fallback
-    #     return allowed_tokens
-
-
-    # Add a debug flag at the beginning of your script
-    DEBUG = False  # Set to True only when debugging
+    
+    
     def prefix_allowed_tokens_fn(batch_id, sent): 
-        # Ensure sent length matches the structure of encoded_docid entries
-        max_length_in_trie = max(len(item) for item in encoded_docid)  # Determine max length of entries
-        truncated_sent = sent.tolist()[:max_length_in_trie]  # Truncate to max length
-        
-        allowed_tokens = docid_trie.get(truncated_sent)
-        # Print only if debugging and for every 10th batch
-        if DEBUG and batch_id % 10 == 0:
-            print(f"Batch {batch_id}, Sent {truncated_sent}, Allowed tokens: {allowed_tokens}")
-        
-        if not allowed_tokens:
-            if DEBUG:
-                print(f"Warning: Empty allowed tokens for batch {batch_id}, sent {truncated_sent}")
-            logger.write(f"Warning: Empty allowed tokens for batch {batch_id}, sent {truncated_sent}\n")
-            return list(range(tokenizer.vocab_size))  # Fallback
-        
-        return allowed_tokens
-
+        # print("sent:", sent)
+        outputs = docid_trie.get(sent.tolist())
+        # we add the below line to avoid the case that the outputs is empty (mxk)
+        if len(outputs) == 0:
+            return [tokenizer.pad_token_id]
+        return outputs
+    
     def docid2string(docid):
-        x_list = ['0']  # Add leading '0' for alignment as per URL encoding
+        # x_list = []
+        x_list = ['0']  # Add leading '0' for alignment, I add this for the url encoding
         for x in docid:
             if x != 0:
                 x_list.append(str(x))
@@ -338,7 +204,7 @@ def evaluate_beamsearch():
         print(f"Evaluate on the {args.test_file_path}.")
         logger.write(f"{localtime} Evaluate on the {args.test_file_path}.\n")
         test_data = load_data(args.test_file_path)
-        test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args)
+        test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args) # 构建训练集
         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
         truth, prediction, inputs = [], [], []
 
@@ -348,59 +214,59 @@ def evaluate_beamsearch():
                     if key in ["query_id", "doc_id"]:
                         continue
                     testing_data[key] = testing_data[key].to(device)
-
+            
             input_ids = testing_data["input_ids"]
             if args.use_docid_rank == "False":
-                labels = testing_data["docid_labels"]
+                labels = testing_data["docid_labels"] # encoded docid
                 truth.extend([[docid2string(docid)] for docid in labels.cpu().numpy().tolist()])
             else:
-                labels = testing_data["query_id"]
+                labels = testing_data["query_id"] # docid
                 truth.extend([[docid] for docid in labels])
-
+            
             inputs.extend(input_ids)
 
-            outputs = model.generate(input_ids, max_length=args.max_docid_length + 1, num_return_sequences=args.num_beams,
-                                     num_beams=args.num_beams, do_sample=False, prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
+            outputs = model.generate(input_ids, max_length=args.max_docid_length+1, num_return_sequences=args.num_beams, num_beams=args.num_beams, do_sample=False, prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
 
             for j in range(input_ids.shape[0]):
                 query_term = tokenizer.decode(input_ids[j], skip_special_tokens=True).split()
                 doc_rank = []
-                batch_output = outputs[j * args.num_beams:(j + 1) * args.num_beams].cpu().numpy().tolist()
+                batch_output = outputs[j*args.num_beams:(j+1)*args.num_beams].cpu().numpy().tolist()
                 for docid in batch_output:
-                    docid_str = docid2string(docid)
                     if args.use_docid_rank == "False":
-                        doc_rank.append(docid_str)
+                        doc_rank.append(docid2string(docid))
                     else:
-                        # Use `.get()` to avoid KeyError, log missing keys for review
-                        docid_list = encode_2_docid.get(docid_str)
-                        if docid_list is None:
-                            print(f"Warning: Key '{docid_str}' not found in encode_2_docid.")
-                            logger.write(f"Warning: Key '{docid_str}' not found in encode_2_docid.\n")
-                            continue  # Skip to the next docid if key is missing
-                        
+                        docid_list = encode_2_docid[docid2string(docid)]
                         if len(docid_list) > 1:
                             random.shuffle(docid_list)
                             doc_rank.extend(docid_list)
                         else:
                             doc_rank.extend(docid_list)                           
                 prediction.append(doc_rank)
-             
         result_df = myevaluator.evaluate_ranking(truth, prediction)
 
-        # Extract and log evaluation metrics
-        metrics = {
-            'MRR@10': result_df['MRR@10'][0], 'MRR': result_df['MRR'][0],
-            'P@1': result_df['P@1'][0], 'P@10': result_df['P@10'][0],
-            'P@20': result_df['P@20'][0], 'P@100': result_df['P@100'][0],
-            'R@1': result_df['R@1'][0], 'R@10': result_df['R@10'][0],
-            'R@100': result_df['R@100'][0], 'R@1000': result_df['R@1000'][0],
-            'Hit@1': result_df['Hit@1'][0], 'Hit@5': result_df['Hit@5'][0],
-            'Hit@10': result_df['Hit@10'][0], 'Hit@100': result_df['Hit@100'][0]
-        }
+        # Extracting metrics from the DataFrame's first row
+        _mrr10 = result_df['MRR@10'][0]
+        _mrr = result_df['MRR'][0]
+        _ndcg10 = result_df['NDCG@10'][0]
+        _ndcg20 = result_df['NDCG@20'][0]
+        _ndcg100 = result_df['NDCG@100'][0]
+        _map20 = result_df['MAP@20'][0]
+        _p1 = result_df['P@1'][0]
+        _p10 = result_df['P@10'][0]
+        _p20 = result_df['P@20'][0]
+        _p100 = result_df['P@100'][0]
+        _r1 = result_df['R@1'][0]
+        _r10 = result_df['R@10'][0]
+        _r100 = result_df['R@100'][0]
+        _r1000 = result_df['R@1000'][0]
+        _hit1 = result_df['Hit@1'][0]
+        _hit5 = result_df['Hit@5'][0]
+        _hit10 = result_df['Hit@10'][0]
+        _hit100 = result_df['Hit@100'][0]
+
         localtime = time.asctime(time.localtime(time.time()))
-        print(f"Evaluation Metrics: {metrics}")
-        logger.write(f"Evaluation Metrics: {metrics}\n")
-        logger.flush()
+        print(f"mrr@10:{_mrr10}, mrr:{_mrr}, p@1:{_p1}, p@10:{_p10}, p@20:{_p20}, p@100:{_p100}, r@1:{_r1}, r@10:{_r10}, r@100:{_r100}, r@1000:{_r1000}, hit@1:{_hit1}, hit@5:{_hit5}, hit@10:{_hit10}, hit@100:{_hit100}")
+        logger.write(f"mrr@10:{_mrr10}, mrr:{_mrr}, p@1:{_p1}, p@10:{_p10}, p@20:{_p20}, p@100:{_p100}, r@1:{_r1}, r@10:{_r10}, r@100:{_r100}, r@1000:{_r1000}, hit@1:{_hit1}, hit@5:{_hit5}, hit@10:{_hit10}, hit@100:{_hit100}\n")
 
 if __name__ == '__main__':
     if args.operation == "training":

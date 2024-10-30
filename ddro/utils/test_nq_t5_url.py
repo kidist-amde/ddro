@@ -35,13 +35,13 @@ def main():
         --epoch 10 \
         --per_gpu_batch_size 2 \
         --learning_rate 1e-3 \
-        --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}/model_final.pkl \
-        --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
+        --save_path {code_dir}/outputs-nq/t5_128_10_url_title_pretrain_search/model_final.pkl \
+        --log_path {code_dir}/logs-nq/inference.t5_128_1.url_title.pretrain_search.log \
         --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-        --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_{encoding}_docids.txt \
-        --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/{cur_data}.{model}.{encoding}.json \
-        --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.{encoding}_nq.json \
+        --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_url_docids.txt \
+        --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/{cur_data}.{model}.url.json \
+        --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.url_nq.json \
         --dataset_script_dir {code_dir}/data/data_scripts \
         --dataset_cache_dir {code_dir}/negs_tutorial_cache \
         --num_beams {num_beams} \
