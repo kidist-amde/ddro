@@ -8,12 +8,12 @@ parser.add_argument("--scale", default="top_300k", type=str, help="docid method 
 
 args = parser.parse_args()
 
-config_file = json.load(open("scripts/config.json", "r"))
+config_file = json.load(open("scripts/config_nq.json", "r"))
 config_file["atomic"]["add_doc_num"] = config_file["doc_num"][args.scale]
 config = config_file[args.encoding]
 encoding, add_doc_num, max_docid_length, use_origin_head = config["encoding"], config["add_doc_num"], config["max_docid_length"], config["use_origin_head"]
 
-code_dir = "/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
+code_dir = "/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
 
 ## test settings
 print("start evaluation...")
@@ -33,9 +33,9 @@ def main():
     epoch = 9
     os.system(f"""cd {code_dir}/utils && python runT5.py \
         --epoch 10 \
-        --per_gpu_batch_size 2 \
+        --per_gpu_batch_size 8 \
         --learning_rate 1e-3 \
-        --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}/model_final.pkl \
+        --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON_10epoch/model_final.pkl \
         --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
         --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \

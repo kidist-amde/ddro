@@ -3,11 +3,12 @@ import json
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--encoding", default="url", type=str, help="docid method atomic/pq/url")
+parser.add_argument("--encoding", default="pq", type=str, help="docid method atomic/pq/url")
 parser.add_argument("--scale", default="top_300k", type=str, help="docid method atomic/pq/url")
+
 args = parser.parse_args()
 
-config_file = json.load(open("scripts/config.json", "r"))
+config_file = json.load(open("scripts/config_nq.json", "r"))
 config_file["atomic"]["add_doc_num"] = config_file["doc_num"][args.scale]
 config = config_file[args.encoding]
 encoding, add_doc_num, max_docid_length, use_origin_head = config["encoding"], config["add_doc_num"], config["max_docid_length"], config["use_origin_head"]
@@ -30,13 +31,13 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --epoch {epoch} \
     --per_gpu_batch_size  100 \
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-msmarco/{model}_{top_or_rand}_{scale}_{encoding}_{all_data}_ULTRON/ \
-    --log_path {code_dir}/logs-msmarco/{stage}.{model}.{top_or_rand}.{scale}.{encoding}.{all_data}.log \
-    --doc_file_path {code_dir}/resources/datasets/processed/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
+    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/ \
+    --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
+    --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
-    --test_file_path {code_dir}/resources/datasets/processed/msmarco-data/test_data_{top_or_rand}_{scale}/ \
+    --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_url_docids.txt \
+    --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/pretrain.t5_128_10.url_nq.json \
+    --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.url_nq.json \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir {code_dir}/negs_tutorial_cache \
     --add_doc_num {add_doc_num} \
@@ -64,13 +65,13 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --epoch {epoch} \
     --per_gpu_batch_size  100 \
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-msmarco/{model}_{top_or_rand}_{scale}_{encoding}_{all_data}_ULTRON/ \
-    --log_path {code_dir}/logs-msmarco/{stage}.{model}.{top_or_rand}.{scale}.{encoding}.{all_data}.log \
-    --doc_file_path {code_dir}/resources/datasets/processed/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
+    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/ \
+    --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
+    --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
-    --test_file_path {code_dir}/resources/datasets/processed/msmarco-data/test_data_{top_or_rand}_{scale}/ \
+    --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_url_docids.txt \
+    --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/search_pretrain.t5_128_10.url_nq.json \
+    --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.url_nq.json \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir {code_dir}/negs_tutorial_cache \
     --add_doc_num {add_doc_num} \
@@ -78,7 +79,7 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --max_docid_length {max_docid_length} \
     --use_origin_head {use_origin_head} \
     --load_ckpt {load_ckpt} \
-    --load_ckpt_path {code_dir}/outputs-msmarco/{load_model}_{top_or_rand}_{scale}_{encoding}_pretrain_ULTRON/model_final.pkl \
+    --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_ULTRON/model_final.pkl \
     --output_every_n_step 5000 \
     --save_every_n_epoch 4 \
     --operation {operation}")
@@ -98,15 +99,15 @@ epoch = 10
 
 os.system(f"cd {code_dir}/utils && python runT5.py \
     --epoch {epoch} \
-    --per_gpu_batch_size 100 \
+    --per_gpu_batch_size 100\
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-msmarco/{model}_{top_or_rand}_{scale}_{encoding}_{all_data}_ULTRON/ \
-    --log_path {code_dir}/logs-msmarco/{stage}.{model}.{top_or_rand}.{scale}.{encoding}.{all_data}.log \
-    --doc_file_path {code_dir}/resources/datasets/processed/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
+    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/ \
+    --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
+    --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
-    --test_file_path {code_dir}/resources/datasets/processed/msmarco-data/test_data_{top_or_rand}_{scale}/ \
+    --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_url_docids.txt \
+    --train_file_path {code_dir}/resources/datasets/processed/nq-data/train_data/finetune.t5_128_1.url_nq.json \
+    --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.url_nq.json \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir {code_dir}/negs_tutorial_cache \
     --add_doc_num {add_doc_num} \
@@ -114,7 +115,7 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --max_docid_length {max_docid_length} \
     --use_origin_head {use_origin_head} \
     --load_ckpt {load_ckpt} \
-    --load_ckpt_path {code_dir}/outputs-msmarco/{load_model}_{top_or_rand}_{scale}_{encoding}_pretrain_search_ULTRON/model_final.pkl \
+    --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_search_ULTRON/model_final.pkl \
     --output_every_n_step 5000 \
     --save_every_n_epoch 2 \
     --operation {operation}")

@@ -34,8 +34,8 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --log_path {code_dir}/logs-msmarco/{stage}.{model}.{top_or_rand}.{scale}.{encoding}.{all_data}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
+    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_url_{top_or_rand}.{scale}.txt \
+    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.url.{scale}.json \
     --test_file_path {code_dir}/resources/datasets/processed/msmarco-data/test_data_{top_or_rand}_{scale}/ \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir {code_dir}/negs_tutorial_cache \
@@ -68,8 +68,8 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --log_path {code_dir}/logs-msmarco/{stage}.{model}.{top_or_rand}.{scale}.{encoding}.{all_data}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
+    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_url_{top_or_rand}.{scale}.txt \
+    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.url.{scale}.json \
     --test_file_path {code_dir}/resources/datasets/processed/msmarco-data/test_data_{top_or_rand}_{scale}/ \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir {code_dir}/negs_tutorial_cache \
@@ -104,8 +104,8 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --log_path {code_dir}/logs-msmarco/{stage}.{model}.{top_or_rand}.{scale}.{encoding}.{all_data}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
+    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_url_{top_or_rand}.{scale}.txt \
+    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.url.{scale}.json \
     --test_file_path {code_dir}/resources/datasets/processed/msmarco-data/test_data_{top_or_rand}_{scale}/ \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir {code_dir}/negs_tutorial_cache \

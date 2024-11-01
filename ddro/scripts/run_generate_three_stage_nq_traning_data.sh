@@ -1,20 +1,27 @@
 #!/bin/sh
-#SBATCH --job-name=t5_train_data_gen
+#SBATCH --job-name=generate-t5-nq-search-pretrain-data
+##SBATCH --partition gpu_h100
+##SBATCH --gres=gpu:2
+#SBATCH --partition gpu
+#SBATCH --gres=gpu:a100:1
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=4-00:00:00 # d-h:m:s
-#SBATCH --mem=128gb # memory per GPU 
-#SBATCH -c 32 # number of CPUs
-#SBATCH --output=logs-slurm/other-logs/t5_atomic_search_pretrain_gen-%j.out # %j is the job ID
+#SBATCH --time=5-00:00:00
+#SBATCH --mem=120gb #120gb #180gb
+#SBATCH -c 16
+#SBATCH --output=logs-slurm/other-logs/t5_pq_search_pretrain_gen-%j.out # %j is the job ID
 
-# Set up the environment.
-source /home/kmekonn/.bashrc
-conda activate ddro
-
+# source /home/kmekonnen/.bashrc
+source ${HOME}/.bashrc
+# conda init
+conda activate dsi-env
+# Change to the project directory.
+cd /gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro
 # Change to the base directory where the code and data are located.
-HOME_DIR="/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
+HOME_DIR="/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
 
 # Variables and parameters for the script
-ENCODING="atomic"  # 'url' or 'pq' or 'atomic'
+ENCODING="pq"  # 'url' or 'pq' or 'atomic'
 MODEL="t5"  # Fixed to 't5' for all experiments
 QRELS_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_msmarco_format/nq_qrels_train.tsv.gz"
 QUERY_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_msmarco_format/nq_queries_train.tsv.gz"

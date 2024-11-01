@@ -14,7 +14,7 @@ config = config_file[args.encoding]
 encoding, add_doc_num, max_docid_length, use_origin_head = config["encoding"], config["add_doc_num"], config["max_docid_length"], config["use_origin_head"]
 
 
-code_dir = "/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
+code_dir = "/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
 top_or_rand, scale = args.scale.split("_")
 
 # ######################################################################
@@ -29,9 +29,9 @@ top_or_rand, scale = args.scale.split("_")
 
 # os.system(f"cd {code_dir}/utils && python runT5.py \
 #     --epoch {epoch} \
-#     --per_gpu_batch_size  128 \
+#     --per_gpu_batch_size 100 \
 #     --learning_rate 1e-3 \
-#     --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}/ \
+#     --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/ \
 #     --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
 #     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
 #     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
@@ -63,9 +63,9 @@ top_or_rand, scale = args.scale.split("_")
 
 # os.system(f"cd {code_dir}/utils && python runT5.py \
 #     --epoch {epoch} \
-#     --per_gpu_batch_size  128 \
+#     --per_gpu_batch_size  100 \
 #     --learning_rate 1e-3 \
-#     --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}/ \
+#     --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/ \
 #     --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
 #     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
 #     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
@@ -79,7 +79,7 @@ top_or_rand, scale = args.scale.split("_")
 #     --max_docid_length {max_docid_length} \
 #     --use_origin_head {use_origin_head} \
 #     --load_ckpt {load_ckpt} \
-#     --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain/model_final.pkl \
+#     --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_ULTRON/model_final.pkl \
 #     --output_every_n_step 5000 \
 #     --save_every_n_epoch 4 \
 #     --operation {operation}")
@@ -95,13 +95,13 @@ stage = "finetune"  # pretrain / post_pretrain / finetune
 load_ckpt = "True"  # True if load checkpoint, go to load_ckpt_path
 operation = "training"  # training / pair_training
 max_seq_length = 64
-epoch = 30
+epoch = 10
 
 os.system(f"cd {code_dir}/utils && python runT5.py \
     --epoch {epoch} \
-    --per_gpu_batch_size 128 \
+    --per_gpu_batch_size 100\
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_30epoch/ \
+    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON_10epoch/ \
     --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
@@ -115,7 +115,7 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --max_docid_length {max_docid_length} \
     --use_origin_head {use_origin_head} \
     --load_ckpt {load_ckpt} \
-    --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_search/model_final.pkl \
+    --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_search_ULTRON/model_final.pkl \
     --output_every_n_step 5000 \
     --save_every_n_epoch 2 \
     --operation {operation}")

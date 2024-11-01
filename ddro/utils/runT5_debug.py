@@ -99,7 +99,6 @@ def load_encoded_docid(docid_path):
                 encode_2_docid[encode].append(docid)
     return encoded_docids, encode_2_docid
     
-    
 def train_model(train_data):
     pretrain_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + args.add_doc_num)

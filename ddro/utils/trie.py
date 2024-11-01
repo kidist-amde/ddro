@@ -24,10 +24,7 @@ class Trie(object):
 
         self.append_trie = None
         self.bos_token_id = None
-        keys = list(self.trie_dict.keys())
-        print("keys", keys[:10])
-        keys2 = list(self.trie_dict[keys[0]].keys())
-        print("keys2", keys2[:10])
+
     def append(self, trie, bos_token_id):
         self.append_trie = trie
         self.bos_token_id = bos_token_id

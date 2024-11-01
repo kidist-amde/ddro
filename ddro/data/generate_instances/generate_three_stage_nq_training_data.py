@@ -29,7 +29,7 @@ msmarco_or_nq = args.msmarco_or_nq
 
 
 def main():
-    code_dir = "/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
+    code_dir = "/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
     output_dir = os.path.join(code_dir, "resources/datasets/processed/nq-data/train_data")
     os.makedirs(output_dir, exist_ok=True)
     if cur_data == "general_pretrain":
