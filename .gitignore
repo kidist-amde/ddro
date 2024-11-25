@@ -44,6 +44,18 @@ outputs-nq/
 outputs-msmarco/
 logs-slurm-dpo/
 ddro/log-slurm-report/
+logs-slurm-sft/
+outputs-sft/
+logs-slurm-sft/
+logs-sft/
+logs-summary/
+outputs-summary/
+logs-slurm-Report/
+logs-slurm-summary/
+open_Ai.py
+test_cuda.py
+environment.yml
+DPO-Enhanced-DSI
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.

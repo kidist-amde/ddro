@@ -26,7 +26,7 @@ MODEL_NAME=t5
 INPUT_EMBEDDINGS=resources/datasets/processed/nq-data/doc_embedding/t5_512_nq_doc_embedding.txt # pass this for PQ-based document IDs
 OUTPUT_PATH=resources/datasets/processed/nq-data/encoded_docid/${MODEL_NAME}_${SEQ_LENGTH}_${ENCODING}_docids.txt
 NQ_DATA_PATH=resources/datasets/processed/nq-data/nq-merged/nq_merged.tsv.gz # pass this for atomic and URL-based document IDs
-
+SUMMARY_PATH=resources/datasets/processed/nq-data/NQ_llama3_summaries.tsv.gz 
 # Run the Python script
 python data/generate_instances/generate_nq_t5_encoded_docids.py \
                 --encoding $ENCODING \

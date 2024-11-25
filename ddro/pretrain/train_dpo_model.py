@@ -1,5 +1,3 @@
-import json
-import logging
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
 from trl import DPOTrainer
@@ -15,7 +13,8 @@ import os
 from collections import defaultdict
 from typing import Callable
 import trl
-from datetime import datetime
+from transformers import EarlyStoppingCallback
+from transformers import get_cosine_with_hard_restarts_schedule_with_warmup
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -31,7 +30,6 @@ def load_model(save_path):
     
     print("load model from ", save_path)
     return new_save_model
-
 
 def _tokenize_encoder_decoder(
     batch: Dict[str, List[int]],
@@ -196,7 +194,30 @@ def load_model_from_checkpoint(cli_args):
 
     return model
 
+
+# # for the atomic checkpoint vocubulary size mismatch
+# def load_model_from_checkpoint(cli_args):
+#     # Load pre-trained T5 model
+#     pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path, device_map="auto")
     
+#     # Load the checkpoint state_dict to check the expected vocab size
+#     checkpoint_state_dict = load_model(cli_args.checkpoint_path)
+#     checkpoint_vocab_size = checkpoint_state_dict['shared.weight'].shape[0]  # Expected vocab size in checkpoint
+    
+#     # Resize embeddings to match the exact vocabulary size from the checkpoint
+#     if pretrain_model.config.vocab_size != checkpoint_vocab_size:
+#         print(f"Resizing token embeddings from {pretrain_model.config.vocab_size} to {checkpoint_vocab_size}")
+#         pretrain_model.resize_token_embeddings(checkpoint_vocab_size)  # Exact size, no padding
+
+#     # Initialize the custom model with resized embeddings
+#     model = T5ForPretrainDPO(pretrain_model, cli_args)
+    
+#     # Load the checkpoint state dict into the model
+#     model.load_state_dict(checkpoint_state_dict, strict=True)  # strict=True to ensure exact matching shapes
+
+#     return model
+
+
 def main():
     # Argument parsing
     parser = argparse.ArgumentParser(description="Train a DPO model.")
@@ -215,37 +236,75 @@ def main():
     tokenizer.pad_token = tokenizer.eos_token
     train_dataset, dev_dataset = create_datasets(cli_args.docid_path, cli_args.train_file, cli_args.dev_file)
 
-    # Set up training arguments
+#     # Set up training arguments for url ranking
+#     training_args = DPOConfig(
+#     output_dir=cli_args.output_dir,
+#     per_device_train_batch_size=128,  # If memory allows, or use gradient accumulation
+#     save_total_limit=2,
+#     save_steps=1000,
+#     eval_steps=250,  # More frequent evaluations
+#     num_train_epochs=7,  # Additional epochs
+#     learning_rate=3e-4,  # Reduced for stability
+#     warmup_steps=1000,  # Increased warmup steps
+#     max_grad_norm=0.7,  # Reduced gradient clipping
+#     weight_decay=0.01,  # Added weight decay
+#     evaluation_strategy="steps",
+#     load_best_model_at_end=True,
+# )
+
+
+#     # Load models
+#     model = load_model_from_checkpoint(cli_args).to(device)
+#     model_ref = load_model_from_checkpoint(cli_args).to(device)
+
+  
+#     # Adjust beta parameter in DPOTrainer
+#     dpo_trainer = T5DpoTrainer(
+#         model,
+#         model_ref,
+#         args=training_args,  
+#         # beta=0.6,    #0.49,    #0.6, 
+#         beta=0.4,
+#         train_dataset=train_dataset,
+#         eval_dataset=dev_dataset,
+#         tokenizer=tokenizer,
+#         is_encoder_decoder=True,
+#     )
+
     training_args = DPOConfig(
     output_dir=cli_args.output_dir,
-    per_device_train_batch_size=64,  # Or try increasing/decreasing
+    per_device_train_batch_size=64,
     save_total_limit=2,
-    save_steps=1000,
-    eval_steps=500,  # Evaluate more frequently to monitor progress
-    num_train_epochs=3,  # Consider increasing to 6 or 7
-    learning_rate=5e-4,  # Lower learning rate for more stable training
-    warmup_steps=500,  # Introduce warmup
-    max_grad_norm=1.0,  # Add gradient clipping
+    save_steps=500,
+    eval_steps=500,
+    num_train_epochs=2,
+    #1e-6 5e-6 1e-5 5e-5 1e-4 1e-7 1e-8 5e-7
+    learning_rate=5e-7, 
+    warmup_steps=1000,
+    max_grad_norm=0.5,
     evaluation_strategy="steps",
     load_best_model_at_end=True,
+    lr_scheduler_type="cosine",
     )
 
     # Load models
     model = load_model_from_checkpoint(cli_args).to(device)
     model_ref = load_model_from_checkpoint(cli_args).to(device)
 
-    
-    # Adjust beta parameter in DPOTrainer
+    # Set up DPOTrainer with early stopping
     dpo_trainer = T5DpoTrainer(
         model,
         model_ref,
-        args=training_args,  
-        beta=0.6, #0.49  # Experiment with lower or higher beta values
+        args=training_args,
+        beta=0.4,
         train_dataset=train_dataset,
         eval_dataset=dev_dataset,
         tokenizer=tokenizer,
         is_encoder_decoder=True,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=1)],  # Early stopping callback
     )
+
+
     # Train the model
     dpo_trainer.train()
     dpo_trainer.save_model()

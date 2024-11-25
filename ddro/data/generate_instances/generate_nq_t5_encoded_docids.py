@@ -7,6 +7,7 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 import nanopq  # For product quantization (pq)
 import gzip
 import pandas as pd
+import json
 
 # Argument parser for command-line inputs
 parser = argparse.ArgumentParser()
@@ -18,6 +19,7 @@ parser.add_argument("--output_path", default="./resources/datasets/processed/nq-
 parser.add_argument("--batch_size", default=1024, type=int, help="Batch size for processing embeddings")
 parser.add_argument("--nq_data_path", default="ddro/resources/datasets/raw/nq-data/nq_merged.tsv.gz", type=str, help="Path to the NQ data file")
 parser.add_argument("--pretrain_model_path", default="resources/transformer_models/t5-base", type=str, help="Pre-trained model path for URL tokenization")
+parser.add_argument("--summary_path", default="path/to/msmarco-llama3_summaries.json", type=str, help="Path to pre-generated summaries JSON")
 args = parser.parse_args()
 
 # Function to load precomputed document embeddings
@@ -187,6 +189,23 @@ def encode_and_write(buffer, tokenizer, model, output_path, device):
             doc_code = ','.join(map(str, output_id.cpu().numpy()))
             fw.write(f"{docid}\t{doc_code}\n")
 
+# Method 4: Generate summary-based document IDs
+def summary_based_docid(summary_path, output_path, max_docid_len=128):
+    print("Generating summary-based document IDs...")
+    tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
+
+    with open(summary_path, "r") as f:
+        summaries = json.load(f)
+
+    with open(output_path, "w") as fw:
+        for docid, summary in tqdm(summaries.items(), desc="Encoding summaries"):
+            docid = f"[{docid.lower()}]"
+            tokenized_summary = tokenizer(summary, truncation=True, max_length=max_docid_len).input_ids
+            doc_code = ','.join(map(str, tokenized_summary))
+            fw.write(f"{docid}\t{doc_code}\n")
+    print(f"Summary-based document IDs written to {output_path}")
+
+
 if __name__ == "__main__":
     # Load precomputed embeddings from the file
     docid_2_idx, idx_2_docid, doc_embeddings = load_doc_embeddings(args.input_embeddings)
@@ -198,5 +217,8 @@ if __name__ == "__main__":
         product_quantization_docid(args, docid_2_idx, idx_2_docid, doc_embeddings, args.output_path)
     elif args.encoding == "url":
         url_docid(args.nq_data_path, args.output_path, args.batch_size)
+    elif args.encoding == "summary":
+        summary_based_docid(args.summary_path, args.output_path)
+
     else:
         raise ValueError("Invalid encoding method! Use one of 'atomic', 'pq', or 'url'.")

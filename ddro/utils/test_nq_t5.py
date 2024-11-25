@@ -35,7 +35,7 @@ def main():
         --epoch 10 \
         --per_gpu_batch_size 8 \
         --learning_rate 1e-3 \
-        --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON_10epoch/model_final.pkl \
+        --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/model_final.pkl \
         --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
         --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \

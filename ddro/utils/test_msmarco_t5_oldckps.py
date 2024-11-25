@@ -26,6 +26,7 @@ num_beams = 100
 use_docid_rank = "True"  # True to discriminate different docs with the same docid
 operation = "testing"
 max_seq_length = 64
+# --save_path {code_dir}/outputs-msmarco/{load_model}_{top_or_rand}_{scale}_{encoding}_{all_data}_ULTRON/model_final.pkl \
 
 def main():
     # for epoch in [1,3,5,7,9]:
@@ -34,13 +35,12 @@ def main():
         --epoch 10 \
         --per_gpu_batch_size 2 \
         --learning_rate 1e-3 \
-        --save_path {code_dir}/outputs-msmarco/{load_model}_{top_or_rand}_{scale}_{encoding}_{all_data}_ULTRON/model_final.pkl \
+        --save_path {code_dir}/DPO-Enhanced-DSI/check_points/url/t5_128_1_top_300k_url_title_pretrain_search_finetune/model_final.pkl \
         --log_path {code_dir}/logs-msmarco/{stage}.{model}.{top_or_rand}.{scale}.{encoding}.{all_data}.log \
-        --doc_file_path {code_dir}/dataset/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
+        --doc_file_path {code_dir}/DPO-Enhanced-DSI/dataset/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-        --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
-        --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
-        --test_file_path {code_dir}/resources/datasets/processed/msmarco-data/test_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
+        --docid_path {code_dir}/DPO-Enhanced-DSI/dataset/encoded_docid/t5_url_msmarco.txt \
+        --test_file_path {code_dir}/DPO-Enhanced-DSI/dataset/test_data_{top_or_rand}_{scale}/{cur_data}.{model}.url_title.{scale}.json \
         --dataset_script_dir {code_dir}/data/data_scripts \
         --dataset_cache_dir {code_dir}/negs_tutorial_cache \
         --num_beams {num_beams} \

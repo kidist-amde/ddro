@@ -31,7 +31,7 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --epoch {epoch} \
     --per_gpu_batch_size  100 \
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/ \
+    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON_3epodocT5query/ \
     --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
@@ -65,7 +65,7 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --epoch {epoch} \
     --per_gpu_batch_size  100 \
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/ \
+    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON_3epodocT5query/ \
     --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
@@ -79,7 +79,7 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --max_docid_length {max_docid_length} \
     --use_origin_head {use_origin_head} \
     --load_ckpt {load_ckpt} \
-    --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_ULTRON/model_final.pkl \
+    --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_ULTRON_3epodocT5query/model_final.pkl \
     --output_every_n_step 5000 \
     --save_every_n_epoch 4 \
     --operation {operation}")
@@ -101,7 +101,7 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --epoch {epoch} \
     --per_gpu_batch_size 100\
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON/ \
+    --save_path {code_dir}/outputs-nq/{model}_{encoding}_{all_data}_ULTRON_3epodocT5query/ \
     --log_path {code_dir}/logs-nq/{stage}.{model}.{encoding}.{all_data}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
@@ -115,7 +115,7 @@ os.system(f"cd {code_dir}/utils && python runT5.py \
     --max_docid_length {max_docid_length} \
     --use_origin_head {use_origin_head} \
     --load_ckpt {load_ckpt} \
-    --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_search_ULTRON/model_final.pkl \
+    --load_ckpt_path {code_dir}/outputs-nq/{load_model}_{encoding}_pretrain_search_ULTRON_3epodocT5query/model_final.pkl \
     --output_every_n_step 5000 \
     --save_every_n_epoch 2 \
     --operation {operation}")

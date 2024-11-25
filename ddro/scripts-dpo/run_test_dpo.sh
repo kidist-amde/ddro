@@ -1,24 +1,25 @@
 #!/bin/sh
-
-#SBATCH --job-name=DDROTesting5epcReport
-#SBATCH --partition=gpu 
-##SBATCH --gres=gpu:nvidia_rtx_a6000:1
-#SBATCH --gres=gpu:nvidia_l40:1
+#SBATCH --job-name=DDRO-atomic-2epo
+##SBATCH --partition gpu_h100
+##SBATCH --gres=gpu:1
+#SBATCH --partition gpu
+#SBATCH --gres=gpu:a100:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=4-00:00:00 # d-h:m:s
-#SBATCH --mem=64gb # memory per GPU 
-#SBATCH -c 16 # number of CPUs
-#SBATCH --output=logs-slurm-dpo/EVAL_DDRO-PQ_7epoch_lr5e-6_beta_049_logs-%j.out # %j is the job ID
-# Set up the environment.
+#SBATCH --time=12:00:00
+#SBATCH --mem=16gb #120gb #180gb
+#SBATCH -c 8
+#SBATCH --output=logs-slurm-sft/EVAL_DDRO-2epoch_url_lr5e-7_logs-%j.out # %j is the job ID
 
-source /home/kmekonn/.bashrc
+# Set up the environment.
+# source /home/kmekonnen/.bashrc
+source ${HOME}/.bashrc
 conda activate ddro
-cd /ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro
+cd /gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro
 nvidia-smi 
 
-python utils/test_dpo.py \
-                --encoding pq \
-                --scale top_300k
+python utils/test_dpo_run_query_metrics.py \
+                --encoding url
+              
 
                 

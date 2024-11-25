@@ -264,65 +264,41 @@ def create_document_mapping(nq_all_doc):
         idx += 1
     
     return title_doc, title_doc_id, id_doc, ran_id_old_id, doc_id_url
-
 def main():
-    
     parser = argparse.ArgumentParser(description="Extract, process, and merge Google NQ data")
     parser.add_argument("--dev_file", type=str, required=True, help="Path to the NQ development dataset (.jsonl.gz)")
     parser.add_argument("--train_file", type=str, required=True, help="Path to the NQ training dataset (.jsonl.gz)")
-    parser.add_argument("--output_file", type=str, required=True, help="Path to save the final merged data (TSV format)")
-    parser.add_argument("--output_train_file", type=str, required=True, help="Path to save the training data (TSV format)")
-    parser.add_argument("--output_val_file", type=str, required=True, help="Path to save the validation data (TSV format)")
-    # parser.add_argument("--doc_content_file", type=str, required=True, help="Path to save the NQ_doc_content.tsv")
+    parser.add_argument("--output_merged_file", type=str, required=True, help="Path to save the final merged data (TSV format)")
+    parser.add_argument("--output_train_file", type=str, required=True, help="Path to save the processed training data (TSV format)")
+    parser.add_argument("--output_val_file", type=str, required=True, help="Path to save the processed validation data (TSV format)")
     parser.add_argument("--sample_size", type=int, default=None, help="Number of samples to process (optional)")
     args = parser.parse_args()
 
-
-    # Process both dev and train datasets
+    # Process the dev and train datasets
     nq_dev = process_nq_devdataset(args.dev_file, args.sample_size)
     nq_train = process_nq_traindataset(args.train_file, args.sample_size)
 
-    # Apply tokenization and lowercasing to titles
-    nq_dev['title'] = nq_dev['title'].map(lower)
-    nq_train['title'] = nq_train['title'].map(lower)
+    # Save the processed dev and train datasets separately
+    with gzip.open(args.output_val_file + '.gz', 'wt') as dev_f:
+        nq_dev.to_csv(dev_f, sep='\t', index=False)
+    print(f"Processed dev dataset saved to {args.output_val_file}.gz")
 
-    # Concatenate dev and train data, drop duplicates based on title
+    with gzip.open(args.output_train_file + '.gz', 'wt') as train_f:
+        nq_train.to_csv(train_f, sep='\t', index=False)
+    print(f"Processed train dataset saved to {args.output_train_file}.gz")
+
+    # Merge the datasets
     nq_all_doc = pd.concat([nq_train, nq_dev], ignore_index=True)
     nq_all_doc.drop_duplicates('title', inplace=True)
     nq_all_doc.reset_index(drop=True, inplace=True)
 
-    print("Total number of documents: ", len(nq_all_doc))
+    print("Total number of documents after merging and deduplication: ", len(nq_all_doc))
 
-    # Save only the gzipped TSV file
-    # with gzip.open(args.output_file + '.gz', 'wt') as f:
-    #     nq_all_doc.to_csv(f, sep='\t', index=False, header=False)  
-    # print(f"Final merged data saved to {args.output_file}.gz")
+    # Save the merged dataset
+    with gzip.open(args.output_merged_file + '.gz', 'wt') as merged_f:
+        nq_all_doc.to_csv(merged_f, sep='\t', index=False)
+    print(f"Merged dataset saved to {args.output_merged_file}.gz")
 
-
-    # Convert the DataFrame to Hugging Face Dataset
-    nq_dataset = Dataset.from_pandas(nq_all_doc)
-
-    # Split the dataset into training and validation sets (80/20 split)
-    split_dataset = nq_dataset.train_test_split(test_size=0.2, shuffle=True)
-
-    train_dataset = split_dataset['train']
-    val_dataset = split_dataset['test']
-
-    print(f"Training set size: {len(train_dataset)}")
-    print(f"Validation set size: {len(val_dataset)}")
-
-    # Save the datasets to gzipped TSV files
-    train_df = train_dataset.to_pandas()
-    val_df = val_dataset.to_pandas()
-
-    with gzip.open(args.output_train_file + '.gz', 'wt') as train_f:
-        train_df.to_csv(train_f, sep='\t', index=False, header=False)
-
-    with gzip.open(args.output_val_file + '.gz', 'wt') as val_f:
-        val_df.to_csv(val_f, sep='\t', index=False, header=False)
-
-    print(f"Training data saved to {args.output_train_file}.gz")
-    print(f"Validation data saved to {args.output_val_file}.gz")
 
 if __name__ == "__main__":
     main()

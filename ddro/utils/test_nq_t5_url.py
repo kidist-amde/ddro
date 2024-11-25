@@ -31,12 +31,12 @@ max_seq_length = 64
 def main():
     # for epoch in [1,3,5,7,9]:
     epoch = 9
-    os.system(f"""cd {code_dir}/utils && python runT5_debug.py \
+    os.system(f"""cd {code_dir}/utils && python runT5_url.py \
         --epoch 10 \
         --per_gpu_batch_size 8 \
         --learning_rate 1e-3 \
-        --save_path {code_dir}/outputs-nq/t5_128_10_url_title_pretrain_ULTRON/model_final.pkl \
-        --log_path {code_dir}/logs-nq/inference.t5_128_1.url_title.pretrain.log \
+        --save_path {code_dir}/outputs-nq/{load_model}_url_title_{all_data}_ULTRON/model_final.pkl \
+        --log_path {code_dir}/logs-nq/{stage}.{model}.url_title.{all_data}.log \
         --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
         --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_url_docids.txt \

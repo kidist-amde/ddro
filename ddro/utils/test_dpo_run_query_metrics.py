@@ -5,15 +5,15 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--encoding", default="pq", type=str, help="docid method atomic/pq/url")
 parser.add_argument("--scale", default="top_300k", type=str, help="docid method atomic/pq/url")
+
 args = parser.parse_args()
 
-config_file = json.load(open("scripts/config.json", "r"))
+config_file = json.load(open("scripts/config_nq.json", "r"))
 config_file["atomic"]["add_doc_num"] = config_file["doc_num"][args.scale]
 config = config_file[args.encoding]
 encoding, add_doc_num, max_docid_length, use_origin_head = config["encoding"], config["add_doc_num"], config["max_docid_length"], config["use_origin_head"]
 
 code_dir = "/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
-top_or_rand, scale = args.scale.split("_")
 
 ## test settings
 print("start evaluation...")
@@ -27,20 +27,23 @@ use_docid_rank = "True"  # True to discriminate different docs with the same doc
 operation = "testing"
 max_seq_length = 64
 
+model_name = "DDRO" # ULTRON / DDRO /SFT
+dataset = "nq" # msmarco / nq
+# --save_path {code_dir}/outputs-new/{load_model}_{top_or_rand}_{scale}_{encoding}_{all_data}/model_9.pkl \
+
 def main():
     # for epoch in [1,3,5,7,9]:
     epoch = 9
-    os.system(f"cd {code_dir}/utils && python runT5.py \
+    os.system(f"cd {code_dir}/utils && python runT5_evaluation_per_querey.py \
         --epoch 10 \
-        --per_gpu_batch_size 2 \
+        --per_gpu_batch_size 8 \
         --learning_rate 1e-3 \
-        --save_path {code_dir}/outputs-msmarco/{load_model}_{top_or_rand}_{scale}_{encoding}_{all_data}_ULTRON/model_final.pkl \
-        --log_path {code_dir}/logs-msmarco/{stage}.{model}.{top_or_rand}.{scale}.{encoding}.{all_data}.log \
-        --doc_file_path {code_dir}/dataset/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
+        --save_path {code_dir}/outputs-sft/dpo/url/dpo_ckp_url_2epoch_lr5e-7/dpo_model_final.pkl \
+        --log_path {code_dir}/logs-sft/dpo/{model_name}-{dataset}-{encoding}.log \
+        --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-        --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
-        --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/train_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
-        --test_file_path {code_dir}/resources/datasets/processed/msmarco-data/test_data_{top_or_rand}_{scale}/{cur_data}.{model}.{encoding}.{scale}.json \
+        --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_url_docids.txt \
+        --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.url_nq.json \
         --dataset_script_dir {code_dir}/data/data_scripts \
         --dataset_cache_dir {code_dir}/negs_tutorial_cache \
         --num_beams {num_beams} \
@@ -50,7 +53,7 @@ def main():
         --output_every_n_step 1000 \
         --save_every_n_epoch 2 \
         --operation {operation} \
-        --use_docid_rank {use_docid_rank}")
+        --use_docid_rank {use_docid_rank}""")
 
     print("write success")
 

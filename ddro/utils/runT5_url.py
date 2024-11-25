@@ -13,10 +13,11 @@ from collections import defaultdict
 from torch.utils.data import DataLoader
 import sys
 # Add the root project directory to the Python path
-sys.path.append("/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro")
+sys.path.append('/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro')
 from pretrain.T5ForPretrain import T5ForPretrain
 from pretrain_dataset import PretrainDataForT5
 from transformers import AdamW, get_linear_schedule_with_warmup
+from transformers import T5Tokenizer, T5ForConditionalGeneration
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 
 device = torch.device("cuda:0")
@@ -98,8 +99,7 @@ def load_encoded_docid(docid_path):
             else:
                 encode_2_docid[encode].append(docid)
     return encoded_docids, encode_2_docid
-    
-    
+
 def train_model(train_data):
     pretrain_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + args.add_doc_num)
@@ -184,7 +184,7 @@ def evaluate_beamsearch():
     myevaluator = evaluator()
 
     encoded_docid, encode_2_docid = load_encoded_docid(args.docid_path)
-    docid_trie = Trie([item if item[0]==0 else [0]+item for item in encoded_docid])
+    docid_trie = Trie([[0] + item for item in encoded_docid])
 
     def prefix_allowed_tokens_fn(batch_id, sent): 
         outputs = docid_trie.get(sent.tolist())
@@ -207,11 +207,11 @@ def evaluate_beamsearch():
         print(f"Evaluate on the {args.test_file_path}.")
         logger.write(f"{localtime} Evaluate on the {args.test_file_path}.\n")
         test_data = load_data(args.test_file_path)
-        test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args) 
+        test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args) # 构建训练集
         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
         truth, prediction, inputs = [], [], []
 
-        for i, testing_data in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
+        for i, testing_data in tqdm(enumerate(test_dataloader)):
             with torch.no_grad():
                 for key in testing_data.keys():
                     if key in ["query_id", "doc_id"]:
@@ -227,7 +227,7 @@ def evaluate_beamsearch():
                 truth.extend([[docid] for docid in labels])
             
             inputs.extend(input_ids)
-            
+
             outputs = model.generate(input_ids, max_length=args.max_docid_length+1, num_return_sequences=args.num_beams, num_beams=args.num_beams, do_sample=False, prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
 
             for j in range(input_ids.shape[0]):

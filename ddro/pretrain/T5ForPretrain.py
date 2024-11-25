@@ -42,6 +42,7 @@ class T5ForPretrain(T5ForConditionalGeneration):
         output_attentions=None,
         output_hidden_states=None,
         return_dict=None,
+        **kwargs  # Add this line to capture extra keyword arguments
     ):        
 
         if encoder_outputs is None:

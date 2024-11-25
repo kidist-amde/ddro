@@ -16,7 +16,7 @@
 # Set up the environment.
 # source /home/kmekonnen/.bashrc
 source ${HOME}/.bashrc
-conda activate dsi-env
+conda activate ddro
 cd /gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro
 nvidia-smi 
 

@@ -13,7 +13,7 @@ from collections import defaultdict
 from torch.utils.data import DataLoader
 import sys
 # Add the root project directory to the Python path
-sys.path.append('/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro')
+sys.path.append("/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro")
 from pretrain.T5ForPretrain import T5ForPretrain
 from pretrain_dataset import PretrainDataForT5
 from transformers import AdamW, get_linear_schedule_with_warmup
@@ -99,6 +99,7 @@ def load_encoded_docid(docid_path):
                 encode_2_docid[encode].append(docid)
     return encoded_docids, encode_2_docid
     
+    
 def train_model(train_data):
     pretrain_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + args.add_doc_num)
@@ -141,7 +142,8 @@ def fit(model, X_train):
         logger.write("Epoch " + str(epoch + 1) + "/" + str(args.epochs) + "\n")
         avg_loss = 0
         model.train()
-        for i, training_data in enumerate(tqdm(train_dataloader)):
+        # for i, training_data in enumerate(tqdm(train_dataloader)):
+        for i, training_data in tqdm(enumerate(train_dataloader),total=len(train_dataloader)):
             loss = train_step(model, training_data)
             loss = loss.mean()
             loss.backward() 
@@ -166,6 +168,7 @@ def fit(model, X_train):
             print(f"Save the model in {args.save_path}")
     torch.save(model.state_dict(), os.path.join(args.save_path, f"model_final.pkl"))
     logger.close()
+
 
 def evaluate_beamsearch():
     '''
@@ -225,12 +228,7 @@ def evaluate_beamsearch():
             
             inputs.extend(input_ids)
             
-            outputs = model.generate(input_ids, 
-                                     max_length=args.max_docid_length+1, 
-                                     num_return_sequences=args.num_beams, 
-                                     num_beams=args.num_beams, 
-                                     do_sample=False, 
-                                     prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
+            outputs = model.generate(input_ids, max_length=args.max_docid_length+1, num_return_sequences=args.num_beams, num_beams=args.num_beams, do_sample=False, prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
 
             for j in range(input_ids.shape[0]):
                 query_term = tokenizer.decode(input_ids[j], skip_special_tokens=True).split()
