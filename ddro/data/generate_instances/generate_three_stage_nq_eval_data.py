@@ -28,7 +28,8 @@ def main():
     msmarco_or_nq = args.msmarco_or_nq
 
     # Base directory
-    code_dir = "/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
+    code_dir = "/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
+
 
     # Command to generate evaluation data
     command = [

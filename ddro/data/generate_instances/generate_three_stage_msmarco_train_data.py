@@ -16,7 +16,7 @@ args = parser.parse_args()
 model = "t5"
 cur_data = args.cur_data
 encoding = args.encoding # atomic/pq/url
-source_docid = "url" if encoding == "pq" else "pq" # label_source_docid
+source_docid = "url_title" if encoding == "pq" else "pq" # label_source_docid
 max_seq_length = 128
 top_or_rand, scale = args.scale.split("_")
 msmarco_or_nq = "msmarco" # msmarco/nq

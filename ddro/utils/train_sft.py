@@ -29,12 +29,12 @@ os.system(f"cd {code_dir}/utils && python sft_T5.py \
     --epoch {epoch} \
     --per_gpu_batch_size  100 \
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-sft/{model}_{top_or_rand}_{scale}_{dataset}_{encoding}/ \
-    --log_path {code_dir}/logs-sft/{model}.{top_or_rand}.{scale}.{dataset}.{encoding}.log \
+    --save_path {code_dir}/outputs-sft-new/{model}_{top_or_rand}_{scale}_{dataset}_{encoding}/ \
+    --log_path {code_dir}/logs-sft-new/{model}.{top_or_rand}.{scale}.{dataset}.{encoding}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-    --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_url_docids.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/nq-data/sft_training_dataset_url \
+    --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_{encoding}_docids.txt \
+    --train_file_path {code_dir}/resources/datasets/processed/nq-data/sft_training_dataset_{encoding} \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir ../negs_tutorial_cache \
     --add_doc_num {add_doc_num} \

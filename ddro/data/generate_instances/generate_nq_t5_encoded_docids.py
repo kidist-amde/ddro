@@ -215,7 +215,7 @@ if __name__ == "__main__":
         atomic_docid(args.nq_data_path, args.output_path, args.batch_size)
     elif args.encoding == "pq":
         product_quantization_docid(args, docid_2_idx, idx_2_docid, doc_embeddings, args.output_path)
-    elif args.encoding == "url":
+    elif args.encoding == "url_title":
         url_docid(args.nq_data_path, args.output_path, args.batch_size)
     elif args.encoding == "summary":
         summary_based_docid(args.summary_path, args.output_path)

@@ -101,6 +101,7 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
             
             docid_2_qid[docid].append(qid)
             count += 1
+        
     print("total count of clicks: ", count)
 
     max_num_tokens = args.max_seq_length - 1

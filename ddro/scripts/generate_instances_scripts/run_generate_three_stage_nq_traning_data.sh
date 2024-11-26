@@ -1,27 +1,24 @@
 #!/bin/sh
-#SBATCH --job-name=generate-t5-nq-search-pretrain-data
-##SBATCH --partition gpu_h100
-##SBATCH --gres=gpu:2
-#SBATCH --partition gpu
-#SBATCH --gres=gpu:a100:1
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=5-00:00:00
-#SBATCH --mem=120gb #120gb #180gb
-#SBATCH -c 16
-#SBATCH --output=logs-slurm/other-logs/t5_pq_search_pretrain_gen-%j.out # %j is the job ID
+#SBATCH --job-name=nq_dataset_processing
+##SBATCH --partition=staging # Accessible partition
+#SBATCH --partition=cbuild
+#SBATCH --ntasks=1          # Number of tasks
+#SBATCH --time=24:00:00      # d-h:m:s
+#SBATCH --mem=64gb         # Memory per job
+#SBATCH -c 1             # Number of CPUs
+#SBATCH --output=logs-slurm/other-logs/T5_url_title_general_pretrain_data_generation-%j.out # %j is the job ID
+
 
 # source /home/kmekonnen/.bashrc
 source ${HOME}/.bashrc
-# conda init
-conda activate dsi-env
-# Change to the project directory.
+conda activate ddro
 cd /gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro
-# Change to the base directory where the code and data are located.
+
+# Change to the directory where your script and data are located.
 HOME_DIR="/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
 
 # Variables and parameters for the script
-ENCODING="pq"  # 'url' or 'pq' or 'atomic'
+ENCODING="url_title"  # 'url_title' or 'pq' or 'atomic'
 MODEL="t5"  # Fixed to 't5' for all experiments
 QRELS_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_msmarco_format/nq_qrels_train.tsv.gz"
 QUERY_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_msmarco_format/nq_queries_train.tsv.gz"
@@ -32,7 +29,7 @@ DOCID_PATH="$HOME_DIR/resources/datasets/processed/nq-data/encoded_docid/t5_512_
 DATA_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json"
 MAX_SEQ_LENGTH=128  # Fixed to 128 for all experiments
 FAKE_QUERY_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_pseudo_query_10_3epoch.txt"
-CURRENT_DATA="search_pretrain"  # Set to 'general_pretrain', 'search_pretrain', or 'finetune'
+CURRENT_DATA="general_pretrain"  # Set to 'general_pretrain', 'search_pretrain', or 'finetune'
 
 # Run the Python script with the specified arguments
 python data/generate_instances/generate_three_stage_nq_training_data.py \

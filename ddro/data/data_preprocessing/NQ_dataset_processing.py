@@ -13,6 +13,7 @@ TRAIN_SET_SIZE = 307373
 def process_nq_devdataset(input_file_path, sample_size=None):
     nq_dev = []
     with gzip.open(input_file_path, 'rt') as f:
+        print(f"Loading NQ dev data from {input_file_path}")
         for idx, item in enumerate(tqdm(jsonlines.Reader(f), total=sample_size or DEV_SET_SIZE, desc="Processing Dev Dataset")):
             if sample_size and idx >= sample_size:
                 break  # Stop after processing the specified number of samples
@@ -115,6 +116,7 @@ def process_nq_devdataset(input_file_path, sample_size=None):
 def process_nq_traindataset(input_file_path, sample_size=None):
     nq_train = []
     with gzip.open(input_file_path, 'rt') as f:
+        print(f"Loading NQ train data from {input_file_path}")
         for idx, item in enumerate(tqdm(jsonlines.Reader(f), total=sample_size or TRAIN_SET_SIZE, desc="Processing Train Dataset")):
             if sample_size and idx >= sample_size:
                 break  
@@ -264,40 +266,57 @@ def create_document_mapping(nq_all_doc):
         idx += 1
     
     return title_doc, title_doc_id, id_doc, ran_id_old_id, doc_id_url
+
 def main():
+    
     parser = argparse.ArgumentParser(description="Extract, process, and merge Google NQ data")
     parser.add_argument("--dev_file", type=str, required=True, help="Path to the NQ development dataset (.jsonl.gz)")
     parser.add_argument("--train_file", type=str, required=True, help="Path to the NQ training dataset (.jsonl.gz)")
     parser.add_argument("--output_merged_file", type=str, required=True, help="Path to save the final merged data (TSV format)")
-    parser.add_argument("--output_train_file", type=str, required=True, help="Path to save the processed training data (TSV format)")
-    parser.add_argument("--output_val_file", type=str, required=True, help="Path to save the processed validation data (TSV format)")
+    parser.add_argument("--output_train_file", type=str, required=True, help="Path to save the training data (TSV format)")
+    parser.add_argument("--output_val_file", type=str, required=True, help="Path to save the validation data (TSV format)")
+    # parser.add_argument("--doc_content_file", type=str, required=True, help="Path to save the NQ_doc_content.tsv")
     parser.add_argument("--sample_size", type=int, default=None, help="Number of samples to process (optional)")
     args = parser.parse_args()
 
-    # Process the dev and train datasets
+
+    # Process both dev and train datasets
     nq_dev = process_nq_devdataset(args.dev_file, args.sample_size)
     nq_train = process_nq_traindataset(args.train_file, args.sample_size)
 
-    # Save the processed dev and train datasets separately
-    with gzip.open(args.output_val_file + '.gz', 'wt') as dev_f:
-        nq_dev.to_csv(dev_f, sep='\t', index=False)
-    print(f"Processed dev dataset saved to {args.output_val_file}.gz")
+    # Apply tokenization and lowercasing to titles
+    nq_dev['title'] = nq_dev['title'].map(lower)
+    nq_train['title'] = nq_train['title'].map(lower)
 
-    with gzip.open(args.output_train_file + '.gz', 'wt') as train_f:
-        nq_train.to_csv(train_f, sep='\t', index=False)
-    print(f"Processed train dataset saved to {args.output_train_file}.gz")
+ 
 
-    # Merge the datasets
+
+    # Concatenate dev and train data, drop duplicates based on title
     nq_all_doc = pd.concat([nq_train, nq_dev], ignore_index=True)
     nq_all_doc.drop_duplicates('title', inplace=True)
     nq_all_doc.reset_index(drop=True, inplace=True)
 
-    print("Total number of documents after merging and deduplication: ", len(nq_all_doc))
+    print("Total number of documents: ", len(nq_all_doc))
 
-    # Save the merged dataset
-    with gzip.open(args.output_merged_file + '.gz', 'wt') as merged_f:
-        nq_all_doc.to_csv(merged_f, sep='\t', index=False)
-    print(f"Merged dataset saved to {args.output_merged_file}.gz")
+    non_dedplicated_ids = set(nq_all_doc['id'])
+    # filiter out the non-deduplicated documents
+    nq_train = nq_train[nq_train['id'].isin(non_dedplicated_ids)]
+    nq_dev = nq_dev[nq_dev['id'].isin(non_dedplicated_ids)]
+
+    with gzip.open(args.output_train_file + '.gz', 'wt') as train_f:
+        nq_train.to_csv(train_f, sep='\t', index=False, header=False)
+
+    with gzip.open(args.output_val_file + '.gz', 'wt') as val_f:
+        nq_dev.to_csv(val_f, sep='\t', index=False, header=False)
+    
+
+    print(f"Training data saved to {args.output_train_file}.gz")
+    print(f"Validation data saved to {args.output_val_file}.gz")
+
+    # Save only the gzipped TSV file
+    with gzip.open(args.output_merged_file + '.gz', 'wt') as f:
+        nq_all_doc.to_csv(f, sep='\t', index=False, header=False)  
+    print(f"Final merged data saved to {args.output_merged_file}.gz")
 
 
 if __name__ == "__main__":

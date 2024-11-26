@@ -273,26 +273,23 @@ def gen_fake_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
 #3：query --> docid,  finetune
 def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
-    
-    # From ms-marco dataset, retrieve the query that clicked on docid
+         
     fw = open(args.output_path, "w")
     qid_2_query = {}
-    docid_2_qid = defaultdict(list)  # Queries that clicked on a specific docid
-
-    # Open query_path with 'rt' for text mode, and specify encoding
-    with gzip.open(args.query_path, 'rt', encoding='utf-8') as fin:
+    docid_2_qid = defaultdict(list)  
+    with gzip.open(args.query_path, "rt", encoding="utf-8") as fin:
         for line in tqdm(fin, desc="reading all queries"):
             qid, query = line.strip().split("\t")
             qid_2_query[qid] = query
     
     count = 0
-    # Open qrels_path with 'rt' for text mode, and specify encoding
-    with gzip.open(args.qrels_path, 'rt', encoding='utf-8') as fin:
+    with gzip.open(args.qrels_path, "rt", encoding="utf-8") as fin:
         for line in tqdm(fin, desc="reading all click samples"):
             qid, _, docid, _ = line.strip().split()
             
             docid = "[{}]".format(docid.lower())
             if docid not in token_to_id:
+                print(f"Skipping unknown docid: {docid}")
                 continue
             
             docid_2_qid[docid].append(qid)
@@ -302,6 +299,9 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     max_num_tokens = args.max_seq_length - 1
     
     for docid, qids in tqdm(docid_2_qid.items(), desc="constructing click samples"):
+        if docid not in encoded_docid:
+            # print(f"Skipping missing docid: {docid}")
+            continue
         for qid in qids:
             query = qid_2_query[qid].lower()
             query_terms = tokenizer.tokenize(query)
@@ -313,9 +313,10 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
                 "tokens": tokens,
             }
             training_instance = add_padding(training_instance, tokenizer, id_to_token, token_to_id)
-            fw.write(json.dumps(training_instance, ensure_ascii=False) + "\n")
-    
+            fw.write(json.dumps(training_instance, ensure_ascii=False)+"\n")
+      
     fw.close()
+
     
 if __name__ == "__main__":
     id_to_token, token_to_id, all_docid, all_term = add_docid_to_vocab(args.data_path)

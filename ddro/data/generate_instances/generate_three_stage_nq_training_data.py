@@ -23,7 +23,7 @@ args = parser.parse_args()
 model = args.model
 cur_data = args.cur_data
 encoding = args.encoding # atomic/pq/url
-source_docid = "url" if encoding == "pq" else "pq" # label_source_docid
+source_docid = "url_title" if encoding == "pq" else "pq" # label_source_docid
 max_seq_length = args.max_seq_length
 msmarco_or_nq = args.msmarco_or_nq
 

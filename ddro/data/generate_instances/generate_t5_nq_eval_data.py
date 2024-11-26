@@ -69,6 +69,7 @@ def get_encoded_docid(docid_path, all_docid=None, token_to_id=None):
                 docid, encode = line.strip().split("\t")
                 docid = "[{}]".format(docid.lower().strip('[').strip(']'))
                 encoded_docid[docid] = encode
+    print("Total docids in encoded_docid:", len(encoded_docid))
     return encoded_docid
 
 # Generate evaluation instances
@@ -76,33 +77,38 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
 
     qid_2_query = {}
-    docid_2_qid = defaultdict(list)    # docid -> qid
-    with gzip.open(args.query_path,"rt") as fin:
+    docid_2_qid = defaultdict(list)
+    missing_docids = []
+
+    with gzip.open(args.query_path, "rt") as fin:
         for line in tqdm(fin):
             qid, query = line.strip().split("\t")
             qid_2_query[qid] = query
-    
+
     count = 0
-    with gzip.open(args.qrels_path,"rt") as fin:
+    with gzip.open(args.qrels_path, "rt") as fin:
         for line in tqdm(fin):
             qid, _, docid, _ = line.strip().split()
-            docid = "[{}]".format(docid.lower())
-            if docid not in token_to_id:
+            # Ensure consistent formatting
+            docid = "[{}]".format(docid.lower().strip())
+            if docid not in encoded_docid:
+                missing_docids.append(docid)
                 continue
-            
             docid_2_qid[docid].append(qid)
             count += 1
-    print("total count of clicks: ", count)
 
+    print("total count of clicks: ", count)
+  
+
+    # Process remaining docids
     max_num_tokens = args.max_seq_length - 1
     fw = open(args.output_path, "w")
 
     for docid, qids in tqdm(docid_2_qid.items()):
         if docid not in encoded_docid:
-            # Log a warning and continue if docid is missing from encoded_docid
             print(f"Warning: docid {docid} not found in encoded_docid. Skipping.")
             continue
-        
+
         for qid in qids:
             query = qid_2_query[qid].lower()
             query_terms = tokenizer.tokenize(query)
@@ -114,8 +120,8 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
                 "tokens": tokens,
             }
             evaluation_instance = add_padding(evaluation_instance, tokenizer, id_to_token, token_to_id)
-            fw.write(json.dumps(evaluation_instance, ensure_ascii=False)+"\n")
-       
+            fw.write(json.dumps(evaluation_instance, ensure_ascii=False) + "\n")
+
     fw.close()
 
 if __name__ == "__main__":

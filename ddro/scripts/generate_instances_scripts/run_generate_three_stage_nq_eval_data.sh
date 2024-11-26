@@ -1,25 +1,28 @@
 #!/bin/sh
-#SBATCH --job-name=t5_eval_data_gen
-##SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=4-00:00:00 # d-h:m:s
-#SBATCH --mem=128gb # memory per GPU 
-#SBATCH -c 16 # number of CPUs
-#SBATCH --output=logs-slurm/other-logs/t5_url_eval_data_generation-%j.out # %j is the job ID
+#SBATCH --job-name=nq_dataset_processing
+##SBATCH --partition=staging # Accessible partition
+#SBATCH --partition=cbuild
+#SBATCH --ntasks=1          # Number of tasks
+#SBATCH --time=1:00:00      # d-h:m:s
+#SBATCH --mem=64gb         # Memory per job
+#SBATCH -c 1             # Number of CPUs
+#SBATCH --output=logs-slurm/other-logs/T5_url_title_eval_data_generation-%j.out # %j is the job ID
 
-# Set up the environment.
-source /home/kmekonn/.bashrc
+
+# source /home/kmekonnen/.bashrc
+source ${HOME}/.bashrc
 conda activate ddro
+cd /gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro
 
 # Change to the directory where your script and data are located.
-HOME_DIR="/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
+HOME_DIR="/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
 
 OUTPUT_DIR="$HOME_DIR/resources/datasets/processed/nq-data/test_data"
 # Create the output directory if it doesn't exist
 mkdir -p $OUTPUT_DIR
 
 # Variables and parameters for the script
-ENCODING="url"  # 'url' or 'pq' or 'atomic'
+ENCODING="url_title"  # 'url_title' or 'pq' or 'atomic'
 MODEL="t5"  # Fixed to 't5' for all experiments
 QRELS_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_msmarco_format/nq_qrels_dev.tsv.gz"
 QUERY_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_msmarco_format/nq_queries_dev.tsv.gz"
