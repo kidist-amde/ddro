@@ -14,7 +14,7 @@ config = config_file[args.encoding]
 encoding, add_doc_num, max_docid_length, use_origin_head = config["encoding"], config["add_doc_num"], config["max_docid_length"], config["use_origin_head"]
 
 
-code_dir = "/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
+code_dir = "/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
 top_or_rand, scale = args.scale.split("_")
 
 ######################################################################
@@ -27,10 +27,10 @@ dataset="nq" # msmarco / nq
 
 os.system(f"cd {code_dir}/utils && python sft_T5.py \
     --epoch {epoch} \
-    --per_gpu_batch_size  100 \
+    --per_gpu_batch_size  128 \
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-sft-new/{model}_{top_or_rand}_{scale}_{dataset}_{encoding}/ \
-    --log_path {code_dir}/logs-sft-new/{model}.{top_or_rand}.{scale}.{dataset}.{encoding}.log \
+    --save_path {code_dir}/outputs-sft/{model}_{top_or_rand}_{scale}_{dataset}_{encoding}/ \
+    --log_path {code_dir}/logs-sft/{model}.{top_or_rand}.{scale}.{dataset}.{encoding}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
     --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_{encoding}_docids.txt \

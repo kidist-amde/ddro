@@ -13,7 +13,7 @@ config_file["atomic"]["add_doc_num"] = config_file["doc_num"][args.scale]
 config = config_file[args.encoding]
 encoding, add_doc_num, max_docid_length, use_origin_head = config["encoding"], config["add_doc_num"], config["max_docid_length"], config["use_origin_head"]
 
-code_dir = "/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
+code_dir = "/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
 
 ## test settings
 print("start evaluation...")
@@ -36,14 +36,14 @@ def main():
     epoch = 9
     os.system(f"cd {code_dir}/utils && python runT5_evaluation_per_querey.py \
         --epoch 10 \
-        --per_gpu_batch_size 16 \
+        --per_gpu_batch_size 4 \
         --learning_rate 1e-3 \
-        --save_path {code_dir}/outputs-sft/t5_128_10_top_300k_nq_url_title/model_final.pkl \
+        --save_path {code_dir}/outputs-sft/t5_128_10_top_300k_nq_atomic/model_final.pkl \
         --log_path {code_dir}/logs-sft/{model_name}-{dataset}-{encoding}.log \
         --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-        --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_url_docids.txt \
-        --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.url_nq.json \
+        --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_{encoding}_docids.txt \
+        --test_file_path {code_dir}/resources/datasets/processed/nq-data/test_data/query_dev.t5_128_1.{encoding}_nq.json \
         --dataset_script_dir {code_dir}/data/data_scripts \
         --dataset_cache_dir {code_dir}/negs_tutorial_cache \
         --num_beams {num_beams} \

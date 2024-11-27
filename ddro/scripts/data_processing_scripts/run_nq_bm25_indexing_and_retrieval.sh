@@ -8,7 +8,7 @@
 #SBATCH --time=4-00:00:00 # d-h:m:s
 #SBATCH --mem=128gb # memory per GPU 
 #SBATCH -c 16 # number of CPUs
-#SBATCH --output=logs-slurm/other-logs/nq_retrieval_bm25-%j.out # %j is the job ID
+#SBATCH --output=logs-slurm-sft/other-logs/nq_retrieval_bm25-%j.out # %j is the job ID
 # Set up the environment.
 source /home/kmekonn/.bashrc
 conda activate pyserini

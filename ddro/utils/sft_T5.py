@@ -13,7 +13,7 @@ from collections import defaultdict
 from torch.utils.data import DataLoader
 import sys
 # Add the root project directory to the Python path
-sys.path.append("/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro")
+sys.path.append("/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro")
 from pretrain.T5ForPretrain import T5ForPretrain
 from pretrain_dataset import PretrainDataForT5
 from transformers import AdamW, get_linear_schedule_with_warmup
