@@ -16,7 +16,7 @@ cd /ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimizati
 HOME_DIR="/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
 
 
-ENCODING="pq"  # 'atomic' or 'pq' or 'atomic'
+ENCODING="atomic"  # 'atomic' or 'pq' or 'atomic'
 QRELS_PATH="$HOME_DIR/resources/datasets/raw/msmarco-data/msmarco-docdev-qrels.tsv.gz"
 QUERY_PATH="$HOME_DIR/resources/datasets/raw/msmarco-data/msmarco-docdev-queries.tsv.gz"
 PRETRAIN_MODEL_PATH="$HOME_DIR/resources/transformer_models/t5-base"  # Fixed to 't5-base' for all experiments  

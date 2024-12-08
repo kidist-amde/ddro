@@ -185,37 +185,37 @@ def create_datasets(docid_path, train_dataset_path, dev_dataset_path, num_proc=2
     )
     return train_data, dev_data
 
-def load_model_from_checkpoint(cli_args):
-    pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path,device_map="auto")
-    pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + 6144)
-    model = T5ForPretrainDPO(pretrain_model, cli_args)
-    state_dict = load_model(cli_args.checkpoint_path)
-    model.load_state_dict(state_dict)
-
-    return model
-
-
-# # for the atomic checkpoint vocubulary size mismatch
 # def load_model_from_checkpoint(cli_args):
-#     # Load pre-trained T5 model
-#     pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path, device_map="auto")
-    
-#     # Load the checkpoint state_dict to check the expected vocab size
-#     checkpoint_state_dict = load_model(cli_args.checkpoint_path)
-#     checkpoint_vocab_size = checkpoint_state_dict['shared.weight'].shape[0]  # Expected vocab size in checkpoint
-    
-#     # Resize embeddings to match the exact vocabulary size from the checkpoint
-#     if pretrain_model.config.vocab_size != checkpoint_vocab_size:
-#         print(f"Resizing token embeddings from {pretrain_model.config.vocab_size} to {checkpoint_vocab_size}")
-#         pretrain_model.resize_token_embeddings(checkpoint_vocab_size)  # Exact size, no padding
-
-#     # Initialize the custom model with resized embeddings
+#     pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path,device_map="auto")
+#     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + 6144)
 #     model = T5ForPretrainDPO(pretrain_model, cli_args)
-    
-#     # Load the checkpoint state dict into the model
-#     model.load_state_dict(checkpoint_state_dict, strict=True)  # strict=True to ensure exact matching shapes
+#     state_dict = load_model(cli_args.checkpoint_path)
+#     model.load_state_dict(state_dict)
 
 #     return model
+
+
+# for the atomic checkpoint vocubulary size mismatch
+def load_model_from_checkpoint(cli_args):
+    # Load pre-trained T5 model
+    pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path, device_map="auto")
+    
+    # Load the checkpoint state_dict to check the expected vocab size
+    checkpoint_state_dict = load_model(cli_args.checkpoint_path)
+    checkpoint_vocab_size = checkpoint_state_dict['shared.weight'].shape[0]  # Expected vocab size in checkpoint
+    
+    # Resize embeddings to match the exact vocabulary size from the checkpoint
+    if pretrain_model.config.vocab_size != checkpoint_vocab_size:
+        print(f"Resizing token embeddings from {pretrain_model.config.vocab_size} to {checkpoint_vocab_size}")
+        pretrain_model.resize_token_embeddings(checkpoint_vocab_size)  # Exact size, no padding
+
+    # Initialize the custom model with resized embeddings
+    model = T5ForPretrainDPO(pretrain_model, cli_args)
+    
+    # Load the checkpoint state dict into the model
+    model.load_state_dict(checkpoint_state_dict, strict=True)  # strict=True to ensure exact matching shapes
+
+    return model
 
 
 def main():
@@ -279,7 +279,7 @@ def main():
     eval_steps=500,
     num_train_epochs=2,
     #1e-6 5e-6 1e-5 5e-5 1e-4 1e-7 1e-8 5e-7
-    learning_rate=5e-7, 
+    learning_rate=1e-6, 
     warmup_steps=1000,
     max_grad_norm=0.5,
     evaluation_strategy="steps",

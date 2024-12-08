@@ -28,7 +28,7 @@ operation = "testing"
 max_seq_length = 64
 
 model_name = "DDRO" # ULTRON / DDRO /SFT
-dataset = "nq" # msmarco / nq
+dataset = "msmarco" # msmarco / nq
 # --save_path {code_dir}/outputs-new/{load_model}_{top_or_rand}_{scale}_{encoding}_{all_data}/model_9.pkl \
 
 def main():

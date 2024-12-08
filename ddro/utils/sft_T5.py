@@ -4,17 +4,15 @@ import torch
 import random
 import argparse
 from utils import *
-from utils import load_model
 from utils import set_seed
-from tqdm.auto import tqdm
+from  utils import load_model
+from tqdm import tqdm
+import torch.nn as nn
 from trie import Trie
 from evaluate import evaluator
 from collections import defaultdict
 from torch.utils.data import DataLoader
-import sys
-# Add the root project directory to the Python path
-sys.path.append("/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro")
-from pretrain.T5ForPretrain import T5ForPretrain
+from T5ForPretrain import T5ForPretrain
 from pretrain_dataset import PretrainDataForT5
 from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import T5Tokenizer, T5ForConditionalGeneration
@@ -35,8 +33,8 @@ parser.add_argument("--load_ckpt", default="False", type=str, help="whether to l
 ### path to load data and save models
 parser.add_argument("--save_path", default="./model/", type=str, help="The path to save trained models.")
 parser.add_argument("--log_path", default="./log/", type=str, help="The path to save log.")
-parser.add_argument("--doc_file_path", default="/ivi/ilps/personal/kmekonn/projects/DPO-Enhanced-DSI/data/processed/msmarco-docs-sents.top.300k.json", type=str, help='path of origin sent data.')
-parser.add_argument("--docid_path", default="None", type=str, help='path of the encoded docid.')
+parser.add_argument("--doc_file_path", default="/home/dou/talent/data/msmarco-docs-sents.100k.json", type=str, help='path of origin sent data.')
+parser.add_argument("--docid_path", default=None, type=str, help='path of the encoded docid.')
 parser.add_argument("--train_file_path", type=str, help="the path/directory of the training file.")
 parser.add_argument("--test_file_path", type=str, help="the path/directory of the testing file.")
 parser.add_argument("--pretrain_model_path", type=str, help="path of the pretrained model checkpoint")
@@ -52,7 +50,6 @@ parser.add_argument("--use_origin_head", default="False", type=str, help="whethe
 parser.add_argument("--num_beams", default=10, type=int, help="the number of beams.")
 
 args = parser.parse_args()
-print("args:", args)
 args.batch_size = args.per_gpu_batch_size * torch.cuda.device_count()
 print("batch_size:", args.batch_size)
 print("start a new running with args: ", args)
@@ -88,9 +85,7 @@ def load_encoded_docid(docid_path):
         for line in fr:
             docid, encode = line.strip().split("\t")
             docid = docid.lower()
-            # since I added padding when I generate the ids , I need to remove the padding
-            encode_list = encode.split(",")
-            encode= [int(x) for x in encode_list if x not in ["0", "1"]]
+            encode = [int(x) for x in encode.split(",")]
             encoded_docids.append(encode)
             encode = ','.join([str(x) for x in encode])
             if encode not in encode_2_docid:
@@ -98,7 +93,6 @@ def load_encoded_docid(docid_path):
             else:
                 encode_2_docid[encode].append(docid)
     return encoded_docids, encode_2_docid
-    
     
 def train_model(train_data):
     pretrain_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
@@ -142,8 +136,7 @@ def fit(model, X_train):
         logger.write("Epoch " + str(epoch + 1) + "/" + str(args.epochs) + "\n")
         avg_loss = 0
         model.train()
-        # for i, training_data in enumerate(tqdm(train_dataloader)):
-        for i, training_data in tqdm(enumerate(train_dataloader),total=len(train_dataloader)):
+        for i, training_data in enumerate(tqdm(train_dataloader)):
             loss = train_step(model, training_data)
             loss = loss.mean()
             loss.backward() 
@@ -169,7 +162,6 @@ def fit(model, X_train):
     torch.save(model.state_dict(), os.path.join(args.save_path, f"model_final.pkl"))
     logger.close()
 
-
 def evaluate_beamsearch():
     '''
         function: Generate the document identifiers with constrained beam search, and evaluate the ranking results.
@@ -184,14 +176,10 @@ def evaluate_beamsearch():
     myevaluator = evaluator()
 
     encoded_docid, encode_2_docid = load_encoded_docid(args.docid_path)
-    docid_trie = Trie([item if item[0]==0 else [0]+item for item in encoded_docid])
+    docid_trie = Trie([[0] + item for item in encoded_docid])
 
     def prefix_allowed_tokens_fn(batch_id, sent): 
-        outputs = docid_trie.get(sent.tolist())
-        # we add the below line to avoid the case that the outputs is empty (mxk)
-        if len(outputs) == 0:
-            return [tokenizer.pad_token_id]
-        return outputs
+        return docid_trie.get(sent.tolist())
 
     def docid2string(docid):
         x_list = []
@@ -207,11 +195,11 @@ def evaluate_beamsearch():
         print(f"Evaluate on the {args.test_file_path}.")
         logger.write(f"{localtime} Evaluate on the {args.test_file_path}.\n")
         test_data = load_data(args.test_file_path)
-        test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args) 
+        test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args) # 构建训练集
         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
         truth, prediction, inputs = [], [], []
 
-        for i, testing_data in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
+        for i, testing_data in tqdm(enumerate(test_dataloader)):
             with torch.no_grad():
                 for key in testing_data.keys():
                     if key in ["query_id", "doc_id"]:
@@ -227,7 +215,7 @@ def evaluate_beamsearch():
                 truth.extend([[docid] for docid in labels])
             
             inputs.extend(input_ids)
-            
+
             outputs = model.generate(input_ids, max_length=args.max_docid_length+1, num_return_sequences=args.num_beams, num_beams=args.num_beams, do_sample=False, prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
 
             for j in range(input_ids.shape[0]):

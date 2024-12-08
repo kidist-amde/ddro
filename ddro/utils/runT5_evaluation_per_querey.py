@@ -75,6 +75,8 @@ def load_data(file_path):
     print("file path: ", fns)
     return fns
 
+# FOR THE NQ DATA THE DOC ID MUST BE UPLOADED WITH THIS FUNCTION for all ids 
+
 def load_encoded_docid(docid_path):
     """
         function: load encoded docid data from the docid_path
@@ -99,6 +101,28 @@ def load_encoded_docid(docid_path):
                 encode_2_docid[encode].append(docid)
     return encoded_docids, encode_2_docid
 
+# # FOR MSMARCO DATA THE DOC ID MUST BE UPLOADED WITH THIS FUNCTION
+# def load_encoded_docid(docid_path):
+#     """
+#         function: load encoded docid data from the docid_path
+#         return:
+#             encoded_docids: list of all encoded document identifiers.
+#             encode_2_docid: dict from encoded document identifiers to original unique id.
+#     """
+#     encode_2_docid = {}
+#     encoded_docids = []
+#     with open(docid_path, "r") as fr:
+#         for line in fr:
+#             docid, encode = line.strip().split("\t")
+#             docid = docid.lower()
+#             encode = [int(x) for x in encode.split(",")]
+#             encoded_docids.append(encode)
+#             encode = ','.join([str(x) for x in encode])
+#             if encode not in encode_2_docid:
+#                 encode_2_docid[encode] = [docid]
+#             else:
+#                 encode_2_docid[encode].append(docid)
+#     return encoded_docids, encode_2_docid
 
 def evaluate_beamsearch():
     '''
@@ -116,12 +140,23 @@ def evaluate_beamsearch():
     encoded_docid, encode_2_docid = load_encoded_docid(args.docid_path)
     docid_trie = Trie([[0] + item for item in encoded_docid])
 
+    # def prefix_allowed_tokens_fn(batch_id, sent): 
+    #     return docid_trie.get(sent.tolist())
+
+
+    # def prefix_allowed_tokens_fn(batch_id, sent): 
+    #     outputs = docid_trie.get(sent.tolist())
+    #     # we add the below line to avoid the case that the outputs is empty (mxk)
+    #     if len(outputs) == 0:
+    #         return [tokenizer.pad_token_id]
+    #     return outputs
+
     def prefix_allowed_tokens_fn(batch_id, sent): 
-        outputs = docid_trie.get(sent.tolist())
-        # we add the below line to avoid the case that the outputs is empty (mxk)
-        if len(outputs) == 0:
+        allowed_tokens = docid_trie.get(sent.tolist())
+        if not allowed_tokens:  # Fallback to ensure no empty list
             return [tokenizer.pad_token_id]
-        return outputs
+        return allowed_tokens
+    
 
     def docid2string(docid):
         x_list = []
@@ -140,7 +175,8 @@ def evaluate_beamsearch():
         test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args) # 构建训练集
         test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
         truth, prediction, inputs = [], [], []
-    
+        print("Start evaluating... ")
+        # print(len(test_dataloader))
         for i, testing_data in tqdm(enumerate(test_dataloader), total=len(test_dataloader), desc="Evaluating"):
             with torch.no_grad():
                 for key in testing_data.keys():
@@ -159,15 +195,20 @@ def evaluate_beamsearch():
             inputs.extend(input_ids)
 
             outputs = model.generate(input_ids, max_length=args.max_docid_length+1, num_return_sequences=args.num_beams, num_beams=args.num_beams, do_sample=False, prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
-
             for j in range(input_ids.shape[0]):
                 query_term = tokenizer.decode(input_ids[j], skip_special_tokens=True).split()
                 doc_rank = []
                 batch_output = outputs[j*args.num_beams:(j+1)*args.num_beams].cpu().numpy().tolist()
+
+                # print(len(batch_output))
+                # print([tokenizer.decode(docid, skip_special_tokens=True) for docid in batch_output])
+                
                 for docid in batch_output:
                     if args.use_docid_rank == "False":
                         doc_rank.append(docid2string(docid))
                     else:
+                        # conver the docurl to docid
+                        # print(docid)
                         docid_list = encode_2_docid[docid2string(docid)]
                         if len(docid_list) > 1:
                             random.shuffle(docid_list)
@@ -175,6 +216,14 @@ def evaluate_beamsearch():
                         else:
                             doc_rank.extend(docid_list)                           
                 prediction.append(doc_rank)
+
+                # print("Here is the prediction")
+                # print(doc_rank)
+                # print("____________________________")
+                # print(labels,flush=True)
+                # os._exit(0)
+                
+
         result_df = myevaluator.evaluate_ranking(truth, prediction)
 
         # Extracting metrics from the DataFrame's first row

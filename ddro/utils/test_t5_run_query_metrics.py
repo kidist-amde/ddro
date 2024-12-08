@@ -22,24 +22,22 @@ load_model = "t5_128_1"  # the data to be loaded
 all_data = "pretrain_search_finetune"  # all data used for training
 cur_data = "query_dev"  # the data used for current training
 stage = "inference"  # pretrain / finetune
-num_beams = 100
+num_beams = 10
 use_docid_rank = "True"  # True to discriminate different docs with the same docid
 operation = "testing"
 max_seq_length = 64
 
-model_name = "SFT" # ULTRON / DDRO /SFT
+model_name = "ULTRON" # ULTRON / DDRO /SFT
 dataset = "nq" # msmarco / nq
-# --save_path {code_dir}/outputs-new/{load_model}_{top_or_rand}_{scale}_{encoding}_{all_data}/model_9.pkl \
 
 def main():
     # for epoch in [1,3,5,7,9]:
     epoch = 9
     os.system(f"cd {code_dir}/utils && python runT5_evaluation_per_querey.py \
         --epoch 10 \
-        --per_gpu_batch_size 4 \
-        --learning_rate 1e-3 \
-        --save_path {code_dir}/outputs-sft/t5_128_10_top_300k_nq_atomic/model_final.pkl \
-        --log_path {code_dir}/logs-sft/{model_name}-{dataset}-{encoding}.log \
+        --per_gpu_batch_size 16 \
+        --save_path {code_dir}/outputs-ultron-nq/t5_128_1_atomic_pretrain_search_finetune/model_final.pkl \
+        --log_path {code_dir}/logs-ultron-nq/{model_name}-{dataset}-{encoding}.log \
         --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
         --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_{encoding}_docids.txt \
