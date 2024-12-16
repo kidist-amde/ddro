@@ -84,8 +84,9 @@ if __name__ == "__main__":
     print(f"Number of matched queries: {len(matched_queries)}")
 
     print("Evaluating metrics...")
-    total_hit_1, total_hit_5, total_hit_10 = 0, 0, 0
+    total_hit_1, total_hit_5, total_hit_10,  = 0, 0, 0
     total_mrr_10 = 0
+    total_mrr_100 = 0
     num_queries = len(matched_queries)
 
     for query_id in tqdm(matched_queries):
@@ -96,14 +97,19 @@ if __name__ == "__main__":
         total_hit_5 += hit_at_k(truth, pred, 5)
         total_hit_10 += hit_at_k(truth, pred, 10)
         total_mrr_10 += mrr_at_k(truth, pred, 10)
+        total_mrr_100 += mrr_at_k(truth, pred, 100)
 
     avg_hit_1 = total_hit_1 / num_queries
     avg_hit_5 = total_hit_5 / num_queries
     avg_hit_10 = total_hit_10 / num_queries
     avg_mrr_10 = total_mrr_10 / num_queries
+    avg_mrr_100 = total_mrr_100 / num_queries
 
     print("\nFinal Metrics:")
     print(f"Hit@1: {avg_hit_1:.4f}")
     print(f"Hit@5: {avg_hit_5:.4f}")
     print(f"Hit@10: {avg_hit_10:.4f}")
     print(f"MRR@10: {avg_mrr_10:.4f}")
+    print(f"MRR@100: {avg_mrr_100:.4f}")
+    
+

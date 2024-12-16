@@ -1,9 +1,7 @@
 import gzip
 import pytrec_eval
+import argparse
 
-# Paths to files
-qrels_file = "resources/datasets/raw/msmarco-data/msmarco-docdev-qrels.tsv.gz"
-run_file = "resources/datasets/processed/msmarco-data/pyserini_data/msmarco_dev_bm25tuned.txt"
 
 def load_qrels(file_path):
     """Load qrels into a dictionary, handling the extra column."""
@@ -41,26 +39,32 @@ def load_run(file_path):
 
 
 def compute_hit_and_mrr(qrels, runs, hits=[1, 5, 10]):
-    """Compute Hit@K and MRR@10 metrics."""
+    """Compute Hit@K and MRR@10 and MRR@100 metrics."""
     metrics = {f'hit@{k}': 0 for k in hits}
     metrics['mrr@10'] = 0
+    metrics['mrr@100'] = 0
     total_queries = 0
 
     for query_id, relevant_docs in qrels.items():
         if query_id not in runs:
             continue
-        retrieved_docs = list(runs[query_id].keys())[:max(hits)]  # Top K documents only
+        
+        # Retrieve top 100 documents for computation
+        retrieved_docs = list(runs[query_id].keys())[:100]
 
         # Compute Hit@K
         for k in hits:
             if any(doc in relevant_docs for doc in retrieved_docs[:k]):
                 metrics[f'hit@{k}'] += 1
 
-        # Compute MRR@10
-        for rank, doc_id in enumerate(retrieved_docs[:10], start=1):
+        # Compute MRR@10 and MRR@100 in a single loop
+        for rank, doc_id in enumerate(retrieved_docs, start=1):
             if doc_id in relevant_docs:
-                metrics['mrr@10'] += 1 / rank
-                break
+                if rank <= 10:
+                    metrics['mrr@10'] += 1 / rank
+                if rank <= 100:
+                    metrics['mrr@100'] += 1 / rank
+                break  # Exit after first relevant document for MRR
 
         total_queries += 1
 
@@ -70,12 +74,24 @@ def compute_hit_and_mrr(qrels, runs, hits=[1, 5, 10]):
 
     return metrics
 
-# Load qrels and run files
-qrels = load_qrels(qrels_file)
-runs = load_run(run_file)
 
-# Compute metrics
-metrics = compute_hit_and_mrr(qrels, runs)
-print("\nMetrics:")
-for metric, value in metrics.items():
-    print(f"{metric}: {value:.4f}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Evaluate a run file using pytrec_eval.')
+    parser.add_argument('--qrels_file', type=str, required=True, help='Path to the qrels file.')
+    parser.add_argument('--run_file', type=str, required=True, help='Path to the run file.')
+    args = parser.parse_args()
+
+    # Load qrels and run files
+    qrels = load_qrels(args.qrels_file)
+    runs = load_run(args.run_file)
+
+    # Compute metrics
+    metrics = compute_hit_and_mrr(qrels, runs)
+    print("\nMetrics:")
+    for metric, value in metrics.items():
+        print(f"{metric}: {value:.4f}")
+
+if __name__ == '__main__':
+    main()

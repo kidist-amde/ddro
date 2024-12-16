@@ -29,38 +29,38 @@ QRELS_TRAIN=resources/datasets/raw/msmarco-data/msmarco-doctrain-qrels.tsv.gz
 
 
 
-# python -m pyserini.index.lucene \
-#   --collection JsonCollection \
-#   --input $INPUT \
-#   --index $INDEX \
-#   --generator DefaultLuceneDocumentGenerator \
-#   --threads 16 \
-#   --storePositions --storeDocvectors --storeRaw
+python -m pyserini.index.lucene \
+  --collection JsonCollection \
+  --input $INPUT \
+  --index $INDEX \
+  --generator DefaultLuceneDocumentGenerator \
+  --threads 16 \
+  --storePositions --storeDocvectors --storeRaw
 
-# python -m pyserini.search.lucene \
-#   --index  $INDEX \
-#   --topics  $MS_TRAIN_SET \
-#   --output $OUTPUT_TRAIN \
-#   --output-format msmarco \
-#   --hits 1000 \
-#   --bm25 --k1 0.82 --b 0.68 \
-#   --threads 16 --batch-size 16
+python -m pyserini.search.lucene \
+  --index  $INDEX \
+  --topics  $MS_TRAIN_SET \
+  --output $OUTPUT_TRAIN \
+  --output-format msmarco \
+  --hits 1000 \
+  --bm25 --k1 0.82 --b 0.68 \
+  --threads 16 --batch-size 16
 
-# python -m pyserini.search.lucene \
-#   --index  $INDEX \
-#   --topics  $MS_DEV_SET \
-#   --output $OUTPUT_DEV \
-#   --output-format msmarco \
-#   --hits 1000 \
-#   --bm25 --k1 0.82 --b 0.68 \
-#   --threads 16 --batch-size 16
+python -m pyserini.search.lucene \
+  --index  $INDEX \
+  --topics  $MS_DEV_SET \
+  --output $OUTPUT_DEV \
+  --output-format msmarco \
+  --hits 1000 \
+  --bm25 --k1 0.82 --b 0.68 \
+  --threads 16 --batch-size 16
 
 # Evaluation for train set
 python -m pyserini.eval.msmarco_doc_eval \
   --judgments $QRELS_TRAIN \
   --run $OUTPUT_TRAIN \
 
-# # Evaluation for dev set
-# python -m pyserini.eval.msmarco_doc_eval \
-#   --judgments $QRELS_DEV \
-#   --run $OUTPUT_DEV \
+# Evaluation for dev set
+python -m pyserini.eval.msmarco_doc_eval \
+  --judgments $QRELS_DEV \
+  --run $OUTPUT_DEV \

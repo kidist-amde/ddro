@@ -63,7 +63,7 @@ def generate_triples_parallel(outfile: str, triples_to_generate: int):
     qrel = load_relevance_judgments(f"resources/datasets/raw/msmarco-data/msmarco-doc{subset}-qrels.tsv.gz")
 
     with gzip.open(f"resources/datasets/raw/msmarco-data/msmarco-doc{subset}-top100.gz", 'rt', encoding='utf8') as top100f, \
-            gzip.open("resources/datasets/raw/msmarco-data/msmarco-docs.tsv.gz", 'rt', encoding="utf8") as docs_f, \
+            open("resources/datasets/raw/msmarco-data/msmarco-docs.tsv", 'r', encoding="utf8") as docs_f, \
             open(outfile, 'w', encoding="utf8") as out:
 
         def doc_url(docid):
@@ -85,7 +85,7 @@ def generate_triples_parallel(outfile: str, triples_to_generate: int):
 
     return stats
 
-outfile = f"resources/datasets/processed/msmarco-data/hard_negatives/msmarco_{subset}_triples"
+outfile = f"resources/datasets/processed/msmarco-data/hard_negatives_DL19/msmarco_{subset}_triples"
 logfile = f"logs-slurm-msmarco-sft/other-logs/triples_{subset}_generation.log"
 ensure_directory_exists(logfile)
 

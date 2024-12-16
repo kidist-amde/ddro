@@ -163,7 +163,8 @@ def create_msmarco_resumbling_dataset(train_file_path, dev_file_path, output_dir
             "id": data["id"],  
             "url": clean_value(data["url"]),
             "title": clean_value(data["title"]),
-            "contents": clean_value(data["content"])  # Ensures no NaN or None values
+            "contents": clean_value(data["content"]),  # Ensures no NaN or None values
+            "doc_tac": clean_value(data["doc_tac"])
         }
         for data in traning_data + dev_data
 ]

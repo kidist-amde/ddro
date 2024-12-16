@@ -6,6 +6,8 @@ import gzip
 import pandas as pd
 from datasets import Dataset, load_dataset
 from transformers import BertTokenizer
+import os
+import json
 
 DEV_SET_SIZE = 7830
 TRAIN_SET_SIZE = 307373
@@ -267,6 +269,7 @@ def create_document_mapping(nq_all_doc):
     
     return title_doc, title_doc_id, id_doc, ran_id_old_id, doc_id_url
 
+
 def main():
     
     parser = argparse.ArgumentParser(description="Extract, process, and merge Google NQ data")
@@ -276,6 +279,7 @@ def main():
     parser.add_argument("--output_train_file", type=str, required=True, help="Path to save the training data (TSV format)")
     parser.add_argument("--output_val_file", type=str, required=True, help="Path to save the validation data (TSV format)")
     # parser.add_argument("--doc_content_file", type=str, required=True, help="Path to save the NQ_doc_content.tsv")
+    parser.add_argument("--output_json_dir", type=str, required=True, help="Directory to save JSON files")
     parser.add_argument("--sample_size", type=int, default=None, help="Number of samples to process (optional)")
     args = parser.parse_args()
 
@@ -313,10 +317,22 @@ def main():
     print(f"Training data saved to {args.output_train_file}.gz")
     print(f"Validation data saved to {args.output_val_file}.gz")
 
+    
+    # Save as JSON with only id and doc_tac
+    json_output_path = os.path.join(args.output_json_dir, 'msmarco_sents_pyserni_format.json')
+    selected_columns = nq_all_doc[['id', 'doc_tac']].rename(columns={'id': 'id', 'doc_tac': 'contents'})
+    selected_columns.to_json(json_output_path, mode='w', orient='records', lines=True)  # Fixed line
+    print(f"Final merged data saved as JSON to {json_output_path}")
+
     # Save only the gzipped TSV file
     with gzip.open(args.output_merged_file + '.gz', 'wt') as f:
         nq_all_doc.to_csv(f, sep='\t', index=False, header=False)  
     print(f"Final merged data saved to {args.output_merged_file}.gz")
+    
+    # save as json file 
+    nq_all_doc.to_json(args.output_merged_file + '.json', orient='records', lines=True)
+    print(f"Saving JSON file to {args.output_merged_file}")    
+
 
 
 if __name__ == "__main__":

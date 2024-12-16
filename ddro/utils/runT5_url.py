@@ -3,21 +3,16 @@ import time
 import torch
 import random
 import argparse
-from utils import *
-from utils import load_model
-from utils import set_seed
-from tqdm.auto import tqdm
-from trie import Trie
-from evaluate import evaluator
+from utils_url import *
+from tqdm import tqdm
+import torch.nn as nn
+from trie_url import Trie
+from eval_url import evaluator
 from collections import defaultdict
 from torch.utils.data import DataLoader
-import sys
-# Add the root project directory to the Python path
-sys.path.append('/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro')
-from pretrain.T5ForPretrain import T5ForPretrain
-from pretrain_dataset import PretrainDataForT5
+from T5pretrain import T5ForPretrain
+from pretrain_dataset_url import PretrainDataForT5
 from transformers import AdamW, get_linear_schedule_with_warmup
-from transformers import T5Tokenizer, T5ForConditionalGeneration
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 
 device = torch.device("cuda:0")
@@ -36,8 +31,8 @@ parser.add_argument("--load_ckpt", default="False", type=str, help="whether to l
 ### path to load data and save models
 parser.add_argument("--save_path", default="./model/", type=str, help="The path to save trained models.")
 parser.add_argument("--log_path", default="./log/", type=str, help="The path to save log.")
-parser.add_argument("--doc_file_path", default="/ivi/ilps/personal/kmekonn/projects/DPO-Enhanced-DSI/data/processed/msmarco-docs-sents.top.300k.json", type=str, help='path of origin sent data.')
-parser.add_argument("--docid_path", default="None", type=str, help='path of the encoded docid.')
+parser.add_argument("--doc_file_path", default="/home/dou/talent/data/msmarco-docs-sents.100k.json", type=str, help='path of origin sent data.')
+parser.add_argument("--docid_path", default=None, type=str, help='path of the encoded docid.')
 parser.add_argument("--train_file_path", type=str, help="the path/directory of the training file.")
 parser.add_argument("--test_file_path", type=str, help="the path/directory of the testing file.")
 parser.add_argument("--pretrain_model_path", type=str, help="path of the pretrained model checkpoint")
@@ -53,7 +48,6 @@ parser.add_argument("--use_origin_head", default="False", type=str, help="whethe
 parser.add_argument("--num_beams", default=10, type=int, help="the number of beams.")
 
 args = parser.parse_args()
-print("args:", args)
 args.batch_size = args.per_gpu_batch_size * torch.cuda.device_count()
 print("batch_size:", args.batch_size)
 print("start a new running with args: ", args)
@@ -89,9 +83,7 @@ def load_encoded_docid(docid_path):
         for line in fr:
             docid, encode = line.strip().split("\t")
             docid = docid.lower()
-            # since I added padding when I generate the ids , I need to remove the padding
-            encode_list = encode.split(",")
-            encode= [int(x) for x in encode_list if x not in ["0", "1"]]
+            encode = [int(x) for x in encode.split(",")]
             encoded_docids.append(encode)
             encode = ','.join([str(x) for x in encode])
             if encode not in encode_2_docid:
@@ -99,7 +91,7 @@ def load_encoded_docid(docid_path):
             else:
                 encode_2_docid[encode].append(docid)
     return encoded_docids, encode_2_docid
-
+    
 def train_model(train_data):
     pretrain_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + args.add_doc_num)
@@ -142,8 +134,7 @@ def fit(model, X_train):
         logger.write("Epoch " + str(epoch + 1) + "/" + str(args.epochs) + "\n")
         avg_loss = 0
         model.train()
-        # for i, training_data in enumerate(tqdm(train_dataloader)):
-        for i, training_data in tqdm(enumerate(train_dataloader),total=len(train_dataloader)):
+        for i, training_data in enumerate(tqdm(train_dataloader)):
             loss = train_step(model, training_data)
             loss = loss.mean()
             loss.backward() 
@@ -166,14 +157,10 @@ def fit(model, X_train):
         if (epoch+1) % args.save_every_n_epoch == 0:
             torch.save(model.state_dict(), os.path.join(args.save_path, f"model_{epoch}.pkl"))
             print(f"Save the model in {args.save_path}")
-    torch.save(model.state_dict(), os.path.join(args.save_path, f"model_final.pkl"))
     logger.close()
 
 
 def evaluate_beamsearch():
-    '''
-        function: Generate the document identifiers with constrained beam search, and evaluate the ranking results.
-    '''
     pretrain_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + args.add_doc_num)
     model = T5ForPretrain(pretrain_model, args)
@@ -186,12 +173,32 @@ def evaluate_beamsearch():
     encoded_docid, encode_2_docid = load_encoded_docid(args.docid_path)
     docid_trie = Trie([[0] + item for item in encoded_docid])
 
-    def prefix_allowed_tokens_fn(batch_id, sent): 
-        outputs = docid_trie.get(sent.tolist())
-        # we add the below line to avoid the case that the outputs is empty (mxk)
-        if len(outputs) == 0:
-            return [tokenizer.pad_token_id]
-        return outputs
+    # def prefix_allowed_tokens_fn(batch_id, sent):
+    #     return docid_trie.get(sent.tolist())
+
+    # def prefix_allowed_tokens_fn(batch_id, sent): 
+    #     # print("sent:", sent)
+    #     outputs = docid_trie.get(sent.tolist())
+    #     if len(outputs) == 0:
+    #         return [tokenizer.pad_token_id]
+    #     return outputs
+
+    def prefix_allowed_tokens_fn(batch_id, sent):
+        allowed_tokens = docid_trie.get(sent.tolist())
+        if not allowed_tokens:  # Handle unsatisfiable constraints
+            
+            # Attempt to fallback to the parent prefix
+            partial_prefix = sent.tolist()[:-1]
+            fallback_tokens = docid_trie.get(partial_prefix) if partial_prefix else []
+            
+            if fallback_tokens:
+                return fallback_tokens
+            
+            # If no fallback possible, return safe tokens
+            return [tokenizer.pad_token_id, tokenizer.eos_token_id]
+        
+        return allowed_tokens
+
 
     def docid2string(docid):
         x_list = []
@@ -201,75 +208,72 @@ def evaluate_beamsearch():
             if x == 1:
                 break
         return ",".join(x_list)
-
     if os.path.exists(args.test_file_path):
         localtime = time.asctime(time.localtime(time.time()))
         print(f"Evaluate on the {args.test_file_path}.")
         logger.write(f"{localtime} Evaluate on the {args.test_file_path}.\n")
-        test_data = load_data(args.test_file_path)
+        test_data = load_data(args.test_file_path)  # 加载测试数据集
         test_dataset = PretrainDataForT5(test_data, args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args) # 构建训练集
-        test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=8)
-        truth, prediction, inputs = [], [], []
+        test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=16)
+        truth, prediction = [], []
 
         for i, testing_data in tqdm(enumerate(test_dataloader)):
             with torch.no_grad():
-                for key in testing_data.keys():
+                for key in testing_data.keys(): # [input_ids, token_type_ids, attention_mask, mlm_labels, label]
                     if key in ["query_id", "doc_id"]:
                         continue
                     testing_data[key] = testing_data[key].to(device)
-            
+
             input_ids = testing_data["input_ids"]
+            attention_mask = testing_data["attention_mask"]
+            qid = testing_data["query_id"]
+
             if args.use_docid_rank == "False":
-                labels = testing_data["docid_labels"] # encoded docid
-                truth.extend([[docid2string(docid)] for docid in labels.cpu().numpy().tolist()])
+                labels = testing_data["docid_labels"] # encode
+                truth.extend([[docid2string(docid)] for docid in labels.cpu().numpy().tolist()]) 
             else:
                 labels = testing_data["query_id"] # docid
                 truth.extend([[docid] for docid in labels])
-            
-            inputs.extend(input_ids)
-
-            outputs = model.generate(input_ids, max_length=args.max_docid_length+1, num_return_sequences=args.num_beams, num_beams=args.num_beams, do_sample=False, prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
+            # outputs = model.generate(input_ids=input_ids, 
+            #                          attention_mask=attention_mask, 
+            #                          max_length=args.max_docid_length+1, 
+            #                          num_return_sequences=args.num_beams, 
+            #                          num_beams=args.num_beams, 
+            #                          do_sample=False, 
+            #                          prefix_allowed_tokens_fn=prefix_allowed_tokens_fn)
+            outputs = model.generate(
+                input_ids,
+                max_length=args.max_docid_length + 1,
+                num_return_sequences=args.num_beams,
+                num_beams=args.num_beams,
+                do_sample=False,
+                prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                return_dict_in_generate=True,  # Fix here
+                output_scores=True  # Include scores if needed
+            )
 
             for j in range(input_ids.shape[0]):
-                query_term = tokenizer.decode(input_ids[j], skip_special_tokens=True).split()
                 doc_rank = []
-                batch_output = outputs[j*args.num_beams:(j+1)*args.num_beams].cpu().numpy().tolist()
-                for docid in batch_output:
+                batch_output = outputs.sequences[j * args.num_beams:(j + 1) * args.num_beams].cpu().numpy().tolist()
+                batch_scores = outputs.sequences_scores[j * args.num_beams:(j + 1) * args.num_beams].cpu().numpy().tolist()
+                for docid, scores in zip(batch_output, batch_scores):
                     if args.use_docid_rank == "False":
                         doc_rank.append(docid2string(docid))
                     else:
                         docid_list = encode_2_docid[docid2string(docid)]
                         if len(docid_list) > 1:
-                            random.shuffle(docid_list)
+                            docid_list.reverse()
                             doc_rank.extend(docid_list)
                         else:
-                            doc_rank.extend(docid_list)                           
+                            doc_rank.extend(docid_list)
                 prediction.append(doc_rank)
-        result_df = myevaluator.evaluate_ranking(truth, prediction)
 
-        # Extracting metrics from the DataFrame's first row
-        _mrr10 = result_df['MRR@10'][0]
-        _mrr = result_df['MRR'][0]
-        _ndcg10 = result_df['NDCG@10'][0]
-        _ndcg20 = result_df['NDCG@20'][0]
-        _ndcg100 = result_df['NDCG@100'][0]
-        _map20 = result_df['MAP@20'][0]
-        _p1 = result_df['P@1'][0]
-        _p10 = result_df['P@10'][0]
-        _p20 = result_df['P@20'][0]
-        _p100 = result_df['P@100'][0]
-        _r1 = result_df['R@1'][0]
-        _r10 = result_df['R@10'][0]
-        _r100 = result_df['R@100'][0]
-        _r1000 = result_df['R@1000'][0]
-        _hit1 = result_df['Hit@1'][0]
-        _hit5 = result_df['Hit@5'][0]
-        _hit10 = result_df['Hit@10'][0]
-        _hit100 = result_df['Hit@100'][0]
-
+                
+        result = myevaluator.evaluate_ranking(truth, prediction, operation="sorted_generate_doc")
+        _mrr5, _mrr10, _mrr, _ndcg10, _ndcg20, _ndcg100, _map20, _p1, _p10, _p20, _p100, _r1, _r5, _r10, _r100, _bleu_1, _bleu_2 = result
         localtime = time.asctime(time.localtime(time.time()))
-        print(f"mrr@10:{_mrr10}, mrr:{_mrr}, p@1:{_p1}, p@10:{_p10}, p@20:{_p20}, p@100:{_p100}, r@1:{_r1}, r@10:{_r10}, r@100:{_r100}, r@1000:{_r1000}, hit@1:{_hit1}, hit@5:{_hit5}, hit@10:{_hit10}, hit@100:{_hit100}")
-        logger.write(f"mrr@10:{_mrr10}, mrr:{_mrr}, p@1:{_p1}, p@10:{_p10}, p@20:{_p20}, p@100:{_p100}, r@1:{_r1}, r@10:{_r10}, r@100:{_r100}, r@1000:{_r1000}, hit@1:{_hit1}, hit@5:{_hit5}, hit@10:{_hit10}, hit@100:{_hit100}\n")
+        print(f"mrr@5:{_mrr5}, mrr@10:{_mrr10}, mrr:{_mrr}, p@1:{_p1}, p@10:{_p10}, p@20:{_p20}, p@100:{_p100}, r@1:{_r1}, r@5:{_r5}, r@10:{_r10}, r@100:{_r100}, bleu_1:{_bleu_1}, bleu_2:{_bleu_2}")
+        logger.write(f"mrr@5:{_mrr5}, mrr@10:{_mrr10}, mrr:{_mrr}, p@1:{_p1}, p@10:{_p10}, p@20:{_p20}, p@100:{_p100}, r@1:{_r1}, r@5:{_r5}, r@10:{_r10}, r@100:{_r100}, bleu_1:{_bleu_1}, bleu_2:{_bleu_2}\n")
 
 if __name__ == '__main__':
     if args.operation == "training":

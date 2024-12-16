@@ -5,8 +5,8 @@ from datetime import datetime
 from tqdm import tqdm  # Progress bar
 
 # Paths for input and logging
-input_file = 'resources/datasets/processed/nq-data/nq-merged/nq_merged.tsv.gz'
-log_dir = 'logs-nq'
+input_file = 'resources/datasets/processed/nq-data/nq-merged/nq_docs.tsv.gz'
+log_dir = 'logs-slurm-sft-nq/other-logs'
 
 # Ensure the log directory exists
 os.makedirs(log_dir, exist_ok=True)

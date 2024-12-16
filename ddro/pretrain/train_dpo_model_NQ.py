@@ -13,43 +13,10 @@ import os
 from collections import defaultdict
 from typing import Callable
 import trl
-import gzip
 from transformers import EarlyStoppingCallback
 from transformers import get_cosine_with_hard_restarts_schedule_with_warmup
-import csv
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-def load_docoffset(doc_lookup_path):
-    docoffset = {}
-    with gzip.open(doc_lookup_path, 'rt', encoding='utf8') as f:
-        tsvreader = csv.reader(f, delimiter="\t")
-        for [docid, _, offset] in tsvreader:
-            docoffset[docid] = int(offset)
-    return docoffset
-
-def getcontent(docid, f, docoffset):
-    """getcontent(docid, f) will get content for a given docid (a string) from filehandle f.
-    The content has four tab-separated strings: docid, url, title, body.
-    """
-
-    f.seek(docoffset[docid])
-    line = f.readline()
-    assert line.startswith(docid + "\t"), \
-        f"Looking for {docid}, found {line}"
-    return line.rstrip()
-
-
-def get_url(docid, f, docoffset):
-    """getcontent(docid, f) will get content for a given docid (a string) from filehandle f.
-    The content has four tab-separated strings: docid, url, title, body.
-    """
-    
-    f.seek(docoffset[docid])
-    line = f.readline()
-    _docid, url, title, body= line.split("\t")
-    assert _docid == docid, f"Looking for {docid}, found {line}"
-    return url
 
 def load_model(save_path):
     save_model = torch.load(save_path)
@@ -153,15 +120,13 @@ def return_prompt_and_responses(samples):
         "rejected": samples["negative_doc_id"], 
     }
 
-def load_line_dataset(path, doc_ids, queries_file):
-    query_id_to_text = load_query_id_to_text(queries_file)
+def load_line_dataset(path,doc_ids):
     with open(path, "r") as f:
         lines = f.readlines()
         output = []
         for line in lines:
             line = line.strip()
-            topic_id, pid, nid = line.split("\t")
-            query= query_id_to_text[topic_id]
+            topic_id, query, p_url, pid, n_url, nid = line.split("\t")
             if pid in doc_ids and nid in doc_ids: 
                 output.append({ 
                     "query": query,
@@ -170,8 +135,7 @@ def load_line_dataset(path, doc_ids, queries_file):
                 })
     return output 
 
-
-def load_encoded_docids(path):
+def load_pq_docids(path):
     
     """Load product quantization docids from a file.
     the files contains the follwong format:
@@ -196,23 +160,12 @@ def load_encoded_docids(path):
             output[docid] = pq_ids
     return output
 
+   
 
-def load_query_id_to_text(path):
-    with gzip.open(path, "rt") as f:
-        lines = f.readlines()
-        output = {}
-        for line in lines:
-            line = line.strip()
-            topic_id, query = line.split("\t")
-            output[topic_id] = query
-    return output
-
-def create_datasets(docid_path, train_dataset_path, dev_dataset_path, train_queries_file, dev_queries_file, num_proc=24):
-
-    doc_ids= load_encoded_docids(docid_path)
-    train_data = load_line_dataset(train_dataset_path, doc_ids, train_queries_file)
-    dev_data = load_line_dataset(dev_dataset_path, doc_ids, dev_queries_file)
-
+def create_datasets(docid_path, train_dataset_path, dev_dataset_path, num_proc=24):
+    doc_ids= load_pq_docids(docid_path)
+    train_data = load_line_dataset(train_dataset_path,doc_ids)
+    dev_data = load_line_dataset(dev_dataset_path,doc_ids)
     print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(dev_data)}")
     train_data = Dataset.from_list(train_data)
     dev_data = Dataset.from_list(dev_data)
@@ -232,37 +185,37 @@ def create_datasets(docid_path, train_dataset_path, dev_dataset_path, train_quer
     )
     return train_data, dev_data
 
-def load_model_from_checkpoint(cli_args):
-    pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path,device_map="auto")
-    pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + 6144)
-    model = T5ForPretrainDPO(pretrain_model, cli_args)
-    state_dict = load_model(cli_args.checkpoint_path)
-    model.load_state_dict(state_dict)
-
-    return model
-
-
-# # for the atomic checkpoint vocubulary size mismatch
 # def load_model_from_checkpoint(cli_args):
-#     # Load pre-trained T5 model
-#     pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path, device_map="auto")
-    
-#     # Load the checkpoint state_dict to check the expected vocab size
-#     checkpoint_state_dict = load_model(cli_args.checkpoint_path)
-#     checkpoint_vocab_size = checkpoint_state_dict['shared.weight'].shape[0]  # Expected vocab size in checkpoint
-    
-#     # Resize embeddings to match the exact vocabulary size from the checkpoint
-#     if pretrain_model.config.vocab_size != checkpoint_vocab_size:
-#         print(f"Resizing token embeddings from {pretrain_model.config.vocab_size} to {checkpoint_vocab_size}")
-#         pretrain_model.resize_token_embeddings(checkpoint_vocab_size)  # Exact size, no padding
-
-#     # Initialize the custom model with resized embeddings
+#     pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path,device_map="auto")
+#     pretrain_model.resize_token_embeddings(pretrain_model.config.vocab_size + 6144)
 #     model = T5ForPretrainDPO(pretrain_model, cli_args)
-    
-#     # Load the checkpoint state dict into the model
-#     model.load_state_dict(checkpoint_state_dict, strict=True)  # strict=True to ensure exact matching shapes
+#     state_dict = load_model(cli_args.checkpoint_path)
+#     model.load_state_dict(state_dict)
 
 #     return model
+
+
+# for the atomic checkpoint vocubulary size mismatch
+def load_model_from_checkpoint(cli_args):
+    # Load pre-trained T5 model
+    pretrain_model = T5ForConditionalGeneration.from_pretrained(cli_args.pretrain_model_path, device_map="auto")
+    
+    # Load the checkpoint state_dict to check the expected vocab size
+    checkpoint_state_dict = load_model(cli_args.checkpoint_path)
+    checkpoint_vocab_size = checkpoint_state_dict['shared.weight'].shape[0]  # Expected vocab size in checkpoint
+    
+    # Resize embeddings to match the exact vocabulary size from the checkpoint
+    if pretrain_model.config.vocab_size != checkpoint_vocab_size:
+        print(f"Resizing token embeddings from {pretrain_model.config.vocab_size} to {checkpoint_vocab_size}")
+        pretrain_model.resize_token_embeddings(checkpoint_vocab_size)  # Exact size, no padding
+
+    # Initialize the custom model with resized embeddings
+    model = T5ForPretrainDPO(pretrain_model, cli_args)
+    
+    # Load the checkpoint state dict into the model
+    model.load_state_dict(checkpoint_state_dict, strict=True)  # strict=True to ensure exact matching shapes
+
+    return model
 
 
 def main():
@@ -276,17 +229,47 @@ def main():
     parser.add_argument("--max_prompt_length", type=int, default=512, help="the max length of input sequences.")
     parser.add_argument("--docid_path", type=str,default="WebUltron/dataset/encoded_docid/t5_pq_msmarco.txt", help="The path of docid file.")
     parser.add_argument("--dev_file", type=str, required=True, help="Path to the development dataset")
-    parser.add_argument("--doc_lookup_path", type=str, required=True, help="Path to the document lookup file")
-    parser.add_argument("--train_queries_file", type=str, required=True, help="Path to the training queries file")
-    parser.add_argument("--dev_queries_file", type=str, required=True, help="Path to the development queries file")
     cli_args = parser.parse_args()  
-
-    docoffset=load_docoffset(cli_args.doc_lookup_path)
 
     # Load tokenizer and datasets
     tokenizer = T5Tokenizer.from_pretrained(cli_args.pretrain_model_path)
     tokenizer.pad_token = tokenizer.eos_token
-    train_dataset, dev_dataset = create_datasets(cli_args.docid_path, cli_args.train_file, cli_args.dev_file, cli_args.train_queries_file, cli_args.dev_queries_file)
+    train_dataset, dev_dataset = create_datasets(cli_args.docid_path, cli_args.train_file, cli_args.dev_file)
+
+#     # Set up training arguments for url ranking
+#     training_args = DPOConfig(
+#     output_dir=cli_args.output_dir,
+#     per_device_train_batch_size=128,  # If memory allows, or use gradient accumulation
+#     save_total_limit=2,
+#     save_steps=1000,
+#     eval_steps=250,  # More frequent evaluations
+#     num_train_epochs=7,  # Additional epochs
+#     learning_rate=3e-4,  # Reduced for stability
+#     warmup_steps=1000,  # Increased warmup steps
+#     max_grad_norm=0.7,  # Reduced gradient clipping
+#     weight_decay=0.01,  # Added weight decay
+#     evaluation_strategy="steps",
+#     load_best_model_at_end=True,
+# )
+
+
+#     # Load models
+#     model = load_model_from_checkpoint(cli_args).to(device)
+#     model_ref = load_model_from_checkpoint(cli_args).to(device)
+
+  
+#     # Adjust beta parameter in DPOTrainer
+#     dpo_trainer = T5DpoTrainer(
+#         model,
+#         model_ref,
+#         args=training_args,  
+#         # beta=0.6,    #0.49,    #0.6, 
+#         beta=0.4,
+#         train_dataset=train_dataset,
+#         eval_dataset=dev_dataset,
+#         tokenizer=tokenizer,
+#         is_encoder_decoder=True,
+#     )
 
     training_args = DPOConfig(
     output_dir=cli_args.output_dir,
@@ -296,7 +279,7 @@ def main():
     eval_steps=500,
     num_train_epochs=2,
     #1e-6 5e-6 1e-5 5e-5 1e-4 1e-7 1e-8 5e-7
-    learning_rate=1e-6, 
+    learning_rate=5e-7, 
     warmup_steps=1000,
     max_grad_norm=0.5,
     evaluation_strategy="steps",
@@ -313,7 +296,7 @@ def main():
         model,
         model_ref,
         args=training_args,
-        beta=0.4,
+        beta=0.49,
         train_dataset=train_dataset,
         eval_dataset=dev_dataset,
         tokenizer=tokenizer,
