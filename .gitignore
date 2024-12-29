@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+BASELINES/
 
 #My repos
 resources/
@@ -56,6 +57,24 @@ open_Ai.py
 test_cuda.py
 environment.yml
 DPO-Enhanced-DSI
+logs-slurm-ultron/
+outputs-ultron-nq/
+logs-slurm-sft-msmarco/
+logs-sft-msmarco/
+outputs-sft-msmarco/
+data/data_preprocessing/create_msmarco_triples.py
+logs-slurm-msmarco-sft/
+logs-slurm-sft-nq/
+logs-ultron-nq/
+outputs_ULTRON_msmarco_DPO_ENHANCED_DSI/ 
+logs-sft-NQ/
+logs-slurm-ultron-msmarco/
+outputs-sft-NQ/
+SFT_MSmarco_PQ_learning_curve.pdf
+SFT_NQ_PQ_learning_curve.pdf
+SFT_NQ_URL_learning_curve.pdf
+k.py
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.

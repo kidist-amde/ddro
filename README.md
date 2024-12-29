@@ -21,10 +21,48 @@ And place the dataset in the spcfied folders.
 - T5-model: `./resources/transformer_models`
 
 #### Data preprocessing 
+# NQ Dataset Preparation 
+- Processes, cleans, and extracts information from raw Natural Questions (NQ) train and dev datasets, saves the processed train and dev datasets separately as `.gz` files, and merges them into a single deduplicated dataset, also saved as a `.gz` file.
+
+```bash
+bash ../scripts/data_processing_scripts/NQ_dataset_processing.sh
+```
+- Convert NQ datasets into MS MARCO format by generating queries, qrels, and document metadata for retrieval tasks.
+
+```bash
+bash ../scripts/data_processing_scripts/NQ_create_msmarco_format_dataset.sh 
+```
+- PreCompute nq dataset T5 embeding 
+
+ ```bash
+bash ../scripts/data_processing_scripts/compute_nq_t5_embeddings.sh
+```
+
+- Generate NQ encodded doc ids 
+
+ ```bash
+bash ../scripts/generate_instances_scripts/generate_nq_t5_encoded_ids.sh
+```
+- Generate T5 traning and eval files
+
+ ```bash
+bash ../scripts/generate_instances_scripts/run_generate_three_stage_nq_eval_data.sh
+bash ../scripts/generate_instances_scripts/run_generate_three_stage_nq_train_data.sh
+```
+
+# DDRO TRANING DATA
+- Nq first stage indexing and retrival 
+```bash
+bash ./sbatch scripts/data_processing_scripts run_nq_bm25_indexing_and_retrieval.sh 
+```
+- create NQ triples 
+```bash
+bash sbatch ./scripts/data_processing_scripts/NQ_create_tripls.sh  
+```
+# MS-Marco-dataset
 - Sample the datasets 
 ```bash
 bash ./scripts/run_msmarco_dataset_smapling.sh
-bash ./scripts/run_nq_merge.sh
 ```
 - Compute the embedding of each document based on pre-trained  T5-based encoder (GTR) 
 
@@ -32,6 +70,7 @@ bash ./scripts/run_nq_merge.sh
 bash ./scripts/generate_nq_t5_embeddings.sh
 bash ./scripts/generate_msmarco_t5_embeddings.sh
 ```
+
 - Generate encodeed doc ids 
   - You can genrate 3 diffrent docid by changing the input file path and the encoding type 
                 - Atomic 
@@ -103,3 +142,16 @@ Train your model
 - [MS MARCO](https://microsoft.github.io/msmarco/Datasets.html#document-ranking-dataset)
 - [Natural Questions](https://ai.google.com/research/NaturalQuestions)
 
+
+
+## Acknowledgments
+This repository incorporates code adapted from the following sources:  
+
+- [ULTRON](https://github.com/smallporridge/WebUltron/tree/main)  
+- [HF TRL library](https://github.com/huggingface/trl), which includes support for the [`DPOTrainer`](https://github.com/huggingface/trl/blob/main/trl/trainer/dpo_trainer.py) used for fine-tuning language models  
+- [NCI](https://github.com/solidsea98/Neural-Corpus-Indexer-NCI/blob/main/Data_process/NQ_dataset/NQ_dataset_Process.ipynb) for preprocessing the NQ dataset  
+
+Credit is due to the authors of these projects for their valuable contributions.
+
+## Contact
+For any questions or concerns, please contact me via email at **kidistamdie@gmail.com**.
