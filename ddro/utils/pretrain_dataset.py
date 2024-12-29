@@ -15,6 +15,7 @@ class PretrainDataForT5(Dataset):
             data_files = self._filename,
             # ignore_verifications=False,
             cache_dir=dataset_cache_dir,
+            trust_remote_code=True
             features=datasets.Features({
                 'query_id': datasets.Value("string"),
                 'doc_id': datasets.Value("string"),

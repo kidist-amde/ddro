@@ -22,7 +22,7 @@ load_model = "t5_128_1"  # the data to be loaded
 all_data = "pretrain_search_finetune"  # all data used for training
 cur_data = "query_dev"  # the data used for current training
 stage = "inference"  # pretrain / finetune
-num_beams = 10
+num_beams = 80
 use_docid_rank = "True"  # True to discriminate different docs with the same docid
 operation = "testing"
 max_seq_length = 64
@@ -36,9 +36,9 @@ def main():
     epoch = 9
     os.system(f"cd {code_dir}/utils && python runT5_evaluation_per_querey.py \
         --epoch 10 \
-        --per_gpu_batch_size 16 \
-        --save_path {code_dir}/outputs-ultron-nq/dpo_NewTripls/dpo_ckp_pq_5epoch_lr1e-5_NewTripls/dpo_model_final.pkl \
-        --log_path {code_dir}/logs-ultron-nq/dpo/{model_name}-{dataset}-{encoding}.log \
+        --per_gpu_batch_size 2 \
+        --save_path {code_dir}/outputs-sft-NQ/dpo/dpo_ckp_url_title_5epoch_lr5e-7_NewTripls/dpo_model_final.pkl \
+        --log_path {code_dir}/logs-sft-NQ/dpo/{model_name}-{dataset}-{encoding}.log \
         --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
         --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
         --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_{encoding}_docids.txt \

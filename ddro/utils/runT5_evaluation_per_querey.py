@@ -75,33 +75,8 @@ def load_data(file_path):
     print("file path: ", fns)
     return fns
 
-# # FOR THE NQ DATA THE DOC ID MUST BE UPLOADED WITH THIS FUNCTION for all ids 
+# FOR THE NQ DATA THE DOC ID MUST BE UPLOADED WITH THIS FUNCTION for all ids 
 
-# def load_encoded_docid(docid_path):
-#     """
-#         function: load encoded docid data from the docid_path
-#         return:
-#             encoded_docids: list of all encoded document identifiers.
-#             encode_2_docid: dict from encoded document identifiers to original unique id.
-#     """
-#     encode_2_docid = {}
-#     encoded_docids = []
-#     with open(docid_path, "r") as fr:
-#         for line in fr:
-#             docid, encode = line.strip().split("\t")
-#             docid = docid.lower()
-#             # since I added padding when I generate the ids , I need to remove the padding
-#             encode_list = encode.split(",")
-#             encode= [int(x) for x in encode_list if x not in ["0", "1"]]
-#             encoded_docids.append(encode)
-#             encode = ','.join([str(x) for x in encode])
-#             if encode not in encode_2_docid:
-#                 encode_2_docid[encode] = [docid]
-#             else:
-#                 encode_2_docid[encode].append(docid)
-#     return encoded_docids, encode_2_docid
-
-# FOR MSMARCO DATA THE DOC ID MUST BE UPLOADED WITH THIS FUNCTION
 def load_encoded_docid(docid_path):
     """
         function: load encoded docid data from the docid_path
@@ -115,7 +90,9 @@ def load_encoded_docid(docid_path):
         for line in fr:
             docid, encode = line.strip().split("\t")
             docid = docid.lower()
-            encode = [int(x) for x in encode.split(",")]
+            # since I added padding when I generate the ids , I need to remove the padding
+            encode_list = encode.split(",")
+            encode= [int(x) for x in encode_list if x not in ["0", "1"]]
             encoded_docids.append(encode)
             encode = ','.join([str(x) for x in encode])
             if encode not in encode_2_docid:
@@ -123,6 +100,29 @@ def load_encoded_docid(docid_path):
             else:
                 encode_2_docid[encode].append(docid)
     return encoded_docids, encode_2_docid
+
+# FOR MSMARCO DATA THE DOC ID MUST BE UPLOADED WITH THIS FUNCTION
+# def load_encoded_docid(docid_path):
+#     """
+#         function: load encoded docid data from the docid_path
+#         return:
+#             encoded_docids: list of all encoded document identifiers.
+#             encode_2_docid: dict from encoded document identifiers to original unique id.
+#     """
+#     encode_2_docid = {}
+#     encoded_docids = []
+#     with open(docid_path, "r") as fr:
+#         for line in fr:
+#             docid, encode = line.strip().split("\t")
+#             docid = docid.lower()
+#             encode = [int(x) for x in encode.split(",")]
+#             encoded_docids.append(encode)
+#             encode = ','.join([str(x) for x in encode])
+#             if encode not in encode_2_docid:
+#                 encode_2_docid[encode] = [docid]
+#             else:
+#                 encode_2_docid[encode].append(docid)
+#     return encoded_docids, encode_2_docid
 
 def evaluate_beamsearch():
     '''

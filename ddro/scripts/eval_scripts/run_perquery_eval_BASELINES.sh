@@ -9,7 +9,7 @@
 #SBATCH --time=4-00:00:00 # d-h:m:s
 #SBATCH --mem=32gb # memory per GPU 
 #SBATCH -c 2 # number of CPUs
-#SBATCH --output=logs-slurm-ultron/Eval_ULTRON-NQ-pq_logs_80_BEAM-%j.out # Log output with unique job ID
+#SBATCH --output=BASELINES/logs-slurm/Eval_LTRG-NQ-URL_logs_10_BEAM-%j.out # Log output with unique job ID
 
 
 # Set up the environment.
@@ -21,6 +21,6 @@ cd /ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimizati
 
 
 
-python utils/test_t5_run_query_metrics.py \
-                --encoding pq \
+python utils/test_t5_run_query_metrics_BASELINE_MODELS_CKP.py \
+                --encoding url \
                 --scale top_300k             

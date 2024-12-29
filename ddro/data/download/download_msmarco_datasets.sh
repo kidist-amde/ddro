@@ -6,7 +6,7 @@
 
 # # Create a directory for raw datasets if it doesn't exist
 # mkdir -p resources/dataset/raw/msmarco-data
-cd resources/dataset/raw/msmarco-data
+# cd resources/dataset/raw/msmarco-data
 
 # # Download the query files
 # echo "Downloading the query files"
