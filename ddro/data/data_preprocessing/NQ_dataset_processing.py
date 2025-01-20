@@ -324,6 +324,11 @@ def main():
     selected_columns.to_json(json_output_path, mode='w', orient='records', lines=True)  # Fixed line
     print(f"Final merged data saved as JSON to {json_output_path}")
 
+    # Save as Json with all columns
+    json_output_path = os.path.join(args.output_json_dir, 'msmarco_sents_all_columns.json')
+    nq_all_doc.to_json(json_output_path, orient='records', lines=True)
+    print(f"Final merged data saved as JSON to {json_output_path}")
+
     # Save only the gzipped TSV file
     with gzip.open(args.output_merged_file + '.gz', 'wt') as f:
         nq_all_doc.to_csv(f, sep='\t', index=False, header=False)  

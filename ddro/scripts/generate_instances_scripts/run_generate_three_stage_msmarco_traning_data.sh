@@ -4,22 +4,22 @@
 #SBATCH --time=4-00:00:00 # d-h:m:s
 #SBATCH --mem=128gb # memory per GPU 
 #SBATCH -c 32 # number of CPUs
-#SBATCH --output=logs-slurm/other-logs/generate_general_pretrain_stage_msmarco_pq_train_data-%j.out # %j is the job ID
+#SBATCH --output=logs-slurm-summaries/generate_general_pretrain_stage_msmarco_summary_train_data-%j.out # %j is the job ID
 
 # Set up the environment.
 source /home/kmekonn/.bashrc
-conda activate ddro
+conda activate ddro_env
 
 # Change to the base directory where the code and data are located.
 HOME_DIR="/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
 
 # Variables and parameters for the script
-ENCODING="pq"  # 'url' or 'pq' or 'atomic'
+ENCODING="summary"  # 'url' or 'pq' or 'atomic' or 'summary'
 QRELS_PATH="$HOME_DIR/resources/datasets/raw/msmarco-data/msmarco-doctrain-qrels.tsv.gz"
 QUERY_PATH="$HOME_DIR/resources/datasets/raw/msmarco-data/msmarco-doctrain-queries.tsv.gz"
 PRETRAIN_MODEL_PATH="$HOME_DIR/resources/transformer_models/t5-base"  # Fixed to 't5-base' for all experiments             
 FAKE_QUERY_PATH="$HOME_DIR/resources/datasets/processed/msmarco-data/msmarco_pseudo_query_10.txt"
-CUR_DATA="finetune"  # general_pretrain/search_pretrain/finetune
+CUR_DATA="general_pretrain"  # general_pretrain/search_pretrain/finetune
 
 # Run the Python script with the specified arguments
 python data/generate_instances/generate_three_stage_msmarco_train_data.py \

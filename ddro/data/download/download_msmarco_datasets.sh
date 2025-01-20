@@ -15,7 +15,7 @@
 
 # # Download the qrels files
 # echo "Downloading the qrels files"
-# wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-qrels.tsv.gz"
+wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-qrels.tsv.gz"
 # wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docdev-qrels.tsv.gz"
 
 # # Download the lookup files

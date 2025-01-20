@@ -21,6 +21,7 @@ parser.add_argument("--output_path", default="dataset/encoded_docid/t5_pq_top_30
 parser.add_argument("--pretrain_model_path", default="transformer_models/t5-base", type=str, help="Path to pre-trained T5 model")
 parser.add_argument("--input_doc_path", type=str, required=True, help="Path to input document file")
 parser.add_argument("--input_embed_path", type=str, required=True, help="Path to input embedding file for PQ")
+parser.add_argument("--summary_path", default="path/to/msmarco-llama3_summaries.json", type=str, help="Path to pre-generated summaries JSON")
 parser.add_argument("--batch_size", type=int, default=1024, help="Batch size for encoding")
 args = parser.parse_args()
 
@@ -114,6 +115,47 @@ def url_docid(input_path, output_path):
         for docid, code in encoded_docids.items():
             fw.write(f"{docid}\t{','.join(map(str, code))}\n")
 
+# # Method 4: Generate summary-based document IDs
+
+def summary_based_docid(summary_path, output_path, max_docid_len=128):
+    """
+    Generate summary-based document IDs from a JSON file with summaries.
+
+    :param summary_path: Path to the input JSON file containing summaries.
+    :param output_path: Path to save the output file with encoded docids.
+    :param max_docid_len: Maximum token length for encoding summaries.
+    """
+    print("Generating summary-based document IDs...")
+    tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
+
+    # Load summaries from the input file
+    with open(summary_path, "r") as f:
+        summaries = json.load(f)
+
+    # Open the output file for writing
+    with open(output_path, "w") as fw:
+        for summary_item in tqdm(summaries, desc="Encoding summaries"):
+            # Validate the structure of each summary item
+            if 'id' not in summary_item or 'summary' not in summary_item:
+                # print(f"Skipping invalid item: {summary_item}")
+                continue
+
+            # Extract document ID and summary
+            docid = f"[{summary_item['id'].lower()}]"
+            summary = summary_item['summary']
+
+            # Tokenize the summary
+            tokenized_summary = tokenizer(summary, truncation=True, max_length=max_docid_len).input_ids
+
+            # Convert tokenized summary to comma-separated string
+            doc_code = ','.join(map(str, tokenized_summary))
+
+            # Write to the output file
+            fw.write(f"{docid}\t{doc_code}\n")
+
+    print(f"Summary-based document IDs written to {output_path}")
+
+
 
 if __name__ == "__main__":
     if args.encoding == "atomic":
@@ -123,3 +165,7 @@ if __name__ == "__main__":
         product_quantization_docid(args, docid_2_idx, idx_2_docid, doc_embeddings, args.output_path)
     elif args.encoding == "url":
         url_docid(args.input_doc_path, args.output_path)
+    elif args.encoding == "summary":
+        summary_based_docid(args.summary_path, args.output_path)
+    else:
+        raise ValueError("Invalid encoding method. Choose from atomic/pq/url/summary.")

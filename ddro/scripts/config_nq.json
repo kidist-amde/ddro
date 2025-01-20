@@ -5,5 +5,7 @@
     
     "url": {"encoding": "url_title", "add_doc_num": 6144, "max_docid_length": 100, "use_origin_head": "True"},
 
+    "summary": {"encoding": "summary", "add_doc_num": 6144, "max_docid_length": 128, "use_origin_head": "True"},
+
     "doc_num": {"top_300k": 109739, "rand_300k": 109739}
 }

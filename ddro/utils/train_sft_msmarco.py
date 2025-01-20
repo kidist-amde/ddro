@@ -22,21 +22,22 @@ print("start SFT traning...")
 model = "t5_128_10"  # the data for current training
 operation = "training"  # training / pair_training
 max_seq_length = 128
-epoch = 25
+epoch = 10
 dataset="msmarco" # msmarco / nq
 load_ckpt = "True"  # True if load checkpoint, go to load_ckpt_path
 
 
+
 os.system(f"cd {code_dir}/utils && python sft_T5.py \
     --epoch {epoch} \
-    --per_gpu_batch_size  128 \
+    --per_gpu_batch_size  100 \
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-sft-msmarco/{model}_{top_or_rand}_{scale}_{dataset}_{encoding}_ResumedFrom27/ \
-    --log_path {code_dir}/logs-sft-msmarco/{model}.{top_or_rand}.{scale}.{dataset}.{encoding}.log \
+    --save_path {code_dir}/outputs-summaries-msmarco/{model}_{top_or_rand}_{scale}_{dataset}_{encoding}_resumed_FromUltron/ \
+    --log_path {code_dir}/logs-summaries/{model}.{top_or_rand}.{scale}.{dataset}.{encoding}.log \
     --doc_file_path {code_dir}/resources/datasets/processed/msmarco-data/msmarco-docs-sents.{top_or_rand}.{scale}.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
-    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_url_{top_or_rand}.{scale}.txt \
-    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/sft_training_datasets_url \
+    --docid_path {code_dir}/resources/datasets/processed/msmarco-data/encoded_docid/t5_512_{encoding}_{top_or_rand}.{scale}.txt \
+    --train_file_path {code_dir}/resources/datasets/processed/msmarco-data/sft_training_datasets_{encoding} \
     --dataset_script_dir {code_dir}/data/data_scripts \
     --dataset_cache_dir ../negs_tutorial_cache \
     --add_doc_num {add_doc_num} \
@@ -44,7 +45,7 @@ os.system(f"cd {code_dir}/utils && python sft_T5.py \
     --max_docid_length {max_docid_length} \
     --use_origin_head {use_origin_head} \
     --load_ckpt {load_ckpt} \
-    --load_ckpt_path {code_dir}/outputs-sft-msmarco/t5_128_10_top_300k_msmarco_url_title/model_27.pkl \
+    --load_ckpt_path {code_dir}/outputs-summaries-msmarco/t5_128_10_top_300k_summary_pretrain_search/model_final.pkl \
     --output_every_n_step 5000 \
     --save_every_n_epoch 2 \
     --operation {operation}")

@@ -135,6 +135,9 @@ Train your model
 - pq 
 - url
 - atomic 
+- SUMARY 
+    - [docid]    token_id_1,token_id_2,...,token_id_n
+
 4. generate  three-stage training, for SFT
 5. generate triples for DPO
 

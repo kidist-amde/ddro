@@ -22,18 +22,19 @@ print("start SFT traning...")
 model = "t5_128_10"  # the data for current training
 operation = "training"  # training / pair_training
 max_seq_length = 128
-epoch = 50
+epoch = 40
 dataset="nq" # msmarco / nq
-load_ckpt = "True"  # True if load checkpoint, go to load_ckpt_path
+load_ckpt = "False"  # True if load checkpoint, go to load_ckpt_path
+#    --load_ckpt_path {code_dir}/outputs-sft/t5_128_10_top_300k_nq_url_title_30epoch_resumeFrom20/model_final.pkl \
 
 
 os.system(f"cd {code_dir}/utils && python sft_T5.py \
     --epoch {epoch} \
     --per_gpu_batch_size  128 \
     --learning_rate 1e-3 \
-    --save_path {code_dir}/outputs-sft/{model}_{top_or_rand}_{scale}_{dataset}_{encoding}_40epoch/ \
-    --log_path {code_dir}/logs-sft/{model}.{top_or_rand}.{scale}.{dataset}.{encoding}_40epoch.log \
-    --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json \
+    --save_path {code_dir}/outputs-sft-NQ/{model}_{top_or_rand}_{scale}_{dataset}_{encoding}/ \
+    --log_path {code_dir}/logs-sft-NQ/{model}.{top_or_rand}.{scale}.{dataset}.{encoding}.log \
+    --doc_file_path {code_dir}/resources/datasets/processed/nq-data/nq-merged/nq-docs-sents.json \
     --pretrain_model_path {code_dir}/resources/transformer_models/t5-base \
     --docid_path {code_dir}/resources/datasets/processed/nq-data/encoded_docid/t5_512_{encoding}_docids.txt \
     --train_file_path {code_dir}/resources/datasets/processed/nq-data/sft_training_dataset_{encoding} \
@@ -44,7 +45,6 @@ os.system(f"cd {code_dir}/utils && python sft_T5.py \
     --max_docid_length {max_docid_length} \
     --use_origin_head {use_origin_head} \
     --load_ckpt {load_ckpt} \
-    --load_ckpt_path {code_dir}/outputs-sft/t5_128_10_top_300k_nq_url_title_30epoch_resumeFrom20/model_final.pkl \
     --output_every_n_step 5000 \
     --save_every_n_epoch 2 \
     --operation {operation}")

@@ -1,15 +1,15 @@
 #!/bin/sh
-#SBATCH --job-name=EVal_SFT-MS-URL  # Job name
+#SBATCH --job-name=EVal_SFT-MS-summ  # Job name
 #SBATCH --partition=gpu 
-#SBATCH --gres=gpu:nvidia_rtx_a6000:8
+#SBATCH --gres=gpu:nvidia_rtx_a6000:4
 ##SBATCH --gres=gpu:nvidia_l40:8 
 ##SBATCH --gres=gpu:tesla_p40:4
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=4-00:00:00 # d-h:m:s
 #SBATCH --mem=128gb # memory per GPU 
-#SBATCH -c 8 # number of CPUs
-#SBATCH --output=logs-slurm-ultron-msmarco/Eval_SFT-MSMARCO-URL_3stage_5_BEAM-%j.out # Log output with unique job ID
+#SBATCH -c 48 # number of CPUs
+#SBATCH --output=logs-slurm-summaries/Eval_SFT-MSMARCO-SFT_3stage_10_BEAM-%j.out # Log output with unique job ID
 
 
 # Set up the environment.

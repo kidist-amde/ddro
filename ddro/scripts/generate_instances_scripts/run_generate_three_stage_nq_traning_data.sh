@@ -1,24 +1,21 @@
 #!/bin/sh
-#SBATCH --job-name=nq_dataset_processing
-##SBATCH --partition=staging # Accessible partition
-#SBATCH --partition=cbuild
-#SBATCH --ntasks=1          # Number of tasks
-#SBATCH --time=24:00:00      # d-h:m:s
-#SBATCH --mem=64gb         # Memory per job
-#SBATCH -c 1             # Number of CPUs
-#SBATCH --output=logs-slurm/other-logs/T5_url_title_general_pretrain_data_generation-%j.out # %j is the job ID
+#SBATCH --job-name=t5_train_data_gen
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=4-00:00:00 # d-h:m:s
+#SBATCH --mem=128gb # memory per GPU 
+#SBATCH -c 32 # number of CPUs
+#SBATCH --output=logs-slurm-summaries/generate_general_pretrain_stage_NQ_summary_train_data-%j.out # %j is the job ID
 
 
-# source /home/kmekonnen/.bashrc
-source ${HOME}/.bashrc
-conda activate ddro
-cd /gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro
+# Set up the environment.
+source /home/kmekonn/.bashrc
+conda activate ddro_env
 
-# Change to the directory where your script and data are located.
-HOME_DIR="/gpfs/work4/0/prjs1037/dpo-exp/DDRO-Direct-Document-Relevance-Optimization/ddro"
+# Change to the base directory where the code and data are located.
+HOME_DIR="/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro"
 
 # Variables and parameters for the script
-ENCODING="url_title"  # 'url_title' or 'pq' or 'atomic'
+ENCODING="summary"  # 'url_title' or 'pq' or 'atomic' or 'summary'
 MODEL="t5"  # Fixed to 't5' for all experiments
 QRELS_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_msmarco_format/nq_qrels_train.tsv.gz"
 QUERY_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_msmarco_format/nq_queries_train.tsv.gz"
@@ -26,7 +23,7 @@ PRETRAIN_MODEL_PATH="$HOME_DIR/resources/transformer_models/t5-base"  # Fixed to
 MSMARCO_OR_NQ="nq"  # Choose 'nq'
 SAMPLE_FOR_ONE_DOC=1  # Fixed to 1 for all experiments
 DOCID_PATH="$HOME_DIR/resources/datasets/processed/nq-data/encoded_docid/t5_512_${ENCODING}_docids.txt"
-DATA_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq-merged-json/nq-docs-sents.json"
+DATA_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq-merged/nq-docs-sents.json"
 MAX_SEQ_LENGTH=128  # Fixed to 128 for all experiments
 FAKE_QUERY_PATH="$HOME_DIR/resources/datasets/processed/nq-data/nq_pseudo_query_10_3epoch.txt"
 CURRENT_DATA="general_pretrain"  # Set to 'general_pretrain', 'search_pretrain', or 'finetune'

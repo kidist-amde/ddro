@@ -29,4 +29,4 @@ python data/data_preprocessing/NQ_dataset_processing.py \
     --output_merged_file $OUTPUT_MERGED_FILE \
     --output_train_file $OUTPUT_TRAIN_PATH \
     --output_val_file $OUTPUT_DEV_PATH \
-    --output_json_dir "resources/datasets/processed/nq-data/nq-merged-json"
+    --output_json_dir "resources/datasets/processed/nq-data/nq-merged"

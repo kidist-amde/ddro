@@ -191,18 +191,41 @@ def encode_and_write(buffer, tokenizer, model, output_path, device):
 
 # Method 4: Generate summary-based document IDs
 def summary_based_docid(summary_path, output_path, max_docid_len=128):
+    """
+    Generate summary-based document IDs from a JSON file with summaries.
+
+    :param summary_path: Path to the input JSON file containing summaries.
+    :param output_path: Path to save the output file with encoded docids.
+    :param max_docid_len: Maximum token length for encoding summaries.
+    """
     print("Generating summary-based document IDs...")
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
 
+    # Load summaries from the input file
     with open(summary_path, "r") as f:
         summaries = json.load(f)
 
+    # Open the output file for writing
     with open(output_path, "w") as fw:
-        for docid, summary in tqdm(summaries.items(), desc="Encoding summaries"):
-            docid = f"[{docid.lower()}]"
+        for summary_item in tqdm(summaries, desc="Encoding summaries"):
+            # Validate the structure of each summary item
+            if 'id' not in summary_item or 'summary' not in summary_item:
+                # print(f"Skipping invalid item: {summary_item}")
+                continue
+
+            # Extract document ID and summary
+            docid = f"[{summary_item['id'].lower()}]"
+            summary = summary_item['summary']
+
+            # Tokenize the summary
             tokenized_summary = tokenizer(summary, truncation=True, max_length=max_docid_len).input_ids
+
+            # Convert tokenized summary to comma-separated string
             doc_code = ','.join(map(str, tokenized_summary))
+
+            # Write to the output file
             fw.write(f"{docid}\t{doc_code}\n")
+
     print(f"Summary-based document IDs written to {output_path}")
 
 
