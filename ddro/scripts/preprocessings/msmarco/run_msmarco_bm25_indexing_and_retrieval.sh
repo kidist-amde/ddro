@@ -11,7 +11,7 @@
 # Set up the environment.
 source /home/kmekonn/.bashrc
 conda activate pyserini
-cd /ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro
+cd ..
 
 INPUT=resources/datasets/processed/msmarco-data/msmarco-json-sents
 INDEX=resources/datasets/processed/msmarco-data/msmarco-indexs/lucene-index-msmarco-docs

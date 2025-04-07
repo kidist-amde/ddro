@@ -4,7 +4,7 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 from trie_url import Trie
 import IPython
 # Configuration
-model_path = "/ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro/outputs-sft-NQ/dpo/dpo_ckp_url_title_5epoch_lr5e-7_NewTripls/"
+model_path = "./dpo_ckp_url_title_5epoch/"
 docid_path = "resources/ENCODED_DOC_IDs/t5_url_msmarco.txt"
 output_dir = "generated_results"
 num_beams = 10

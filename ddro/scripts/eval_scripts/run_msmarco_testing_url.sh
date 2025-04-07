@@ -20,4 +20,4 @@ nvidia-smi
 
 
 python utils/test_msmarco_t5_url.py \
-                --encoding urlte
+                --encoding url

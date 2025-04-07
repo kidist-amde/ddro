@@ -1,7 +1,7 @@
 #!/bin/sh
 #SBATCH --job-name=compute_msmarco_embeddings
 #SBATCH --partition=gpu 
-#SBATCH --gres=gpu:nvidia_rtx_a6000:6
+#SBATCH --gres=gpu:nvidia_rtx_a6000:1
 ##SBATCH --gres=gpu:nvidia_l40:8
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=3
@@ -13,7 +13,7 @@
 
 source /home/kmekonn/.bashrc
 conda activate ddro
-cd /ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro
+cd ..
 nvidia-smi 
 
 # Set the paths for the input and output files

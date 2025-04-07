@@ -9,7 +9,7 @@
 # Set up the environment
 source /home/kmekonn/.bashrc
 conda activate ddro_env
-cd /ivi/ilps/personal/kmekonn/projects/DDRO-Direct-Document-Relevance-Optimization/ddro
+cd ..
 
 # Set variables
 SUBSET="dev" # Options: "train" or "dev"

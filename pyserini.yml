@@ -194,4 +194,3 @@ dependencies:
       - wasabi==1.1.3
       - weasel==0.4.1
       - wrapt==1.16.0
-prefix: /ivi/ilps/personal/kmekonn/projects/envs/pyserini
