@@ -69,9 +69,9 @@ bash scripts/generate_nq_eval_and_train_data.sh     # Eval/train file generation
 ### ✅ For MS MARCO
 
 ```bash
-bash scripts/sample_top_docs.sh
-bash scripts/generate_msmarco_t5_embeddings.sh
-bash scripts/generate_msmarco_encoded_ids.sh
+bash scripts/preprocess/sample_top_docs.sh
+sbatch scripts/generate_msmarco_t5_embeddings.sh
+sbatch scripts/generate_msmarco_encoded_ids.sh
 ```
 
 ---
@@ -101,8 +101,8 @@ pip install -r pyserini.txt
 
 Run indexing and retrieval:
 ```bash
-bash scripts/run_bm25_retrieval_nq.sh
-bash scripts/run_bm25_retrieval_msmarco.sh
+bash scripts/bm25/run_bm25_retrieval_nq.sh
+bash scripts/bm25/run_bm25_retrieval_msmarco.sh
 ```
 
 ---
@@ -166,6 +166,6 @@ Licensed under the [Apache 2.0 License](LICENSE).
 
 ## Contact
 
-For questions, please open an [issue](https://github.com/your-username/DDRO/issues).
+For questions, please open an [issue](https://github.com/kidist-amde/DDRO-Direct-Document-Relevance-Optimization/issues).
 
 
