@@ -10,7 +10,7 @@ We propose a lightweight and effective optimization framework for generative IR 
 ## 📁 Project Structure
 
 ```bash
-ddro/
+src/
 ├── data/                # Data downloading, preprocessing, and docid instance generation
 ├── pretrain/            # DDRO model training and evaluation logic (incl. DPO)
 ├── scripts/             # Entry-point shell scripts for SFT, DPO, BM25, and preprocessing
@@ -29,7 +29,7 @@ Each subdirectory includes a README where needed.
 
 1. Clone the repo and install dependencies:
    ```bash
-   git clone https://github.com/kidist-amde/DDRO-Direct-Document-Relevance-Optimization.git
+   git clone https://github.com/kidist-amde/ddro.git
    conda env create -f ddro.yml
    conda activate ddro
    ```
