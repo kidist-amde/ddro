@@ -84,10 +84,11 @@ log-SIGNIFICANCETEST/
 logs-summaries/
 outputs-summaries-msmarco/
 summary_id/
-data/exploration/
-data/preprocessing/msmarco/create_msmarco_triples_DL19.py
-data/summarizers/
-data/eval/
+ddro/data/exploration/
+ddro/data/preprocessing/msmarco/create_msmarco_triples_DL19.py
+ddro/data/summarizers/
+ddro/data/eval/
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
