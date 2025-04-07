@@ -1,3 +1,35 @@
+
+## 🔍 TL;DR
+This repo contains code for our SIGIR 2025 paper: **Lightweight and Direct Document Relevance Optimization for Generative IR (DDRO)**. We propose a simple and effective optimization method for generative retrievers that directly aligns document ID generation with document-level relevance using a pairwise ranking objective.
+
+## 📁 Project Structure
+
+```
+ddro/
+├── ddro_data_builder/         # Replaces gen_instance
+│   ├── build_passages.py
+│   ├── build_sampled_terms.py
+│   ├── build_pq_docids.py
+│   └── build_queries.py
+│
+├── ddro_configs/              # Replaces starter_script
+│   ├── config_pretrain.json
+│   ├── config_ddro_finetune.json
+│   └── slurm_templates/
+│
+├── ddro_trainer/              # Contains training & decoding logic
+│   ├── ddro_trainer.py        # Replaces runT5.py
+│   └── trie_utils.py
+│
+├── ddro_pipeline/             # End-to-end runners
+│   └── run_ddro_pipeline.py   # Replaces train_t5_pipeline.py
+│
+├── data/                      # Keep for preprocessing scripts
+├── evaluation/                # Evaluation logic (unchanged)
+├── utils/                     # Tokenization, IDF sampling, etc.
+└── README.md
+```
+
 ### Data Preparation
 
 Download MS MARCO and Natural Questions datasets using the provided shell script.
@@ -19,6 +51,8 @@ And place the dataset in the spcfied folders.
 - MS MARCO: `./resources/dataset/msmarco-data/raw`
 - Natural Questions: `./resources/dataset/nq-data/raw`
 - T5-model: `./resources/transformer_models`
+
+
 
 #### Data preprocessing 
 # NQ Dataset Preparation 
@@ -158,3 +192,23 @@ Credit is due to the authors of these projects for their valuable contributions.
 
 ## Contact
 For any questions or concerns, please contact me via email at **kidistamdie@gmail.com**.
+
+## 📚 Citation
+
+```bibtex
+@inproceedings{kidiy2025ddro,
+  title = {Lightweight and Direct Document Relevance Optimization for Generative IR},
+  author = {Kidist ..., et al.},
+  booktitle = {SIGIR},
+  year = {2025}
+}
+
+📄 License
+This project is licensed under the Apache 2.0 License.
+
+## 📞 Questions?
+Open an issue or contact the author @.
+
+---
+
+Made with ❤️ by Kidist.

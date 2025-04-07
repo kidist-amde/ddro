@@ -33,8 +33,8 @@ resources/
 logs/
 logs-slurm/
 cache/
-log*/     # Ignores all folders starting with "log" (e.g., log, logs, logging)
-output*/  # Ignores all folders starting with "output" (e.g., output, outputs, output_files)
+log*/     
+output*/  
 cache/
 logs-msmarco/
 logs-nq/
@@ -83,6 +83,10 @@ log-SIGNIFICANCETEST/
 logs-summaries/
 outputs-summaries-msmarco/
 summary_id/
+data/exploration/
+data/preprocessing/msmarco/create_msmarco_triples_DL19.py
+data/summarizers/
+data/eval/
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
