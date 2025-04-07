@@ -1,19 +1,15 @@
-# File: t5_docid_trainer.py
 
 import os
 import time
 import torch
-import random
 import argparse
-from collections import defaultdict
 from torch.utils.data import DataLoader
 from transformers import (
-    AdamW, 
-    get_linear_schedule_with_warmup, 
-    T5Tokenizer, 
+    AdamW,
+    get_linear_schedule_with_warmup,
+    T5Tokenizer,
     T5ForConditionalGeneration
 )
-
 from utils import set_seed, load_model
 from trie import Trie
 from evaluate_per_query import evaluator
@@ -51,12 +47,6 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def load_data(file_path):
-    if os.path.isfile(file_path):
-        return [file_path]
-    return [os.path.join(file_path, fn) for fn in os.listdir(file_path)]
-
-
 def load_encoded_docid(docid_path):
     encode_2_docid, encoded_docids = {}, []
     with open(docid_path, "r") as fr:
@@ -80,25 +70,23 @@ def prefix_allowed_tokens_fn_builder(trie, tokenizer):
     return fn
 
 
-def train(args, tokenizer):
-    train_data = load_data(args.train_file_path)
-    model = T5ForPretrain(
-        T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path).resize_token_embeddings(
-            T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path).config.vocab_size + args.add_doc_num
-        ),
-        args
-    )
+def build_model_and_tokenizer(args):
+    tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
+    base_model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
+    base_model.resize_token_embeddings(base_model.config.vocab_size + args.add_doc_num)
+    model = T5ForPretrain(base_model, args)
     if args.load_ckpt == "True":
         model.load_state_dict(load_model(args.load_ckpt_path))
-    model.to("cuda:0")
-    model = torch.nn.DataParallel(model)
+    return model, tokenizer
 
-    dataset = PretrainDataForT5(train_data, args.max_seq_length, args.max_docid_length, tokenizer,
-                                args.dataset_script_dir, args.dataset_cache_dir, args)
-    dataloader = DataLoader(dataset, batch_size=args.per_gpu_batch_size * torch.cuda.device_count(), shuffle=True, num_workers=8)
-    optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=args.learning_rate)
-    total_steps = len(dataloader) * args.epochs
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(args.warmup_ratio * total_steps), num_training_steps=total_steps)
+
+def run_training(args, model, tokenizer):
+    train_dataset = PretrainDataForT5([args.train_file_path], args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args)
+    dataloader = DataLoader(train_dataset, batch_size=args.per_gpu_batch_size, shuffle=True, num_workers=8)
+    model = torch.nn.DataParallel(model).to("cuda")
+
+    optimizer = AdamW(model.parameters(), lr=args.learning_rate)
+    scheduler = get_linear_schedule_with_warmup(optimizer, int(args.warmup_ratio * len(dataloader) * args.epochs), len(dataloader) * args.epochs)
 
     os.makedirs(args.save_path, exist_ok=True)
     logger = open(args.log_path, "a")
@@ -108,58 +96,41 @@ def train(args, tokenizer):
         total_loss = 0
         for step, batch in enumerate(tqdm(dataloader)):
             batch = {k: v.cuda() for k, v in batch.items() if k not in ["query_id", "doc_id"]}
-            loss = model(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["docid_labels"])
-            loss = loss.mean()
+            loss = model(**batch).loss
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
             optimizer.step()
             scheduler.step()
             model.zero_grad()
             total_loss += loss.item()
             if step % args.output_every_n_step == 0:
-                print(f"Step {step}, Loss: {loss.item():.4f}")
-        print(f"Epoch {epoch+1}, Avg Loss: {total_loss/len(dataloader):.4f}")
-        if (epoch+1) % args.save_every_n_epoch == 0:
+                print(f"Epoch {epoch+1}, Step {step}, Loss: {loss.item():.4f}")
+        print(f"Epoch {epoch+1} completed. Avg Loss: {total_loss / len(dataloader):.4f}")
+        if (epoch + 1) % args.save_every_n_epoch == 0:
             torch.save(model.state_dict(), os.path.join(args.save_path, f"model_epoch{epoch+1}.pt"))
     logger.close()
 
 
-def evaluate(args, tokenizer):
-    model = T5ForPretrain(
-        T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path).resize_token_embeddings(
-            T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path).config.vocab_size + args.add_doc_num
-        ),
-        args
-    )
-    model.load_state_dict(load_model(args.save_path))
-    model.to("cuda:0")
+def run_evaluation(args, model, tokenizer):
+    model = model.to("cuda")
     model.eval()
 
     encoded_docids, encode_2_docid = load_encoded_docid(args.docid_path)
     trie = Trie([[0]+docid for docid in encoded_docids])
     prefix_fn = prefix_allowed_tokens_fn_builder(trie, tokenizer)
-    dataset = PretrainDataForT5(load_data(args.test_file_path), args.max_seq_length, args.max_docid_length, tokenizer,
-                                args.dataset_script_dir, args.dataset_cache_dir, args)
-    dataloader = DataLoader(dataset, batch_size=args.per_gpu_batch_size * torch.cuda.device_count(), shuffle=False, num_workers=8)
+
+    test_dataset = PretrainDataForT5([args.test_file_path], args.max_seq_length, args.max_docid_length, tokenizer, args.dataset_script_dir, args.dataset_cache_dir, args)
+    dataloader = DataLoader(test_dataset, batch_size=args.per_gpu_batch_size, shuffle=False, num_workers=8)
 
     truth, prediction = [], []
     for batch in tqdm(dataloader):
         batch = {k: v.cuda() for k, v in batch.items() if k not in ["query_id", "doc_id"]}
-        input_ids = batch["input_ids"]
         labels = batch["docid_labels"]
-        truth.extend([[','.join(map(str, doc[:doc.index(1)]))] for doc in labels.tolist()])
-        outputs = model.module.generate(input_ids, max_length=args.max_docid_length+1, num_beams=args.num_beams,
-                                        num_return_sequences=args.num_beams, prefix_allowed_tokens_fn=prefix_fn)
+        truth.extend([[','.join(str(x) for x in doc if x != 0 and x != 1)] for doc in labels.tolist()])
+        input_ids = batch["input_ids"]
+        outputs = model.generate(input_ids, max_length=args.max_docid_length+1, num_beams=args.num_beams, num_return_sequences=args.num_beams, prefix_allowed_tokens_fn=prefix_fn)
         for i in range(0, len(outputs), args.num_beams):
-            doc_rank = []
-            batch_output = outputs[i:i+args.num_beams].cpu().numpy().tolist()
-            for docid in batch_output:
-                try:
-                    string = ','.join(str(x) for x in docid if x != 0 and x != 1)
-                    doc_rank.append(string)
-                except Exception:
-                    doc_rank.append('')
-            prediction.append(doc_rank)
+            preds = outputs[i:i+args.num_beams].cpu().tolist()
+            prediction.append([','.join(str(x) for x in pred if x not in [0, 1]) for pred in preds])
 
     eval_df = evaluator().evaluate_ranking(truth, prediction)
     print(eval_df.mean())
@@ -169,8 +140,8 @@ def evaluate(args, tokenizer):
 if __name__ == '__main__':
     args = parse_arguments()
     set_seed()
-    tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
+    model, tokenizer = build_model_and_tokenizer(args)
     if args.operation == "training":
-        train(args, tokenizer)
+        run_training(args, model, tokenizer)
     elif args.operation == "testing":
-        evaluate(args, tokenizer)
+        run_evaluation(args, model, tokenizer)
