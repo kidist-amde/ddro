@@ -3,6 +3,8 @@
 This repository contains the official implementation for our SIGIR 2025 paper:  
 **"Lightweight and Direct Document Relevance Optimization for Generative IR (DDRO)"**.
 
+![DDRO Image](src/Images/ddro.png)
+
 We propose a lightweight and effective optimization framework for generative IR that directly aligns document ID generation with document-level relevance using a pairwise ranking objective.
 
 ---
@@ -134,6 +136,28 @@ outputs/
 
 ---
 
+
+## 📂 Important Files and Checkpoints
+
+### Document DocIDs
+The **DocIDs** used in this paper can be downloaded from the following link:
+
+- [Generated DocIDs](https://drive.google.com/drive/folders/15LSgC2j8sS9quSveIJSv_NxaZVDMO0P8?usp=drive_link)
+
+### Generated Pseudo Queries
+
+We follow the **[DocTTTTTQuery](https://github.com/castorini/docTTTTTquery)** approach to generate pseudo queries. The queries used in this paper can be downloaded from the following link:
+
+- [Generated Pseudo Queries](https://drive.google.com/drive/folders/1zRBHJ0Ltw26kdmQ0WsVYrlrcjbMfUKtQ?usp=drive_link)
+
+### Additional Files and Checkpoints
+All the necessary files, including **model checkpoints** and **datasets**, are located in the **`DDRO-Resources`** folder. You can access the full dataset and checkpoints here:
+
+- [ddro-data (Model Checkpoints, Datasets, etc.)](https://drive.google.com/drive/folders/1Qyphxsd51Al5yC3GMHg0lAyI5DbJzGv7?usp=sharing)
+
+
+---
+
 ## 🙏 Acknowledgments
 
 We gratefully acknowledge these open-source projects:
@@ -156,7 +180,7 @@ Licensed under the [Apache 2.0 License](LICENSE).
 ```bibtex
 @inproceedings{kidiy2025ddro,
   title = {Lightweight and Direct Document Relevance Optimization for Generative IR},
-  author = {Author Name(s)},
+  author = {Kidist Amde Mekonnen, Yubao Tang, Maarten de Rijke},
   booktitle = {SIGIR},
   year = {2025}
 }
