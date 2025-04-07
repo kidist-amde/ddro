@@ -3,7 +3,7 @@
 This repository contains the official implementation for our SIGIR 2025 paper:  
 **"Lightweight and Direct Document Relevance Optimization for Generative IR (DDRO)"**.
 
-![DDRO Image](src/arc_images/ddro.png)
+![DDRO Image](src/arc_images/ddro_arc.png)
 
 We propose a lightweight and effective optimization framework for generative IR that directly aligns document ID generation with document-level relevance using a pairwise ranking objective.
 
