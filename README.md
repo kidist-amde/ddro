@@ -178,11 +178,11 @@ Licensed under the [Apache 2.0 License](LICENSE).
 ## 📌 Citation
 
 ```bibtex
-@inproceedings{kidiy2025ddro,
-  title = {Lightweight and Direct Document Relevance Optimization for Generative IR},
-  author = {Kidist Amde Mekonnen, Yubao Tang, Maarten de Rijke},
-  booktitle = {SIGIR},
-  year = {2025}
+@article{mekonnen2025lightweight,
+  title={Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval},
+  author={Mekonnen, Kidist Amde and Tang, Yubao and de Rijke, Maarten},
+  journal={arXiv preprint arXiv:2504.05181},
+  year={2025}
 }
 ```
 
