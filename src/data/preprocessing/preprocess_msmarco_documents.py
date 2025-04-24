@@ -1,4 +1,3 @@
-# filename: preprocess_msmarco_documents.py
 
 import os
 import json

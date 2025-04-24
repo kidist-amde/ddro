@@ -4,9 +4,8 @@ import json
 import argparse
 import collections
 import numpy as np
-from tqdm import tqdm
 from transformers import T5Tokenizer, T5ForConditionalGeneration
-import nanopq
+from tqdm import tqdm
 
 MaskedLmInstance = collections.namedtuple("MaskedLmInstance", ["index", "label"])
 
@@ -64,26 +63,103 @@ def product_quantization_docid(args, docid_2_idx, idx_2_docid, doc_embeddings, o
                 code = ','.join(str(x + vocab_size) for x in new_doc_code)
                 fw.write(f"{docid}\t{code}\n")
 
-def url_docid(input_path, output_path):
-    model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
-    vocab_size = model.config.vocab_size
-    tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
-    max_docid_len = 99
-    encoded_docids = {}
-    with open(input_path) as fin:
-        for doc_index, line in tqdm(enumerate(fin), desc='Processing URL docids'):
-            doc_item = json.loads(line)
-            docid = f"[{doc_item['docid'].lower()}]"
-            url = doc_item['url'].lower().replace("http://", "").replace("https://", "").replace("-", " ")
-            title = doc_item['title'].lower().strip()
-            reversed_url = url.split('/')[::-1]
-            url_content = " ".join(reversed_url[:-1])
-            domain = reversed_url[-1]
-            url = url_content + " " + domain if len(title.split()) <= 2 else title + " " + domain
-            encoded_docids[docid] = tokenizer(url).input_ids[:-1][:max_docid_len] + [1]
-    with open(output_path, "w") as fw:
-        for docid, code in encoded_docids.items():
-            fw.write(f"{docid}\t{','.join(map(str, code))}\n")
+def is_url_semantically_rich(url_segments):
+    """
+    Determines if a URL is semantically rich based on its segments.
+    A URL is considered semantically rich if the majority of its segments
+    are descriptive and not generic or numeric.
+    """
+    generic_terms = {"index", "page", "item", "view", "default", "home"}
+    descriptive_count = 0
+    total_segments = len(url_segments)
+
+    for segment in url_segments:
+        if not segment.isnumeric() and segment not in generic_terms and len(segment) > 2:
+            descriptive_count += 1
+
+    # Consider the URL semantically rich if more than half of the segments are descriptive
+    return descriptive_count > total_segments / 2
+
+def url_docid(input_data, max_docid_len=99, pretrain_model_path="transformer_models/t5-base"):
+    """
+    Generates tokenized document IDs based on reversed URL segments or title + domain.
+    
+    Args:
+        input_data (list): List of JSON objects, each containing `docid`, `url`, and `title`.
+        max_docid_len (int): Maximum length of tokenized IDs.
+        pretrain_model_path (str): Path to the pre-trained T5 model.
+    
+    Returns:
+        dict: Mapping of each `docid` to its final string, source, and token IDs.
+    """
+    tokenizer = T5Tokenizer.from_pretrained(pretrain_model_path)
+    results = {}
+    skipped_docs = []
+
+    for doc_item in tqdm(input_data, desc="Processing URL docids"):
+        try:
+            # Validate and extract fields
+            docid = doc_item.get('docid', '').strip().lower()
+            url = doc_item.get('url', '')
+            title = doc_item.get('title', '')
+
+            # Ensure docid is present
+            if not docid:
+                skipped_docs.append({"reason": "Missing or empty docid", "doc_item": doc_item})
+                continue
+
+            # Ensure url and title are strings
+            url = url.strip().lower() if isinstance(url, str) else ""
+            title = title.strip().lower() if isinstance(title, str) else ""
+
+            # Skip if both url and title are empty
+            if not url and not title:
+                skipped_docs.append({"reason": "Missing both URL and title", "docid": docid})
+                continue
+
+            # Process URL
+            url = url.replace("http://", "").replace("https://", "").replace("-", " ")
+            url_segments = [segment for segment in url.split('/') if segment]  # Remove empty segments
+
+            # Extract domain and reverse URL content
+            domain = url_segments[0] if url_segments else ""
+            reversed_url = " ".join(reversed(url_segments[1:])) if len(url_segments) > 1 else ""
+
+            # Determine final string and source
+            if url_segments and is_url_semantically_rich(url_segments):
+                final_string = f"{reversed_url} {domain}".strip()
+                source = "URL"
+            elif title and domain:
+                final_string = f"{title} {domain}".strip()
+                source = "TITLE"
+            elif title:
+                final_string = title
+                source = "TITLE"
+            else:
+                skipped_docs.append({"reason": "Unable to determine final string", "docid": docid})
+                continue
+
+            # Tokenize the final string
+            tokenized_ids = tokenizer(final_string, truncation=True, max_length=max_docid_len).input_ids
+            tokenized_ids = tokenized_ids[:-1][:max_docid_len] + [1]  # Ensure final token is [1]
+
+            # Store results
+            results[docid] = {
+                "final_string": final_string,
+                "source": source,
+                "token_ids": tokenized_ids
+            }
+
+        except Exception as e:
+            skipped_docs.append({"reason": f"Error: {str(e)}", "docid": doc_item.get('docid', 'unknown')})
+
+    # Log skipped documents
+    if skipped_docs:
+        print("Skipped documents:")
+        for skipped in skipped_docs:
+            print(skipped)
+
+    return results
 
 def summary_based_docid(summary_path, output_path, max_docid_len=128):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)

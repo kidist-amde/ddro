@@ -1,5 +1,3 @@
-# filename: generate_doc_embeddings.py
-
 import os
 import json
 import gzip
