@@ -12,6 +12,8 @@ ddro/data/generate_instances/
 ├── generate_train_data_wrapper.py        # Wrapper for generating & merging training instances
 ├── generate_train_instances.py           # Core script for training data generation
 ├── nq_doc2query_query_generator.py       # Generate pseudo-queries using doc2query-T5
+├── url_title_docid_demo.ipynb            # Demo: Generate doc IDs using URLs and titles
+├── pq_docid_demo.ipynb                   # Demo: Encode and decode doc IDs with Product Quantization
 └── README.md                              # You are here
 ```
 
