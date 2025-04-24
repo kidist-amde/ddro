@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH --job-name=ddro-dpo           # Job name
+#SBATCH --job-name=ddro-ddro           # Job name
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1                  # One GPU (type auto-handled by cluster scheduler)
 #SBATCH --nodes=1
@@ -7,7 +7,7 @@
 #SBATCH --time=5-00:00:00             # Max time (D-HH:MM:SS)
 #SBATCH --mem=64gb                    # Memory per node
 #SBATCH -c 4                          # Number of CPU cores
-#SBATCH --output=logs/ddro_dpo_run-%j.out  # Log output with job ID
+#SBATCH --output=logs/ddro_ddro_run-%j.out  # Log output with job ID
 
 # Activate environment
 source ~/.bashrc
@@ -22,14 +22,14 @@ FILE_PATH=resources/datasets/processed/msmarco-data
 ENCODING=pq  # options: pq | url_title 
 
 # Run training script
-python pretrain/train_dpo_encoder_decoder.py \
+python pretrain/train_ddro_encoder_decoder.py \
   --train_file $FILE_PATH/hard_negatives_from_bm25_top1000_retrieval/msmarco_train_triplets.txt \
   --dev_file $FILE_PATH/hard_negatives_from_bm25_top1000_retrieval/msmarco_dev_triplets.txt \
   --doc_lookup_path resources/datasets/raw/msmarco-data/msmarco-docs-lookup.tsv.gz \
   --train_queries_file resources/datasets/raw/msmarco-data/msmarco-doctrain-queries.tsv.gz \
   --dev_queries_file resources/datasets/raw/msmarco-data/msmarco-docdev-queries.tsv.gz \
   --docid_path $FILE_PATH/encoded_docid/t5_512_pq_top.300k.txt \
-  --output_dir outputs-sft-msmarco/dpo/dpo_ckp_${ENCODING}_5epoch_lr1e-5_BETA_049 \
+  --output_dir outputs-sft-msmarco/ddro/ddro_ckp_${ENCODING}_5epoch_lr1e-5_BETA_049 \
   --pretrain_model_path resources/transformer_models/t5-base \
   --use_origin_head False \
   --max_prompt_length 128 \

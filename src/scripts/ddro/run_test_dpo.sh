@@ -18,7 +18,7 @@ nvidia-smi
 cd ..
 
 
-python test_dpo_run_query_metrics.py --dataset nq --encoding pq --scale top_300k
+python test_ddro_run_query_metrics.py --dataset nq --encoding pq --scale top_300k
 
 
                 

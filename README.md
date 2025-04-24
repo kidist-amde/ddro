@@ -14,8 +14,8 @@ We propose a lightweight and effective optimization framework for generative IR 
 ```bash
 src/
 ├── data/                # Data downloading, preprocessing, and docid instance generation
-├── pretrain/            # DDRO model training and evaluation logic (incl. DPO)
-├── scripts/             # Entry-point shell scripts for SFT, DPO, BM25, and preprocessing
+├── pretrain/            # DDRO model training and evaluation logic (incl. ddro)
+├── scripts/             # Entry-point shell scripts for SFT, ddro, BM25, and preprocessing
 ├── utils/               # Core utilities (tokenization, trie, metrics, trainers)
 ├── ddro.yml             # Conda environment (for training DDRO)
 ├── pyserini.yml         # Conda environment (for BM25 retrieval with Pyserini)
@@ -109,13 +109,13 @@ bash scripts/bm25/run_bm25_retrieval_msmarco.sh
 
 ---
 
-##  DPO Training
+##  DDRO Training
 
-See `scripts/dpo/` for lightweight pairwise fine-tuning using [HF's `DPOTrainer`](https://github.com/huggingface/trl).  
+See `scripts/ddro/` for lightweight pairwise fine-tuning using [HF's `DPOTrainer`](https://github.com/huggingface/trl).  
 Example:
 ```bash
-bash scripts/dpo/run_dpo_training.sh
-bash scripts/dpo/run_test_dpo.sh
+bash scripts/ddro/run_ddro_training.sh
+bash scripts/ddro/run_test_ddro.sh
 ```
 
 ---
