@@ -51,6 +51,9 @@ def atomic_docid(input_path, output_path):
 def product_quantization_docid(args, docid_2_idx, idx_2_docid, doc_embeddings, output_path):
     model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
     vocab_size = model.config.vocab_size
+    # Initialize Product Quantization (PQ)
+    # M = number of subspaces (embedding is split into M chunks)
+    # Ks = number of clusters per subspace
     pq = nanopq.PQ(M=args.sub_space, Ks=args.cluster_num)
     pq.fit(doc_embeddings)
     with open(output_path, "w") as fw:
@@ -59,7 +62,12 @@ def product_quantization_docid(args, docid_2_idx, idx_2_docid, doc_embeddings, o
             X_code = pq.encode(batch_embeddings)
             for idx, doc_code in enumerate(X_code, start=i):
                 docid = idx_2_docid[idx]
+                # Make the code unique across subspaces:
+                # For each subspace i, offset the code index by (i * 256)
+                # This ensures that token IDs from different subspaces won't overlap
                 new_doc_code = [int(x) + i * 256 for i, x in enumerate(doc_code)]
+                # Shift the entire code space above the original vocab to avoid collision
+                # Result: Each PQ code becomes a new "vocabulary token" used in generation
                 code = ','.join(str(x + vocab_size) for x in new_doc_code)
                 fw.write(f"{docid}\t{code}\n")
 
