@@ -1,20 +1,24 @@
 #!/bin/bash
-#SBATCH --job-name=msmarco_sample_docs
-#SBATCH --output=logs-slurm/sample_top_docs-%j.out
-#SBATCH --time=12:00:00
-#SBATCH --mem=64gb
-#SBATCH -c 16
 
-# Description:
-# This script processes the MS MARCO document collection, tokenizes passages,
-# and generates top-k and random sampled subsets for training generative retrievers.
+# Set paths to input files and output directories
+DOC_FILE="resources/datasets/raw/msmarco-docs.tsv.gz"
+QRELS_FILE="resources/datasets/raw/msmarco-doctrain-qrels.tsv.gz"
+OUTPUT_FILE="resources/datasets/processed/msmarco-docs-sents-all.json.gz"
+LOG_FILE="logs/msmarco_preprocessing.log"
 
-# Activate environment
-source ~/.bashrc
-conda activate ddro
+# Ensure the logs directory exists
+mkdir -p "$(dirname "$LOG_FILE")"
 
-# Navigate to project root
-cd "$(dirname "$0")/../.."
+# Activate the Python environment if needed
+# source /path/to/venv/bin/activate
 
-# Run preprocessing
-python ddro/data/preprocessing/preprocess_msmarco_documents.py
+# Run the Python script
+python ./src/data/preprocessing/preprocess_msmarco_documents.py \
+  --doc_file "$DOC_FILE" \
+  --qrels_file "$QRELS_FILE" \
+  --output_file "$OUTPUT_FILE"
+
+# Deactivate the Python environment if activated earlier
+# deactivate
+
+echo "Preprocessing completed. Logs saved to $LOG_FILE."

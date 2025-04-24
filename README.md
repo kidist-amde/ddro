@@ -61,19 +61,19 @@ Each subdirectory includes a README where needed.
 
 Run the full NQ preparation pipeline:
 ```bash
-bash running_scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
-bash running_scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO style
-bash running_scripts/preprocess/compute_nq_t5_embeddings.sh            # T5-based embeddings
-bash running_scripts/preprocess/generate_nq_encoded_ids.sh             # Encode docids (URL, PQ, Atomic)
-bash running_scripts/preprocess/generate_nq_eval_and_train_data.sh     # Eval/train file generation
+bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
+bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO style
+bash scripts/preprocess/compute_nq_t5_embeddings.sh            # T5-based embeddings
+bash scripts/preprocess/generate_nq_encoded_ids.sh             # Encode docids (URL, PQ, Atomic)
+bash scripts/preprocess/generate_nq_eval_and_train_data.sh     # Eval/train file generation
 ```
 
 ### ✅ For MS MARCO
 
 ```bash
-bash running_scripts/preprocess/sample_top_docs.sh
-sbatch running_scripts/preprocess/generate_msmarco_t5_embeddings.sh
-sbatch running_scripts/preprocess/generate_msmarco_encoded_ids.sh
+bash scripts/preprocess/sample_top_docs.sh
+sbatch scripts/preprocess/generate_msmarco_t5_embeddings.sh
+sbatch scripts/preprocess/generate_msmarco_encoded_ids.sh
 ```
 
 ---
