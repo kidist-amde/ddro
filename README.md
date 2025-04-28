@@ -55,7 +55,7 @@ Each subdirectory includes a README where needed.
 
 ---
 
-## 📦 Data Preparation
+## Data Preparation
 
 ### ✅ For Natural Questions
 
@@ -136,25 +136,29 @@ outputs/
 
 ---
 
-
 ## 📂 Important Files and Checkpoints
 
 ### Document DocIDs
-The **DocIDs** used in this paper can be downloaded from the following link:
+The **DocIDs** (PQ and TU) used in this paper are available here:
 
-- [Generated DocIDs](https://drive.google.com/drive/folders/15LSgC2j8sS9quSveIJSv_NxaZVDMO0P8?usp=drive_link)
+- 👉🏽 [ddro-docids on Hugging Face](https://huggingface.co/datasets/kiyam/ddro-docids)
 
 ### Generated Pseudo Queries
+Pseudo queries generated following the **[DocTTTTTQuery](https://github.com/castorini/docTTTTTquery)** approach are available here:
 
-We follow the **[DocTTTTTQuery](https://github.com/castorini/docTTTTTquery)** approach to generate pseudo queries. The queries used in this paper can be downloaded from the following link:
+- 👉🏽 [ddro-pseudo-queries on Hugging Face](https://huggingface.co/datasets/kiyam/ddro-pseudo-queries)
 
-- [Generated Pseudo Queries](https://drive.google.com/drive/folders/1zRBHJ0Ltw26kdmQ0WsVYrlrcjbMfUKtQ?usp=drive_link)
+### Model Checkpoints
+All DDRO model checkpoints are publicly available here:
 
-### Additional Files and Checkpoints
-All the necessary files, including **model checkpoints** and **datasets**, are located in the **`DDRO-Resources`** folder. You can access the full dataset and checkpoints here:
+- 👉🏽 [DDRO-Generative-Document-Retrieval Collection on Hugging Face](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5)
 
-- [ddro-data (Model Checkpoints, Datasets, etc.)](https://drive.google.com/drive/folders/1Qyphxsd51Al5yC3GMHg0lAyI5DbJzGv7?usp=sharing)
+Includes models trained on **MS MARCO** and **Natural Questions** datasets, with both **PQ** and **TU** docid strategies.
 
+### Preprocessed Dataset (Top-300K MS MARCO documents)
+The preprocessed Top-300K MS MARCO document dataset used for training DDRO models is available here:
+
+- 👉🏽 [ddro-msmarco-document-dataset on Hugging Face](https://huggingface.co/datasets/kiyam/ddro-msmarco-doc-dataset-300k)
 
 ---
 
