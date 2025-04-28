@@ -64,7 +64,7 @@ Run the full NQ preparation pipeline:
 bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
 bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO style
 bash scripts/preprocess/compute_nq_t5_embeddings.sh            # T5-based embeddings
-bash scripts/preprocess/generate_nq_encoded_ids.sh             # Encode docids (URL, PQ, Atomic)
+bash scripts/preprocess/generate_nq_encoded_ids.sh             # Encode docids (URL, PQ, Atomic, Summary)
 bash scripts/preprocess/generate_nq_eval_and_train_data.sh     # Eval/train file generation
 ```
 
@@ -135,31 +135,21 @@ outputs/
 - [Natural Questions](https://ai.google.com/research/NaturalQuestions)
 
 ---
+## 📂 Important Files and Checkpoints (Available on Hugging Face 🤗)
 
-## 📂 Important Files and Checkpoints
-
-### Document DocIDs
-The **DocIDs** (PQ and TU) used in this paper are available here:
-
+###  Document DocIDs
 - 👉🏽 [ddro-docids on Hugging Face](https://huggingface.co/datasets/kiyam/ddro-docids)
 
-### Generated Pseudo Queries
-Pseudo queries generated following the **[DocTTTTTQuery](https://github.com/castorini/docTTTTTquery)** approach are available here:
-
+###  Generated Pseudo Queries
 - 👉🏽 [ddro-pseudo-queries on Hugging Face](https://huggingface.co/datasets/kiyam/ddro-pseudo-queries)
 
-### Model Checkpoints
-All DDRO model checkpoints are publicly available here:
-
+###  Model Checkpoints
 - 👉🏽 [DDRO-Generative-Document-Retrieval Collection on Hugging Face](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5)
 
-Includes models trained on **MS MARCO** and **Natural Questions** datasets, with both **PQ** and **TU** docid strategies.
+This collection includes DDRO models trained on **MS MARCO** and **Natural Questions** datasets, across both **PQ** and **TU** docid strategies.
 
-### Preprocessed Dataset (Top-300K MS MARCO documents)
-The preprocessed Top-300K MS MARCO document dataset used for training DDRO models is available here:
-
-- 👉🏽 [ddro-msmarco-document-dataset on Hugging Face](https://huggingface.co/datasets/kiyam/ddro-msmarco-doc-dataset-300k)
-
+###  Preprocessed Dataset (Top-300K MS MARCO documents)
+- 👉🏽 [ddro-msmarco-doc-dataset-300k on Hugging Face](https://huggingface.co/datasets/kiyam/ddro-msmarco-doc-dataset-300k)
 ---
 
 ## 🙏 Acknowledgments
