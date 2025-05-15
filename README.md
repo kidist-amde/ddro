@@ -1,7 +1,8 @@
 # DDRO: Direct Document Relevance Optimization for Generative IR
 
 This repository contains the official implementation for our SIGIR 2025 paper:  
-**"Lightweight and Direct Document Relevance Optimization for Generative IR (DDRO)"**.
+📄 **[Lightweight and Direct Document Relevance Optimization for Generative IR (DDRO)](https://arxiv.org/abs/2504.05181)**  
+
 
 ![DDRO Image](src/arc_images/ddro_arc.png)
 
