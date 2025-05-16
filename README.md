@@ -33,9 +33,10 @@ We propose **DDRO**:
 - Requires **no reinforcement learning or reward modeling**
 
 ---
+<img src="src/arc_images/DDRO.drawio.png" alt="DDRO Image" width="600"/>
 
 
-![DDRO Image](src/arc_images/DDRO.drawio.png)
+
 
 ### 🧠 Learning Objectives in DDRO
 
@@ -46,11 +47,25 @@ We optimize DDRO in two phases:
 #### 📘 Phase 1: Supervised Fine-Tuning (SFT)
 
 Learn to generate the correct **docid** sequence given a query by minimizing the autoregressive token-level cross-entropy loss:
-
+<!-- 
 $$
 \mathcal{L}_{\text{SFT}} = -\sum \log p_\theta(\text{docid}_i \mid \text{docid}_{<i}, q)
-$$
+$$ -->
 
+ - <img src="src/arc_images/loss_ntp.png" alt="DDRO Image" width="300"/>
+
+
+Maximize the likelihood of generating the correct docid given a query:
+
+<!-- $$
+\boxed{
+\max_{\pi} \,\, \mathbb{E}_{(q, \text{docid}) \sim \mathcal{D}} \left[
+\log \pi(\text{docid} \mid q)
+\right]
+}
+$$ -->
+
+ - <img src="src/arc_images/objective_ntp.png" alt="DDRO Image" width="300"/>
 ---
 
 #### 📗 Phase 2: Pairwise Ranking Optimization (DDRO Loss)
@@ -59,7 +74,7 @@ This phase improves the **ranking quality** of generated document identifiers by
 
 📄 *Rafailov et al., 2023 — [Direct Preference Optimization: Your Language Model is Secretly a Reward Model](https://arxiv.org/abs/2305.18290)*
 
-$$
+<!-- $$
 \mathcal{L}_{\text{DDRO}}(\pi_\theta; \pi^{\text{ref}}) = - \mathbb{E}_{(q, \text{docid}^+, \text{docid}^-) \sim \mathcal{D}} 
 \left[
 \log \sigma \left(
@@ -67,7 +82,8 @@ $$
 \beta \log \frac{\pi_\theta(\text{docid}^- \mid q)}{\pi^{\text{ref}}(\text{docid}^- \mid q)}
 \right)
 \right]
-$$
+$$ -->
+ - <img src="src/arc_images/dpo_loss.png" alt="DDRO Image" width="800"/>
 
 ### 📖 Description
 
@@ -79,6 +95,21 @@ This **Direct Document Relevance Optimization (DDRO)** loss guides the model to 
 * $\pi^{\text{ref}}$: A frozen reference model (typically trained with SFT in Phase 1)
 * $\beta$: A temperature-like scaling factor to control sensitivity
 * $\sigma$: Sigmoid function, to map scores to \[0,1] preference space
+
+Encourage the model to rank relevant docid⁺ higher than non-relevant docid⁻  :
+
+
+<!-- $$
+\boxed{
+\max_{\pi} \,\, \mathbb{E}_{(q, \text{docid}^+, \text{docid}^-) \sim \mathcal{D}} \left[
+\log \sigma \left(
+\beta \log \frac{\pi(\text{docid}^+ \mid q)}{\pi_{\text{ref}}(\text{docid}^+ \mid q)} -
+\beta \log \frac{\pi(\text{docid}^- \mid q)}{\pi_{\text{ref}}(\text{docid}^- \mid q)}
+\right)
+\right]
+}
+$$ -->
+ - <img src="src/arc_images/dpo_objective.png" alt="DDRO Image" width="500"/>
 
 ### ✅ Usage
 
