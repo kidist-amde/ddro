@@ -21,6 +21,46 @@ ddro/data/preprocessing/
 ```
 
 ---
+---
+## Data Preparation
+
+### ✅ For Natural Questions
+
+Run the full NQ preparation pipeline:
+```bash
+bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
+bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO style
+bash scripts/preprocess/compute_nq_t5_embeddings.sh            # T5-based embeddings
+bash scripts/preprocess/generate_nq_encoded_ids.sh             # Encode docids (URL, PQ, Atomic, Summary)
+bash scripts/preprocess/generate_nq_eval_and_train_data.sh     # Eval/train file generation
+```
+
+### ✅ For MS MARCO
+
+```bash
+bash scripts/preprocess/sample_top_docs.sh
+sbatch scripts/preprocess/generate_msmarco_t5_embeddings.sh
+sbatch scripts/preprocess/generate_msmarco_encoded_ids.sh
+```
+
+---
+
+## 🔁 Training Pipeline
+
+The DDRO training proceeds in 3 stages. Use:
+
+```bash
+python utils/run_training_pipeline.py --encoding pq
+```
+
+It runs:
+- Stage 1: Pretraining on document contents
+- Stage 2: Pretraining on doc2query outputs
+- Stage 3: Finetuning on BM25 negatives or labeled qrels
+
+---
+
+---
 ##  Example Usage
 
 ### BM25 Negative Sampling
