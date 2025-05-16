@@ -33,7 +33,7 @@ We propose **DDRO**:
 - Requires **no reinforcement learning or reward modeling**
 
 ---
-<img src="src/arc_images/DDRO.drawio.png" alt="DDRO Image" width="600"/>
+<img src="src/arc_images/DDRO.drawio.png" alt="DDRO Image" width="800"/>
 
 
 
