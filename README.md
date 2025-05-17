@@ -203,7 +203,7 @@ resources/
       please check the repo and the README below.
     </span>
     - </h5>
-      See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/dataprep#readme">
+      See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme">
       <code>src/data/dataprep/README.md</code>
     </a>
 
