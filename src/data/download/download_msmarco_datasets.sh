@@ -5,18 +5,18 @@
 
 
 # # Create a directory for raw datasets if it doesn't exist
-# mkdir -p resources/dataset/raw/msmarco-data
-# cd resources/dataset/raw/msmarco-data
+mkdir -p resources/dataset/raw/msmarco-data
+cd resources/dataset/raw/msmarco-data
 
 # # Download the query files
 # echo "Downloading the query files"
-# wget  "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-queries.tsv.gz"
-# wget  "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docdev-queries.tsv.gz"
+wget  "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-queries.tsv.gz"
+wget  "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docdev-queries.tsv.gz"
 
 # # Download the qrels files
 # echo "Downloading the qrels files"
 wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-qrels.tsv.gz"
-# wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docdev-qrels.tsv.gz"
+wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docdev-qrels.tsv.gz"
 
 # # Download the lookup files
 # echo "Downloading the lookup files"

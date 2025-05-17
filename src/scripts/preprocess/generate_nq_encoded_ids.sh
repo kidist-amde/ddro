@@ -1,5 +1,17 @@
 #!/bin/bash
+#SBATCH --job-name=generate_docid_embeddings
+#SBATCH --partition=gpu 
+#SBATCH --gres=gpu:1
+#SBATCH --nodes=1
+#SBATCH --nodelist=......  # Replace with the actual node name
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=1:00:00
+#SBATCH --mem=64gb
+#SBATCH -c 4
+#SBATCH --output=logs-slurm/generate_docid_embeddings-%j.out
 
+
+# Note: Make sure to replace the placeholder paths with actual paths in your environment.
 # Set paths to input files and output directory
 INPUT_DOC_PATH="/path/to/input_document_file.jsonl"
 INPUT_EMBED_PATH="/path/to/input_embedding_file.txt"
@@ -28,7 +40,9 @@ python ./src/data/generate_instances/generate_encoded_docids.py \
   --summary_path "$SUMMARY_PATH" \
   --sub_space "$SUB_SPACE" \
   --cluster_num "$CLUSTER_NUM" \
-  --batch_size "$BATCH_SIZE"
+  --batch_size "$BATCH_SIZE"  
 
-# Deactivate the Python environment if activated earlier
+# Print completion message
+echo "Document ID encoding completed. Output saved to $OUTPUT_PATH."
+# Deactivate the Python environment if needed
 # deactivate

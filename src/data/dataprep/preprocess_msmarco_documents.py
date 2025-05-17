@@ -22,7 +22,7 @@ logging.basicConfig(
 )
 
 # Ensure nltk punkt tokenizer is available
-nltk.data.path.append("/tmp/nltk_data")  # Update for public usage
+nltk.data.path.append("your_path_to/tmp/nltk_data")  
 
 
 def process_document(columns):

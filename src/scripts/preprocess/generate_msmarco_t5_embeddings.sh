@@ -1,6 +1,14 @@
-#!/bin/bash
-
-# Script to run generate_doc_embeddings.py
+#!/bin/sh
+#SBATCH --job-name= generate_doc_embeddings
+#SBATCH --partition=gpu 
+#SBATCH --gres=gpu:1
+#SBATCH --nodes=1
+#SBATCH --nodelist=......  # Replace with the actual node name
+#SBATCH --ntasks-per-node=1
+#SBATCH --time=1:00:00
+#SBATCH --mem=64gb
+#SBATCH -c 4
+#SBATCH --output=logs-slurm/generate_doc_embeddings-%j.out
 
 # Set default values for parameters
 INPUT_PATH="/path/to/input/data"  # Replace with the actual input data path

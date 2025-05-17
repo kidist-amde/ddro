@@ -10,7 +10,7 @@ FAKE_QUERY_PATH="/path/to/fake_query.txt"
 OUTPUT_DIR="/path/to/output_directory"
 
 # Parameters
-ENCODING_METHOD="url"  # Choose from  pq, url, or summary, atomic, 
+ENCODING_METHOD="url"  # Choose from pq, url, or summary, atomic, 
 SCALE="top_300k"       # Choose from top_300k, rand_300k
 CUR_DATA="general_pretrain"  # Choose from general_pretrain, search_pretrain, finetune
 MAX_SEQ_LENGTH=128

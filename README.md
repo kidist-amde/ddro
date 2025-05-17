@@ -33,7 +33,7 @@ We propose **DDRO**:
 - Requires **no reinforcement learning or reward modeling**
 
 ---
-<img src="src/arc_images/DDRO.drawio.png" alt="DDRO Image" width="800"/>
+<img src="src/arc_images/DDRO.drawio.png" alt="DDRO Image" width="600"/>
 
 
 
@@ -83,7 +83,7 @@ This phase improves the **ranking quality** of generated document identifiers by
 \right)
 \right]
 $$ -->
- - <img src="src/arc_images/dpo_loss.png" alt="DDRO Image" width="800"/>
+ - <img src="src/arc_images/dpo_loss.png" alt="DDRO Image" width="600"/>
 
 ### 📖 Description
 
@@ -180,37 +180,42 @@ We use MS MARCO document (top-300k) and Natural Questions (NQ-320k) datasets, an
 📂 For details and download links, refer to: [src/data/download/README.md](https://github.com/kidist-amde/ddro/tree/main/src/data/download#readme)
 
 
-### 3. Expected Directory Structure
-Once downloaded, your resources/ directory should look like this:
-   ```
-   resources/
-   ├── datasets/
-   │   ├── msmarco-data/
-   │   └── nq-data/
-   └── transformer_models/
-       └── t5-base/
-   ```
-
----
-
-## Data Preparation
+## 3. Data Preparation
 DDRO evaluated both on **Natural Questions (NQ)** and **MS MARCO** datasets. 
 
-We provide preprocessing scripts for:
-- Cleaning and formatting datasets
-- Generating dense document embeddings
-- Encoding documents into discrete docid representations (e.g., PQ, URL ids, etc ..)
-- Creating training and evaluation instances
+✅ Sample Top-300K MS MARCO Subset
+Run the following script to preprocess and extract the top-300K most relevant MS MARCO documents based on qrels:
 
+```bash
+bash scripts/preprocess/sample_top_docs.sh
+```
+- 📌 This will generate: resources/datasets/processed/msmarco-docs-sents.top.300k.json
+(sentence-tokenized JSONL format, ranked by relevance frequency)
+---
+### Expected Directory Structure
+Once everything is downloaded and processed, your resources/ directory should look like this:
+
+   ```
+resources/
+├── datasets/
+│   ├── raw/
+│   │   ├── msmarco-data/         # Raw MS MARCO dataset 
+│   │   └── nq-data/              # Raw Natural Questions dataset
+│   └── processed/                # Preprocessed outputs
+└── transformer_models/
+         └── t5-base/                # Local copy of T5 model & tokenizer
+   ```
 ---
 
-### 📚 Natural Questions & MS MARCO
-
-To prepare both datasets for training and evaluation:
-
-➡️ See: [`src/data/preprocessing/README.md`](https://github.com/kidist-amde/ddro/tree/main/src/data/preprocessing#readme)  
-
----
+<h5>
+  <span style="color:pink;">
+    ➡️ To process and sample both datasets, generate document IDs, and prepare training and evaluation instances, 
+    please check the repo and the README below.
+  </span>
+</h5>
+See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/dataprep#readme">
+  <code>ddro/src/data/dataprep/README.md</code>
+</a>
 
 ## 🔁 Training Pipeline
 

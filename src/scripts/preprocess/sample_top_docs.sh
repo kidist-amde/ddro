@@ -6,7 +6,8 @@ QRELS_FILE="resources/datasets/raw/msmarco-doctrain-qrels.tsv.gz"
 OUTPUT_FILE="resources/datasets/processed/msmarco-docs-sents-all.json.gz"
 LOG_FILE="logs/msmarco_preprocessing.log"
 
-# Ensure the logs directory exists
+# Ensure required directories exist
+mkdir -p "$(dirname "$OUTPUT_FILE")"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 # Activate the Python environment if needed

@@ -1,46 +1,76 @@
-# DDRO Dataset Download Scripts
+# ⬇️ DDRO Dataset & Model Download Scripts
 
-This folder contains scripts to download datasets and models required for **Direct Document Relevance Optimization (DDRO)**.
+This folder contains scripts to download all datasets and pretrained models required for training and evaluating **Direct Document Relevance Optimization (DDRO)**.
 
 ---
 
-## 📂 Contents
+## 📁 Contents
+
 ```bash
 download/
-├── download_msmarco_datasets.sh   # Download MS MARCO dataset (docs, qrels, queries)
-├── download_nq_datasets.sh        # Download Natural Questions (NQ) data
-├── download_t5_model.py           # Fetch T5 model/tokenizer from HuggingFace
-└── README.md                      # You're here
+├── download_msmarco_datasets.sh     # Download MS MARCO documents, qrels, queries
+├── download_nq_datasets.sh          # Download Natural Questions (NQ) documents and qrels
+├── download_t5_model.py             # Download T5 model/tokenizer from Hugging Face
+└── README.md                        # You're here!
 ```
 
 ---
 
-##  Dataset Download Scripts
+## 📦 Dataset Download Instructions
 
-###  MS MARCO
-Run this script to download MS MARCO passage/document-level files and qrels:
+### 📘 MS MARCO
+
+Downloads passage-level documents, qrels, and dev queries:
+
 ```bash
 bash download_msmarco_datasets.sh
 ```
 
-###  Natural Questions
-Run this to download preprocessed NQ documents and supervision:
+---
+
+### 📗 Natural Questions (NQ)
+
+Downloads preprocessed NQ documents and relevance annotations:
+
 ```bash
 bash download_nq_datasets.sh
 ```
 
-###  Pretrained T5 Model
-This Python script downloads a specified HuggingFace model + tokenizer locally:
+---
+
+## 🧠 Pretrained T5 Model
+
+Download a t5-base pretrained model and tokenizer locally:
 ```bash
-python download_t5_model.py --model_name_or_path castorini/doc2query-t5-large-msmarco --save_dir models/t5
+python download_t5_model.py
 ```
 
 ---
 
-## ☁️ Google Cloud SDK (Optional)
-Some MS MARCO datasets are hosted on GCS buckets (gs://...). To download via `gsutil`, install the Google Cloud SDK:
+## 📂 Expected Directory Structure
 
-### Installation (Linux Example)
+After downloading, your project structure should include:
+
+```
+resources/
+├── datasets/
+│   └── raw/
+│       ├── msmarco-data/     
+│       └── nq-data/          
+└── transformer_models/
+    └── t5-base/              
+```
+
+> ✅ Make sure scripts point to these exact paths.
+
+---
+
+## ☁️ Optional: Google Cloud SDK for GCS Downloads
+
+Some MS MARCO files are hosted on `gs://` buckets. To use `gsutil`:
+
+### Install Google Cloud SDK (Linux Example)
+
 ```bash
 curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-439.0.0-linux-x86_64.tar.gz
 
@@ -48,20 +78,17 @@ curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-
 tar -xf google-cloud-sdk-439.0.0-linux-x86_64.tar.gz
 ./google-cloud-sdk/install.sh
 
-# Activate
+# Activate and initialize
 source ~/.bashrc  # or ~/.zshrc
-
-# Initialize
 gcloud init
 ```
 
-###  Verify Installation
+### Verify installation:
+
 ```bash
 gcloud version
 gsutil version
 ```
-
-
 
 ---
 
