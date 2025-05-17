@@ -1,49 +1,51 @@
+
+
 # 🧱 DDRO Data Preparation & Instance Generation
 
-This directory contains **unified scripts** for preparing and transforming data for **Direct Document Relevance Optimization (DDRO)**. It includes:
+This directory contains unified scripts for preparing and transforming data for **Direct Document Relevance Optimization (DDRO)**. It covers:
 
-* Raw data preprocessing (MS MARCO, Natural Questions)
-* Dense embedding generation
+* Preprocessing MS MARCO and Natural Questions datasets
+* Generating dense document embeddings
 * DocID encoding (URL, PQ, Atomic)
-* Training & evaluation instance creation
+* Creating training and evaluation instances
 
 ---
 
 ## 📁 Available Scripts
 
-### 📦 Dataset Preprocessing
-```bash
-ddro/dataprepr/
-├── negative_sampling.py                # BM25-based hard negative sampling for MS MARCO or NQ
-├── generate_doc_embeddings.py          # Compute dense GTR-T5 embeddings for documents (MS MARCO, NQ)
-├── sample_msmarco_dataset.py           # Create top/random subsets of MSMARCO based on relevance frequency
-├── convert_tsv_to_json_array.py        # Convert MSMARCO TSV docs to a flat JSON array
-├── convert_nq_to_msmarco_format.py     # Reformat NQ data into MSMARCO-style queries and qrels
-├── process_nq_dataset.py               # Extract and clean fields from raw NQ into structured format
-├── create_nq_triples.py                # Generate BM25-based training triples for NQ
-└── README.md                           # You are here
-```
-
-### 📄 Instance Generation
+### Dataset Preprocessing
 
 ```bash
-src/data/dataprep/
-├── generate_encoded_docids.py            # Encode docids for retrieval
-├── generate_eval_data_wrapper.py         # Entry point for evaluation data
-├── generate_eval_instances.py            # Core script for eval generation
-├── generate_train_data_wrapper.py        # Entry point for training data
-├── generate_train_instances.py           # Core script for training generation
-├── nq_doc2query_query_generator.py       # Generate pseudo queries using doc2query-T5
-├── url_title_docid_demo.ipynb            # Demo: URL+title-based docid encoding
-├── pq_docid_demo.ipynb                   # Demo: Product Quantization (PQ) docid encoding
+dataprep/
+├── negative_sampling.py                # BM25-based hard negative sampling (MS MARCO, NQ)
+├── generate_doc_embeddings.py          # Generate dense GTR-T5 embeddings
+├── sample_msmarco_dataset.py           # Create top/random MS MARCO subsets
+├── convert_tsv_to_json_array.py        # Convert MS MARCO TSV to flat JSON
+├── convert_nq_to_msmarco_format.py     # Convert NQ to MS MARCO-style format
+├── process_nq_dataset.py               # Clean and extract NQ fields
+├── create_nq_triples.py                # Create BM25-based NQ triplets
+└── README.md                           # You're here!
 ```
 
+### Instance Generation
+
+```bash
+dataprep/
+├── generate_encoded_docids.py          # Encode documents into docid formats
+├── generate_eval_data_wrapper.py       # Entry for evaluation data generation
+├── generate_eval_instances.py          # Core script for eval instance creation
+├── generate_train_data_wrapper.py      # Entry for training data generation
+├── generate_train_instances.py         # Core script for training instances
+├── nq_doc2query_query_generator.py     # Generate pseudo queries via doc2query-T5
+├── url_title_docid_demo.ipynb          # URL+title docid encoding demo
+├── pq_docid_demo.ipynb                 # Product Quantization (PQ) docid demo
+```
 
 ---
 
 ## 📊 Data Preparation
 
-DDRO is evaluated on both **MS MARCO** and **Natural Questions (NQ)** datasets.
+DDRO supports both **MS MARCO** and **Natural Questions (NQ)** benchmarks.
 
 ### ✅ MS MARCO: Sample Top-300K Subset
 
@@ -58,19 +60,12 @@ bash scripts/preprocess/sample_top_docs.sh
 
 ### 🔢 DocID Representations
 
-You can download document ID representations for both datasets used in this paper from our 🤗 Hugging Face repo:
-👉🏽 [ddro-docids](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5)
+You can either **generate** docid representations locally or **download** pre-encoded files from 🤗 [Hugging Face](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5):
 
 Place them under:
 
-```
-resources/datasets/processed/msmarco-data/encoded_docid/
-```
-
-But you can also generate them locally. To generate **URL-based docids**, run:
-
 ```bash
-bash ddro/src/scripts/preprocess/generate_msmarco_encoded_ids.sh
+resources/datasets/processed/msmarco-data/encoded_docid/
 ```
 
 Example `url_docid` format:
@@ -82,9 +77,7 @@ Example `url_docid` format:
 
 ---
 
-### 🧠 Generating PQ DocIDs
-
-To generate **PQ-based docids**, you must first compute document embeddings using a `GTR-T5` encoder (e.g., `sentence-transformers/gtr-t5-base`):
+To generate **PQ docids**, first compute document embeddings:
 
 ```bash
 sbatch scripts/preprocess/generate_msmarco_t5_embeddings.sh
@@ -116,40 +109,33 @@ bash scripts/preprocess/generate_nq_encoded_ids.sh    # Generate and save encode
 ```
 
 ---
+### ✏️ Pseudo Query Generation (DocTTTTTQuery)
 
-### ✏️  Pseudo Query Generation
-
-We generate pseudo queries using the [**DocTTTTTQuery**](https://github.com/castorini/docTTTTTquery) framework.
-The model is fine-tuned separately for each dataset (MS MARCO and NQ) to better match their domain.
-
-#### 🛠️ Fine-tuning the Model
-
-To fine-tune the DocTTTTTQuery model on the NQ dataset, run:
+To fine-tune on NQ:
 
 ```bash
 bash ./scripts/run_finetune_docTTTTTquery.sh
 ```
 
-#### 🧾 Query Generation Script
+To generate queries:
 
-Once fine-tuned, use the following script to generate pseudo queries for each document:
-
-```python
+```bash
 python ./src/data/dataprep/doc2query_query_generator.py
 ```
 
-This script will generate 10 queries per document and output them in the expected format.
+**Or download pre-generated queries from Hugging Face:**
+📥 [DDRO HF Collection](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5)
 
-#### 📥 Pre-generated Queries
 
-You can also download pre-generated pseudo queries from our 🤗 [Hugging Face collection](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5) and place them in:
+Save under:
 
-```text
+```bash
 ddro/resources/datasets/processed/msmarco-data/msmarco_pseudo_query_10.txt
 ddro/resources/datasets/processed/nq-data/nq_pseudo_query_10.txt
 ```
 
-#### 🧾 Output Format
+Expected format:
+
 
 Each line should contain a document ID and one of its generated queries, tab-separated:
 
@@ -164,88 +150,81 @@ Each line should contain a document ID and one of its generated queries, tab-sep
 ...
 ```
 
+Your section is already clear and well-structured! Here's a lightly polished version to ensure consistency, flow, and professional tone—just a few minor edits to tighten phrasing, clarify script purposes, and improve formatting:
+
+---
 
 ## 🛠 Training Instance Generation
 
-To train the reference model (**Phase 1: Supervised Fine-Tuning (SFT)**), we generate three types of **supervised signal instances** for next-token prediction training across three stages:
+To train the reference model (**Phase 1: Supervised Fine-Tuning, SFT**), we generate three types of **supervised instances** for next-token prediction across the following stages:
 
 ### 🎯 Training Stages
 
 1. **General Pretraining**
-   Train the model to predict `docid` from **document content**
+   Train on raw document content to predict `docid`:
    → `doc → docid`
 
 2. **Search Pretraining**
-   Train the model to predict `docid` from **pseudo queries**
+   Train on synthetic pseudo queries to predict `docid`:
    → `pseudoquery → docid`
 
 3. **Finetuning**
-   Train the model using **real queries paired with gold documents**
-   → `query → docid` (from QRELs)
+   Train on real queries paired with gold documents from qrels:
+   → `query → docid`
 
-Each stage aligns with a different training signal to gradually improve the model's relevance generation.
+Each stage provides a progressively stronger retrieval signal to guide relevance generation.
 
 ---
 
 ### ⚙️ Script: `generate_train_data_wrapper.py`
 
-This script generate training instances for all three stages by specifying the `--cur_data` flag:
+This script supports all three training stages via the `--cur_data` flag:
 
-| `--cur_data` Option | Input Source         | Description                       |
-| ------------------- | -------------------- | --------------------------------- |
-| `general_pretrain`  | Document contents    | For unsupervised content modeling |
-| `search_pretrain`   | Pseudo queries       | For intermediate search alignment |
-| `finetune`          | Real queries + qrels | For final relevance optimization  |
+| `--cur_data` Value | Input Source         | Purpose                        |
+| ------------------ | -------------------- | ------------------------------ |
+| `general_pretrain` | Document contents    | General language understanding |
+| `search_pretrain`  | Pseudo queries       | Search-aligned supervision     |
+| `finetune`         | Real queries + qrels | Final relevance optimization   |
 
 ---
 
-### 🚀 Generate Instances
+### 🚀 Generating Training + Evaluation Data
 
-Use the following scripts to generate both **training and evaluation** instances for each dataset. These scripts internally call the wrapper and handle all necessary dataset paths and output configurations.
+Use the following entry-point scripts to generate both **training** and **evaluation** instances for MS MARCO and NQ. These scripts internally invoke the wrapper and handle all required paths and configurations.
 
-#### 📘 For **MS MARCO**:
-
-Run the following command to generate data for **both training and evaluation**:
+#### 📘 MS MARCO
 
 ```bash
 bash ./src/scripts/preprocess/generate_msmarco_eval_and_train_data.sh
 ```
 
-#### 📗 For **Natural Questions (NQ)**:
+#### 📗 Natural Questions (NQ)
 
 ```bash
-bash ddro/src/scripts/preprocess/generate_nq_eval_and_train_data.sh
+bash ./src/scripts/preprocess/generate_nq_eval_and_train_data.sh
 ```
 
-> These scripts prepare inputs for all three training stages: `general_pretrain`, `search_pretrain`, and `finetune`.
-> As well as, they generate evaluation data required for testing the model.
+> These scripts automatically generate data for all three stages (`general_pretrain`, `search_pretrain`, and `finetune`) as well as the corresponding evaluation files.
 
 ---
 
+## 🧲 Contrastive Triplets (For Phase 2: DDRO)
 
-### 🧲 Contrastive Data (For phase 2 Training)
+After training the SFT model, we move to **Phase 2: Direct Document Relevance Optimization (DDRO)**, which fine-tunes the model with a **pairwise ranking objective** using contrastive triplets.
 
-After training the SFT model in **Phase 1**, we proceed to **Phase 2: Direct Document Relevance Optimization (DDRO)**, which fine-tunes the model using a **pairwise ranking objective**.
+Each triplet contains:
 
-To train this model, we require **triplets** consisting of:
-
-* a query
-* a positive document ID
-* one or more negative document IDs
-
----
-
-### 📦 Generate Contrastive Triplets
-
-To train the Phase 2 DDRO model using a pairwise ranking objective, you need triplets of:
-
-> **(query, positive doc ID, negative doc ID)**
+* A query
+* A **positive** document ID
+* One or more **negative** document IDs
 
 ---
 
-#### 🔹 For **Natural Questions (NQ)**
+### 📦 Triplet Generation
 
-Run the following script to create contrastive triplets:
+To create these contrastive training triplets:
+
+#### 🔹 Natural Questions (NQ)
 
 ```bash
 python ddro/src/data/dataprep/create_nq_triples.py
@@ -253,19 +232,18 @@ python ddro/src/data/dataprep/create_nq_triples.py
 
 ---
 
-#### 🔹 For **MS MARCO**
+#### 🔹 MS MARCO
 
-You can sample negatives from the **top-100 BM25 retrievals** provided by the official MS MARCO document ranking dataset:
+1. Download the official top-100 BM25 retrievals:
+   📥 [msmarco-doctrain-top100.gz](https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-top100.gz)
 
-📥 [msmarco-doctrain-top100.gz](https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-top100.gz)
-
-Use the following script to generate triplets from the ranking file:
+2. Run the triplet generation script:
 
 ```bash
 python src/data/dataprep/generate_msmarco_triples.py
 ```
 
-Alternatively, you can modify the script to generate triplets from your **own BM25 retrieval outputs**.
+You may also adapt the script to use your **own BM25 ranking outputs**.
 
 ---
 

@@ -1,3 +1,7 @@
+Here’s a cleaner, final version of your sub-README that improves clarity, consistency, and tone while keeping the structure and content intact:
+
+---
+
 # ⬇️ DDRO Dataset & Model Download Scripts
 
 This folder contains scripts to download all datasets and pretrained models required for training and evaluating **Direct Document Relevance Optimization (DDRO)**.
@@ -8,9 +12,9 @@ This folder contains scripts to download all datasets and pretrained models requ
 
 ```bash
 download/
-├── download_msmarco_datasets.sh     # Download MS MARCO documents, qrels, queries
+├── download_msmarco_datasets.sh     # Download MS MARCO documents, qrels, and queries
 ├── download_nq_datasets.sh          # Download Natural Questions (NQ) documents and qrels
-├── download_t5_model.py             # Download T5 model/tokenizer from Hugging Face
+├── download_t5_model.py             # Download the T5-base model and tokenizer
 └── README.md                        # You're here!
 ```
 
@@ -18,9 +22,9 @@ download/
 
 ## 📦 Dataset Download Instructions
 
-### 📘 MS MARCO
+### MS MARCO
 
-Downloads passage-level documents, qrels, and dev queries:
+Downloads passage-level documents, queries, and qrels:
 
 ```bash
 bash download_msmarco_datasets.sh
@@ -28,7 +32,7 @@ bash download_msmarco_datasets.sh
 
 ---
 
-### 📗 Natural Questions (NQ)
+### Natural Questions (NQ)
 
 Downloads preprocessed NQ documents and relevance annotations:
 
@@ -40,7 +44,8 @@ bash download_nq_datasets.sh
 
 ## 🧠 Pretrained T5 Model
 
-Download a t5-base pretrained model and tokenizer locally:
+Downloads the `t5-base` model and tokenizer from Hugging Face:
+
 ```bash
 python download_t5_model.py
 ```
@@ -49,36 +54,37 @@ python download_t5_model.py
 
 ## 📂 Expected Directory Structure
 
-After downloading, your project structure should include:
+After running the scripts, your file structure should look like:
 
-```
+```bash
 resources/
 ├── datasets/
 │   └── raw/
-│       ├── msmarco-data/     
-│       └── nq-data/          
+│       ├── msmarco-data/
+│       └── nq-data/
 └── transformer_models/
-    └── t5-base/              
+    └── t5-base/
 ```
 
-> ✅ Make sure scripts point to these exact paths.
+> ✅ Ensure all paths match the expected structure for downstream scripts to work properly.
 
 ---
 
-## ☁️ Optional: Google Cloud SDK for GCS Downloads
+## ☁️ (Optional) Google Cloud SDK for `gs://` Downloads
 
-Some MS MARCO files are hosted on `gs://` buckets. To use `gsutil`:
+Some MS MARCO files are hosted on Google Cloud Storage. To access them:
 
-### Install Google Cloud SDK (Linux Example)
+### Install Google Cloud SDK (Linux example)
 
 ```bash
 curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-439.0.0-linux-x86_64.tar.gz
-
-# Extract and install
 tar -xf google-cloud-sdk-439.0.0-linux-x86_64.tar.gz
 ./google-cloud-sdk/install.sh
+```
 
-# Activate and initialize
+Then initialize:
+
+```bash
 source ~/.bashrc  # or ~/.zshrc
 gcloud init
 ```

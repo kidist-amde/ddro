@@ -7,19 +7,22 @@
 This repository contains the official implementation of our SIGIR 2025 paper:  
 📄 **[Lightweight and Direct Document Relevance Optimization for Generative IR (DDRO)](https://arxiv.org/abs/2504.05181)**
 
+---
 ## 📑 Table of Contents
 
 - [Motivation](#motivation)
 - [What DDRO Does](#what-ddro-does)
 - [Learning Objectives](#learning-objectives-in-ddro)
 - [Training Pipeline](#training-pipeline)
-- [BM25 Retrieval Setup (via Pyserini)](#bm25-retrieval-setup-via-pyserini)
 - [DDRO Training (Phase 2: Pairwise Optimization)](#ddro-training-phase-2-pairwise-optimization)
-- [Preprocessed Data & Model Checkpoints (Hugging Face 🤗)](#preprocessed-data--model-checkpoints-hugging-face-)
+- [Preprocessed Data & Model Checkpoints](#preprocessed-data--model-checkpoints)
+
 - [Citation](#citation)
 
 
-## 🤖 Motivation
+
+
+## Motivation
 
 **Misalignment in Learning Objectives:**  
 Gen-IR models are typically trained via next-token prediction (cross-entropy loss) over docid tokens.  
@@ -31,7 +34,7 @@ As a result, Gen-IR models are not directly optimized for **learning-to-rank**, 
 
 
 
-## 🎯 What DDRO Does
+## What DDRO Does
 
 In this work, we ask:
 
@@ -49,7 +52,7 @@ We propose **DDRO**:
 ---
 <img src="src/arc_images/DDRO.drawio.png" alt="DDRO training pipeline overview" width="800"/>
 
-### 🧠 Learning Objectives in DDRO
+### Learning Objectives in DDRO
 
 We optimize DDRO in two phases:
 
@@ -227,7 +230,7 @@ resources/
       <code>src/data/dataprep/README.md</code></a>
 
 
-## 🔁 Training Pipeline
+## Training Pipeline
 
 (Phase 1) We first train a **Supervised Fine-Tuning (SFT) model** using **next-token prediction** across three stages:
 
@@ -331,26 +334,12 @@ We evaluate DDRO on two standard retrieval benchmarks:
 - 📘 [MS MARCO Document Ranking](https://microsoft.github.io/msmarco/Datasets.html#document-ranking-dataset)
 - 📗 [Natural Questions (NQ)](https://ai.google.com/research/NaturalQuestions)
 
----
 
-## 📂 Preprocessed Data & Model Checkpoints (Hugging Face 🤗)
+## Preprocessed Data & Model Checkpoints
 
-We release all training resources to support reproducibility:
+All datasets, pseudo queries, docid encodings, and model checkpoints are available here:  
+🔗 [DDRO Generative IR Collection on Hugging Face 🤗](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5)
 
-### 🧾 Document DocID Encodings
-- 👉🏽 [ddro-docids](https://huggingface.co/datasets/kiyam/ddro-docids)  
-  Encoded docid representations (PQ, URL, Atomic, etc.)
-
-### ❓ Pseudo Queries (for Search Pretraining)
-- 👉🏽 [ddro-pseudo-queries](https://huggingface.co/datasets/kiyam/ddro-pseudo-queries)  
-  Synthetic queries generated using DocT5Query.
-
-### 🧠 Model Checkpoints
-- 👉🏽 [DDRO Generative IR Collection](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5)  
-  Includes models trained on MS MARCO and NQ with both PQ and TU encoding strategies.
-
-### 📄 Preprocessed MS MARCO Subset
-- 👉🏽 [Top-300K MS MARCO Corpus](https://huggingface.co/datasets/kiyam/ddro-msmarco-doc-dataset-300k)
 
 ---
 
@@ -371,7 +360,7 @@ This project is licensed under the [Apache 2.0 License](LICENSE).
 
 ---
 
-## 📌 Citation
+## Citation
 
 ```bibtex
 @article{mekonnen2025lightweight,
