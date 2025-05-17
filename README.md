@@ -1,9 +1,24 @@
-# DDRO: Direct Document Relevance Optimization for for Generative Information Retrieval
+# DDRO: Direct Document Relevance Optimization for Generative Information Retrieval
+
+[![Paper](https://img.shields.io/badge/Paper-arXiv%3A2504.05181-b31b1b.svg)](https://arxiv.org/abs/2504.05181)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
+[![HuggingFace](https://img.shields.io/badge/HF-Datasets-blueviolet)](https://huggingface.co/kiyam)
 
 This repository contains the official implementation of our SIGIR 2025 paper:  
 📄 **[Lightweight and Direct Document Relevance Optimization for Generative IR (DDRO)](https://arxiv.org/abs/2504.05181)**
 
----
+## 📑 Table of Contents
+
+
+- [Motivation](#motivation)
+- [What DDRO Does](#what-ddro-does)
+- [Learning Objectives](#learning-objectives-in-ddro)
+- [Training Pipeline](#training-pipeline)
+- [bm25-retrieval-setup-via-pyserini](#bm25-retrieval-setup-via-pyserini)
+- [ddro-training-phase-2-pairwise-optimization](#ddro-training-phase-2-pairwise-optimization)
+- [Preprocessed Data & Model Checkpoints](#preprocessed-data--model-checkpoints-hugging-face)
+- [Citation](#citation)
+
 
 ## 🤖 Motivation
 
@@ -15,7 +30,7 @@ While effective for language modeling, this objective:
 
 As a result, Gen-IR models are not directly optimized for **learning-to-rank**, which is the core requirement in IR systems.
 
----
+
 
 ## 🎯 What DDRO Does
 
@@ -33,7 +48,7 @@ We propose **DDRO**:
 - Requires **no reinforcement learning or reward modeling**
 
 ---
-<img src="src/arc_images/DDRO.drawio.png" alt="DDRO Image" width="800"/>
+<img src="src/arc_images/DDRO.drawio.png" alt="DDRO training pipeline overview" width="800"/>
 
 ### 🧠 Learning Objectives in DDRO
 
@@ -84,7 +99,7 @@ $$ -->
 
 ### 📖 Description
 
-This **Direct Document Relevance Optimization (DDRO)** loss guides the model to **prefer relevant documents (`docid⁺`) over non relevant ones (`docid⁻`)** by comparing how both the current model and a frozen reference model score each document:
+This **Direct Document Relevance Optimization (DDRO)** loss guides the model to **prefer relevant documents (`docid⁺`) over non-relevant ones (`docid⁻`)** by comparing how both the current model and a frozen reference model score each document:
 
 * `docid⁺`: A relevant document for the query `q`
 * `docid⁻`: A non-relevant or less relevant document
@@ -93,7 +108,7 @@ This **Direct Document Relevance Optimization (DDRO)** loss guides the model to 
 * **β**: Temperature-like factor controlling sensitivity.
 * $\sigma$: Sigmoid function, to map scores to \[0,1] preference space
 
-Encourage the model to rank relevant docid⁺ higher than non-relevant docid⁻  :
+Encourage the model to rank relevant docid⁺ higher than non-relevant docid⁻:
 
 <!-- $$
 \boxed{
@@ -147,7 +162,8 @@ src/
 └── requirements.txt     # Additional Python dependencies
 ```
 ### 📌 Important
-  - <h5><span style="color:Yellow;">➡️ Each subdirectory includes a detailed README.md with instructions.</span></h5>
+  <!-- - <h5><span style="color:Yellow;">➡️ Each subdirectory includes a detailed README.md with instructions.</span></h5> -->
+  > 🔎 **Each subdirectory includes a detailed `README.md` with instructions.**
 
 ---
 
@@ -197,7 +213,7 @@ resources/
    ```
 ---
 ### 📌 Important
-  - <h5>
+  <!-- - <h5>
     <span style="color:pink;">
       ➡️ To process and sample both datasets, generate document IDs, and prepare training and evaluation instances, 
       please check the repo and the README below.
@@ -205,7 +221,12 @@ resources/
     - </h5>
       See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme">
       <code>src/data/dataprep/README.md</code>
-    </a>
+    </a> -->
+
+ >  🔎  To process and sample both datasets, generate document IDs, and prepare training and evaluation instances, please check the repo and the README.
+     See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme">
+      <code>src/data/dataprep/README.md</code></a>
+
 
 ## 🔁 Training Pipeline
 
@@ -223,7 +244,7 @@ You can run all stages with a single command:
 bash ddro/src/scripts/sft/launch_SFT_training.sh
 ```
 
-📍 The --encoding flag in the script supports id formats like pq, url.
+📍 The \--encoding flag in the script supports id formats like pq, url.
 
 
 ---
@@ -255,25 +276,28 @@ bash scripts/bm25/run_bm25_retrieval_nq.sh
 bash scripts/bm25/run_bm25_retrieval_msmarco.sh
 ```
 
-📉 Negative Sampling (MS MARCO)
+### 📉 Negative Sampling (MS MARCO)
 
-- For MS MARCO, you can use the top-100 retrieved documents to sample negatives for each positive document:
+You can use the top-100 BM25 retrieved documents to sample negatives for each positive document:
 
 ```bash 
 python src/data/dataprep/generate_msmarco_triples.py
 ```
 
-This script prepares training triples for phase 2 model traning by pairing each positive docs with hard negatives.
+This script prepares training triplets for Phase 2 model training by pairing each positive document with hard negatives.
 
+<!-- - <h5>
+  <span style="color:pink;">
+    ➡️ ➡️ To sample negatives for both datasets for Phase 2 training, check the following README:
+  </span>
+  - </h5>
+    See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme">
+    <code>src/data/dataprep/README.md</code>
+  </a> -->
 
-  - <h5>
-    <span style="color:pink;">
-      ➡️ ➡️ To sample negatives for both datasets for Phase 2 training, check the following README:
-    </span>
-    - </h5>
-      See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme">
-      <code>src/data/dataprep/README.md</code>
-    </a>
+>  🔎 **To sample negatives for both datasets for Phase 2 training, see:**  
+> [`src/data/dataprep/README.md`](https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme)
+
 ---
 
 ### DDRO Training (Phase 2: Pairwise Optimization)
