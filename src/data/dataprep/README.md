@@ -223,4 +223,50 @@ bash ddro/src/scripts/preprocess/generate_nq_eval_and_train_data.sh
 ---
 
 
+### 🧲 Contrastive Data (For phase 2 Training)
+
+After training the SFT model in **Phase 1**, we proceed to **Phase 2: Direct Document Relevance Optimization (DDRO)**, which fine-tunes the model using a **pairwise ranking objective**.
+
+To train this model, we require **triplets** consisting of:
+
+* a query
+* a positive document ID
+* one or more negative document IDs
+
+---
+
+### 📦 Generate Contrastive Triplets
+
+To train the Phase 2 DDRO model using a pairwise ranking objective, you need triplets of:
+
+> **(query, positive doc ID, negative doc ID)**
+
+---
+
+#### 🔹 For **Natural Questions (NQ)**
+
+Run the following script to create contrastive triplets:
+
+```bash
+python ddro/src/data/dataprep/create_nq_triples.py
+```
+
+---
+
+#### 🔹 For **MS MARCO**
+
+You can sample negatives from the **top-100 BM25 retrievals** provided by the official MS MARCO document ranking dataset:
+
+📥 [msmarco-doctrain-top100.gz](https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-top100.gz)
+
+Use the following script to generate triplets from the ranking file:
+
+```bash
+python src/data/dataprep/generate_msmarco_triples.py
+```
+
+Alternatively, you can modify the script to generate triplets from your **own BM25 retrieval outputs**.
+
+---
+
 Maintained with ❤️ by the DDRO authors.

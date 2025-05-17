@@ -204,7 +204,7 @@ resources/
     </span>
     - </h5>
       See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/dataprep#readme">
-      <code>ddro/src/data/dataprep/README.md</code>
+      <code>src/data/dataprep/README.md</code>
     </a>
 
 ## 🔁 Training Pipeline
@@ -254,6 +254,26 @@ Then index and retrieve with:
 bash scripts/bm25/run_bm25_retrieval_nq.sh
 bash scripts/bm25/run_bm25_retrieval_msmarco.sh
 ```
+
+📉 Negative Sampling (MS MARCO)
+
+- For MS MARCO, you can use the top-100 retrieved documents to sample negatives for each positive document:
+
+```bash 
+python src/data/dataprep/generate_msmarco_triples.py
+```
+
+This script prepares training triples for phase 2 model traning by pairing each positive docs with hard negatives.
+
+
+  - <h5>
+    <span style="color:pink;">
+      ➡️ ➡️ To sample negatives for both datasets for Phase 2 training, check the following README:
+    </span>
+    - </h5>
+      See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme">
+      <code>src/data/dataprep/README.md</code>
+    </a>
 ---
 
 ### DDRO Training (Phase 2: Pairwise Optimization)
@@ -285,7 +305,7 @@ outputs/
 
 We evaluate DDRO on two standard retrieval benchmarks:
 
-- 📘 [MS MARCO Document Ranking](https://microsoft.github.io/msmarco/)
+- 📘 [MS MARCO Document Ranking](https://microsoft.github.io/msmarco/Datasets.html#document-ranking-dataset)
 - 📗 [Natural Questions (NQ)](https://ai.google.com/research/NaturalQuestions)
 
 ---
