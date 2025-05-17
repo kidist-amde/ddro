@@ -8,7 +8,7 @@ This repository contains the official implementation of our SIGIR 2025 paper:
 ## 🤖 Motivation
 
 **Misalignment in Learning Objectives:**  
-Gen-IR models are typically trained via next-token prediction (cross-entropy loss) over docids.  
+Gen-IR models are typically trained via next-token prediction (cross-entropy loss) over docid tokens.  
 While effective for language modeling, this objective:
 - 🎯 Optimizes **token-level generation**
 - ❌ Not designed for **document-level ranking**
@@ -33,10 +33,7 @@ We propose **DDRO**:
 - Requires **no reinforcement learning or reward modeling**
 
 ---
-<img src="src/arc_images/DDRO.drawio.png" alt="DDRO Image" width="600"/>
-
-
-
+<img src="src/arc_images/DDRO.drawio.png" alt="DDRO Image" width="800"/>
 
 ### 🧠 Learning Objectives in DDRO
 
@@ -87,17 +84,16 @@ $$ -->
 
 ### 📖 Description
 
-This **Direct Document Relevance Optimization (DDRO)** loss guides the model to **prefer relevant documents (`docid⁺`) over less relevant ones (`docid⁻`)** by comparing how both the current model and a frozen reference model score each document:
+This **Direct Document Relevance Optimization (DDRO)** loss guides the model to **prefer relevant documents (`docid⁺`) over non relevant ones (`docid⁻`)** by comparing how both the current model and a frozen reference model score each document:
 
 * `docid⁺`: A relevant document for the query `q`
 * `docid⁻`: A non-relevant or less relevant document
 * $\pi_\theta$: The current model being optimized
 * $\pi^{\text{ref}}$: A frozen reference model (typically trained with SFT in Phase 1)
-* $\beta$: A temperature-like scaling factor to control sensitivity
+* **β**: Temperature-like factor controlling sensitivity.
 * $\sigma$: Sigmoid function, to map scores to \[0,1] preference space
 
 Encourage the model to rank relevant docid⁺ higher than non-relevant docid⁻  :
-
 
 <!-- $$
 \boxed{
@@ -113,9 +109,7 @@ $$ -->
 
 ### ✅ Usage
 
-This loss is used **after** the SFT phase to **fine-tune the ranking behavior** of the model. Instead of just generating `docid`, the model now **learns to rank `docid⁺` higher than `docid⁻`** in a preference-aligned manner.
-
-
+The DPO loss is used **after** the SFT phase to **fine-tune the ranking behavior** of the model. Instead of just generating `docid`, the model now **learns to rank `docid⁺` higher than `docid⁻`** in a relevance/preference-aligned manner.
 
 ---
 
@@ -127,19 +121,17 @@ This loss is used **after** the SFT phase to **fine-tune the ranking behavior** 
 
 
 ---
----
+
 
 ### 💡 Why DDRO is Different from Standard DPO
 
-While our optimization is inspired by the DPO framework [Rafailov et al., 2023](https://arxiv.org/abs/2305.18290), its adaptation to **Generative Information Retrieval (GenIR)** is **non-trivial**:
+While our optimization is inspired by the DPO framework [Rafailov et al., 2023](https://arxiv.org/abs/2305.18290), its adaptation to **Generative Document Retrieval** is **non-trivial**:
 
 - In contrast to open-ended preference alignment, our task involves **structured docid generation** under **beam decoding constraints**
 - Our model uses an **encoder-decoder** architecture rather than decoder-only
 - The objective is **document-level ranking**, not open-ended preference generation
 
 This required **novel integration** of preference optimization into **retrieval-specific pipelines**, making DDRO uniquely suited for GenIR.
-
-
 
 ## 📁 Project Structure
 
@@ -154,7 +146,8 @@ src/
 ├── README.md            # You're here!
 └── requirements.txt     # Additional Python dependencies
 ```
-<h5><span style="color:Yellow;">➡️ Each subdirectory includes a detailed README.md with instructions.</span></h5>
+### 📌 Important
+  - <h5><span style="color:Yellow;">➡️ Each subdirectory includes a detailed README.md with instructions.</span></h5>
 
 ---
 
@@ -167,10 +160,8 @@ Clone the repo and install dependencies:
    conda env create -f ddro.yml
    conda activate ddro
    ```
-
 ### 2. Download Datasets and Pretrained Model
 We use MS MARCO document (top-300k) and Natural Questions (NQ-320k) datasets, and a pretrained T5 model.
-
 
    ```bash
    bash   ./src/data/download/download_msmarco_datasets.sh
@@ -178,7 +169,6 @@ We use MS MARCO document (top-300k) and Natural Questions (NQ-320k) datasets, an
    python ./src/data/download/download_t5_model.py
    ```
 📂 For details and download links, refer to: [src/data/download/README.md](https://github.com/kidist-amde/ddro/tree/main/src/data/download#readme)
-
 
 ## 3. Data Preparation
 DDRO evaluated both on **Natural Questions (NQ)** and **MS MARCO** datasets. 
@@ -206,16 +196,16 @@ resources/
          └── t5-base/                # Local copy of T5 model & tokenizer
    ```
 ---
-
-<h5>
-  <span style="color:pink;">
-    ➡️ To process and sample both datasets, generate document IDs, and prepare training and evaluation instances, 
-    please check the repo and the README below.
-  </span>
-</h5>
-See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/dataprep#readme">
-  <code>ddro/src/data/dataprep/README.md</code>
-</a>
+### 📌 Important
+  - <h5>
+    <span style="color:pink;">
+      ➡️ To process and sample both datasets, generate document IDs, and prepare training and evaluation instances, 
+      please check the repo and the README below.
+    </span>
+    - </h5>
+      See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/dataprep#readme">
+      <code>ddro/src/data/dataprep/README.md</code>
+    </a>
 
 ## 🔁 Training Pipeline
 
@@ -227,31 +217,29 @@ See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/dataprep#readme"
 
 This results in a **seed model** trained to autoregressively generate document identifiers.
 
-
 You can run all stages with a single command:
 
 ```bash
-python utils/run_training_pipeline.py --encoding pq
+bash ddro/src/scripts/sft/launch_SFT_training.sh
 ```
-📍 The --encoding flag supports formats like pq, url, atomic, summary.
 
-➡️ For detailed instructions, configuration options, and individual stage execution: See [pretrain/README.md](https://github.com/kidist-amde/ddro/blob/main/src/pretrain/README.md)
+📍 The --encoding flag in the script supports id formats like pq, url.
+
 
 ---
 
-## 🔍 BM25 Retrieval Setup (via Pyserini)
+#### 🔍 BM25 Retrieval Setup (via Pyserini)
 
 We use BM25 for two key purposes in DDRO:
 
 1. **Sparse Baseline Comparison**  
-   BM25 serves as a strong term-based baseline in our experiments, allowing comparison against dense and generative retrievers.
 
 2. **Negative Sampling for Training**  
-   BM25 results are used to sample hard negatives for training contrastive and pairwise objectives.
+ BM25 results are used to sample hard negatives for training contrastive and pairwise objectives.
 
 ---
 
-### ⚙️ Setup Instructions
+##### ⚙️ Setup Instructions
 
 To run BM25 retrieval using Pyserini:
 
@@ -266,10 +254,9 @@ Then index and retrieve with:
 bash scripts/bm25/run_bm25_retrieval_nq.sh
 bash scripts/bm25/run_bm25_retrieval_msmarco.sh
 ```
-
 ---
 
-## DDRO Training (Phase 2: Pairwise Optimization)
+### DDRO Training (Phase 2: Pairwise Optimization)
 
 After training the SFT model (Phase 1), we apply **Phase 2: Direct Document Relevance Optimization**, which fine-tunes the model using a **pairwise ranking objective**.
 
@@ -277,14 +264,11 @@ This stage optimizes the model to **prefer relevant documents over non-relevant 
 
 We implement this using [Hugging Face’s `DPOTrainer`](https://github.com/huggingface/trl), adapted for document ID generation.
 
-➡️ Scripts are available in: [`scripts/ddro/`](./src/scripts/ddro/)
-
 Run training and evaluation:
 
 ```bash
 bash scripts/ddro/run_ddro_training.sh
 bash scripts/ddro/run_test_ddro.sh
-
 ```
 
 ---
@@ -295,9 +279,6 @@ bash scripts/ddro/run_test_ddro.sh
 logs/
 outputs/
 ```
-###### ➡️ For configuration options and example training pairs, see: pretrain/train_ddro_encoder_decoder.py
----
-
 ---
 
 ## 📚 Datasets Used
