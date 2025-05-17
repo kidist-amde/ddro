@@ -9,14 +9,13 @@ This repository contains the official implementation of our SIGIR 2025 paper:
 
 ## 📑 Table of Contents
 
-
 - [Motivation](#motivation)
 - [What DDRO Does](#what-ddro-does)
 - [Learning Objectives](#learning-objectives-in-ddro)
 - [Training Pipeline](#training-pipeline)
-- [bm25-retrieval-setup-via-pyserini](#bm25-retrieval-setup-via-pyserini)
-- [ddro-training-phase-2-pairwise-optimization](#ddro-training-phase-2-pairwise-optimization)
-- [Preprocessed Data & Model Checkpoints](#preprocessed-data--model-checkpoints-hugging-face)
+- [BM25 Retrieval Setup (via Pyserini)](#bm25-retrieval-setup-via-pyserini)
+- [DDRO Training (Phase 2: Pairwise Optimization)](#ddro-training-phase-2-pairwise-optimization)
+- [Preprocessed Data & Model Checkpoints (Hugging Face 🤗)](#preprocessed-data--model-checkpoints-hugging-face-)
 - [Citation](#citation)
 
 
