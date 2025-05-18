@@ -100,6 +100,11 @@ To prepare NQ data for training and evaluation, run:
 bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
 bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO-style format
 ```
+First, convert the original NQ data to match the MS MARCO query-passage format:
+
+```bash
+bash src/scripts/preprocess/convert_nq_to_msmarco_format.sh
+```
 
 Then generate the document IDs and training instances:
 
