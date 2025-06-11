@@ -1,7 +1,9 @@
 import pandas as pd
 from scipy.stats import ttest_rel, wilcoxon
 
-def load_metrics(file_path):
+# def load_metrics(file_path):
+def load_metrics(file_path) -> pd.DataFrame:
+
     """
     Load metrics from a CSV file.
     Each row should correspond to a query, and columns contain the metrics.
