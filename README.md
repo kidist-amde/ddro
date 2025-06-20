@@ -6,7 +6,7 @@
 
 This repository contains the official implementation of our SIGIR 2025 paper:  
 📄 **[Lightweight and Direct Document Relevance Optimization for Generative IR (DDRO)](https://arxiv.org/abs/2504.05181)**
-
+ -  Optimizing Generative Retrieval with Ranking-Aligned Objectives 
 ---
 ## 📑 Table of Contents
 
