@@ -1,25 +1,33 @@
 #!/bin/bash
+#SBATCH --job-name=sample_top_docs
+#SBATCH --time=1-00:00:00
+#SBATCH --mem=64gb
+#SBATCH -c 48
+#SBATCH --output=logs-slurm/sample_top_ms_docs-%j.out
 
-# Set paths to input files and output directories
-DOC_FILE="resources/datasets/raw/msmarco-docs.tsv.gz"
-QRELS_FILE="resources/datasets/raw/msmarco-doctrain-qrels.tsv.gz"
+# Paths to input files and output locations
+DOC_FILE="resources/datasets/raw/msmarco-data/msmarco-docs.tsv.gz"
+QRELS_FILE="resources/datasets/raw/msmarco-data/msmarco-doctrain-qrels.tsv.gz"
 OUTPUT_FILE="resources/datasets/processed/msmarco-docs-sents-all.json.gz"
+TOP_OUTPUT_FILE="resources/datasets/processed/msmarco-docs-sents.top.300k.json.gz"
 LOG_FILE="logs/msmarco_preprocessing.log"
 
-# Ensure required directories exist
+# Ensure output dirs exist
 mkdir -p "$(dirname "$OUTPUT_FILE")"
+mkdir -p "$(dirname "$TOP_OUTPUT_FILE")"
 mkdir -p "$(dirname "$LOG_FILE")"
 
-# Activate the Python environment if needed
-# source /path/to/venv/bin/activate
-
-# Run the Python script
-python ./src/data/preprocessing/preprocess_msmarco_documents.py \
+# Run Python preprocessing
+python src/data/data_prep/preprocess_msmarco_documents.py \
   --doc_file "$DOC_FILE" \
   --qrels_file "$QRELS_FILE" \
-  --output_file "$OUTPUT_FILE"
+  --output_file "$OUTPUT_FILE" \
+  --top_output_file "$TOP_OUTPUT_FILE" \
+  --log_file "$LOG_FILE"
 
-# Deactivate the Python environment if activated earlier
-# deactivate
-
-echo "Preprocessing completed. Logs saved to $LOG_FILE."
+# Only show this if script succeeded
+if [ $? -eq 0 ]; then
+  echo "Preprocessing completed. Log saved to $LOG_FILE."
+else
+  echo "Preprocessing failed. Check SLURM log for errors."
+fi

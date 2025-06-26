@@ -13,6 +13,7 @@ This repository contains the official implementation of our SIGIR 2025 paper:
 - [Motivation](#motivation)
 - [What DDRO Does](#what-ddro-does)
 - [Learning Objectives](#learning-objectives-in-ddro)
+- [🛠️ Setup & Dependencies - Steps to Reproduce](#1-install-environment)
 - [Training Pipeline](#training-pipeline)
 - [DDRO Training (Phase 2: Pairwise Optimization)](#ddro-training-phase-2-pairwise-optimization)
 - [Preprocessed Data & Model Checkpoints](#preprocessed-data--model-checkpoints)
@@ -169,7 +170,7 @@ src/
 
 ---
 
-## 🛠️ Setup & Dependencies
+## Setup & Dependencies
 ### 1. Install Environment
 
 Clone the repo and install dependencies:

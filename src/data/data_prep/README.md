@@ -1,5 +1,3 @@
-
-
 # 🧱 DDRO Data Preparation & Instance Generation
 
 This directory contains unified scripts for preparing and transforming data for **Direct Document Relevance Optimization (DDRO)**. It covers:
@@ -50,7 +48,7 @@ DDRO supports both **MS MARCO** and **Natural Questions (NQ)** benchmarks.
 ### ✅ MS MARCO: Sample Top-300K Subset
 
 ```bash
-bash scripts/preprocess/sample_top_docs.sh
+sbatch src/scripts/preprocess/sample_top_docs.sh
 ```
 
 📌 Generates: `resources/datasets/processed/msmarco-docs-sents.top.300k.json`
