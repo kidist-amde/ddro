@@ -17,7 +17,7 @@ This directory contains unified scripts for preparing and transforming data for 
 dataprep/
 ├── negative_sampling.py                # BM25-based hard negative sampling (MS MARCO, NQ)
 ├── generate_doc_embeddings.py          # Generate dense GTR-T5 embeddings
-├── sample_msmarco_dataset.py           # Create top/random MS MARCO subsets
+├── sample_top300k_msmarco_documents.py         # Create top/random MS MARCO subsets
 ├── convert_tsv_to_json_array.py        # Convert MS MARCO TSV to flat JSON
 ├── convert_nq_to_msmarco_format.py     # Convert NQ to MS MARCO-style format
 ├── process_nq_dataset.py               # Clean and extract NQ fields

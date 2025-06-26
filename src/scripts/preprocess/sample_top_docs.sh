@@ -8,7 +8,6 @@
 # Paths to input files and output locations
 DOC_FILE="resources/datasets/raw/msmarco-data/msmarco-docs.tsv.gz"
 QRELS_FILE="resources/datasets/raw/msmarco-data/msmarco-doctrain-qrels.tsv.gz"
-OUTPUT_FILE="resources/datasets/processed/msmarco-docs-sents-all.json.gz"
 TOP_OUTPUT_FILE="resources/datasets/processed/msmarco-docs-sents.top.300k.json.gz"
 LOG_FILE="logs/msmarco_preprocessing.log"
 
@@ -18,10 +17,9 @@ mkdir -p "$(dirname "$TOP_OUTPUT_FILE")"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 # Run Python preprocessing
-python src/data/data_prep/preprocess_msmarco_documents.py \
+python src/data/data_prep/sample_top300k_msmarco_documents.py \
   --doc_file "$DOC_FILE" \
   --qrels_file "$QRELS_FILE" \
-  --output_file "$OUTPUT_FILE" \
   --top_output_file "$TOP_OUTPUT_FILE" \
   --log_file "$LOG_FILE"
 
