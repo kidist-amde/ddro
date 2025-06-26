@@ -28,7 +28,8 @@ args = parser.parse_args()
 def load_doc_vec(input_path):
     docid_2_idx, idx_2_docid = {}, {}
     doc_embeddings = []
-    with open(input_path, "r") as fr:
+    open_func = gzip.open if input_path.endswith('.gz') else open
+    with open_func(input_path, 'rt', encoding='utf-8') as fr:
         for line in tqdm(fr, desc="Loading document vectors"):
             did, demb = line.strip().split('\t')
             d_embedding = [float(x) for x in demb.split(',')]
@@ -36,6 +37,7 @@ def load_doc_vec(input_path):
             idx_2_docid[docid_2_idx[did]] = did
             doc_embeddings.append(d_embedding)
     return docid_2_idx, idx_2_docid, np.array(doc_embeddings, dtype=np.float32)
+
 
 def atomic_docid(input_path, output_path):
     model = T5ForConditionalGeneration.from_pretrained(args.pretrain_model_path)
@@ -57,6 +59,7 @@ def product_quantization_docid(args, docid_2_idx, idx_2_docid, doc_embeddings, o
     vocab_size = model.config.vocab_size
     pq = nanopq.PQ(M=args.sub_space, Ks=args.cluster_num)
     pq.fit(doc_embeddings)
+    # pq.fit(doc_embeddings, iter=50, minit='++')
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as fw:
         for i in range(0, len(doc_embeddings), args.batch_size):

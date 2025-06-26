@@ -3,7 +3,7 @@
 #SBATCH --time=1-00:00:00
 #SBATCH --mem=256gb
 #SBATCH -c 48
-#SBATCH --output=logs-slurm/generate_MSDOC_encoded_ids-%j.out
+#SBATCH --output=logs-slurm/generate_MSDOC_pq_encoded_ids-%j.out
 
 
 source /home/kmekonn/.bashrc
