@@ -17,6 +17,12 @@ mkdir -p "$(dirname "$TOP_OUTPUT_FILE")"
 mkdir -p "$(dirname "$LOG_FILE")"
 
 # Run Python preprocessing
+
+echo "Starting preprocessing of MS MARCO documents..."
+echo "Input document file: $DOC_FILE"
+echo "Input QRELs file: $QRELS_FILE"
+echo "Output file for top documents: $TOP_OUTPUT_FILE"
+
 python src/data/data_prep/sample_top300k_msmarco_documents.py \
   --doc_file "$DOC_FILE" \
   --qrels_file "$QRELS_FILE" \

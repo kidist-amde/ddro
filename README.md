@@ -200,7 +200,7 @@ Run the following script to preprocess and extract the top-300K most relevant MS
 ```bash
 bash scripts/preprocess/sample_top_docs.sh
 ```
-- 📌 This will generate: resources/datasets/processed/msmarco-docs-sents.top.300k.json
+- 📌 This will generate: resources/datasets/processed/msmarco-docs-sents.top.300k.json.gz
 (sentence-tokenized JSONL format, ranked by relevance frequency)
 ---
 ### Expected Directory Structure

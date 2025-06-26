@@ -51,7 +51,7 @@ DDRO supports both **MS MARCO** and **Natural Questions (NQ)** benchmarks.
 sbatch src/scripts/preprocess/sample_top_docs.sh
 ```
 
-📌 Generates: `resources/datasets/processed/msmarco-docs-sents.top.300k.json`
+📌 Generates: `resources/datasets/processed/msmarco-docs-sents.top.300k.json.gz`
 (JSONL format, sentence-tokenized, ranked by qrels frequency)
 
 ---
