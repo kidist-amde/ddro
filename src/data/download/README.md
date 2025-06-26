@@ -1,7 +1,3 @@
-Here’s a cleaner, final version of your sub-README that improves clarity, consistency, and tone while keeping the structure and content intact:
-
----
-
 # ⬇️ DDRO Dataset & Model Download Scripts
 
 This folder contains scripts to download all datasets and pretrained models required for training and evaluating **Direct Document Relevance Optimization (DDRO)**.
@@ -70,32 +66,48 @@ resources/
 
 ---
 
-## ☁️ (Optional) Google Cloud SDK for `gs://` Downloads
+## ☁️ (Prerequisite) Google Cloud SDK for `gs://` Downloads
 
-Some MS MARCO files are hosted on Google Cloud Storage. To access them:
+To download the Natural Questions (NQ) dataset, you need to have the [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed and gsutil available in your environment.
+
 
 ### Install Google Cloud SDK (Linux example)
+One-time setup (if not already installed):
 
 ```bash
-curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-439.0.0-linux-x86_64.tar.gz
-tar -xf google-cloud-sdk-439.0.0-linux-x86_64.tar.gz
+# Download and install the SDK
+curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-460.0.0-linux-x86_64.tar.gz
+tar -xvzf google-cloud-sdk-460.0.0-linux-x86_64.tar.gz
 ./google-cloud-sdk/install.sh
 ```
 
-Then initialize:
+> 📌 When prompted, allow the installer to update your `.bashrc` or `.zshrc`.
+
+### 🔄 Initialize and authenticate
 
 ```bash
+# Reload your shell and initialize
+
 source ~/.bashrc  # or ~/.zshrc
 gcloud init
 ```
 
-### Verify installation:
+> 📌 When prompted during gcloud init, you can select any existing project (no billing required for public downloads).
+
+### Verify installation
 
 ```bash
-gcloud version
-gsutil version
+gcloud --version
+gsutil --version
+```
+
+You can now run:
+
+```bash
+bash ./src/data/download/download_nq_datasets.sh
 ```
 
 ---
 
-Maintained with ❤️ by the DDRO authors.
+© 2025 Kidist Amde Mekonnen Made with ❤️ at IRLab, University of Amsterdam.
+

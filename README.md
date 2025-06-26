@@ -181,6 +181,8 @@ Clone the repo and install dependencies:
 ### 2. Download Datasets and Pretrained Model
 We use MS MARCO document (top-300k) and Natural Questions (NQ-320k) datasets, and a pretrained T5 model.
 
+To download them, run the following commands from the project root (ddro/):
+
    ```bash
    bash   ./src/data/download/download_msmarco_datasets.sh
    bash   ./src/data/download/download_nq_datasets.sh
