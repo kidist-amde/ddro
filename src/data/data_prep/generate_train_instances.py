@@ -27,6 +27,16 @@ parser.add_argument("--current_data", default=None, type=str)
 
 args = parser.parse_args()
 
+
+def smart_open(path, mode='r', encoding='utf-8'):
+    if path.endswith('.gz'):
+        if 'b' not in mode:
+            mode = mode.replace('r', 'rt').replace('w', 'wt')
+            return gzip.open(path, mode, encoding=encoding)
+        return gzip.open(path, mode)
+    return open(path, mode, encoding=encoding)
+
+
 def map_tokens_to_ids(tokens, token_to_id):
     return [token_to_id.get(t, token_to_id['<unk>']) for t in tokens]
 
@@ -45,7 +55,7 @@ def extend_tokenizer_with_docids(doc_file_path):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
     vocab = tokenizer.get_vocab()
     new_tokens = []
-    with open(doc_file_path) as fin:
+    with smart_open(doc_file_path) as fin:
         for line in tqdm(fin, desc='Reading documents'):
             docid = json.loads(line)['docid'].lower()
             new_tokens.append(f"[{docid}]")
@@ -64,7 +74,7 @@ def load_encoded_docids(docid_path, all_docid=None, token_to_id=None):
         for doc_id in all_docid:
             encoded_docid[doc_id] = str(token_to_id[doc_id])
     else:
-        with open(docid_path, "r") as fr:
+        with smart_open(docid_path) as fr:
             for line in fr:
                 docid, encode = line.strip().split("\t")
                 encoded_docid[f"[{docid.lower().strip('[]')}]"] = encode
@@ -75,7 +85,7 @@ def compute_term_idf(doc_file_path):
     vocab = tokenizer.get_vocab()
     doc_count = 0
     idf_dict = defaultdict(int)
-    with open(doc_file_path) as fin:
+    with smart_open(doc_file_path) as fin:
         for line in tqdm(fin, desc='Building IDF dict'):
             doc_count += 1
             doc_item = json.loads(line)
@@ -88,7 +98,7 @@ def compute_term_idf(doc_file_path):
 def create_passage_to_docid_samples(id_to_token, token_to_id, all_docid, encoded_docid):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
     sample_count = 0
-    with open(args.output_path, "w") as fw, open(args.data_path) as fin:
+    with smart_open(args.output_path, "w") as fw, smart_open(args.data_path) as fin:
         for line in tqdm(fin, desc='Generating passage instances'):
             doc_item = json.loads(line)
             docid = f"[{doc_item['docid'].lower()}]"

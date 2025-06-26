@@ -9,37 +9,76 @@ This directory contains unified scripts for preparing and transforming data for 
 
 ---
 
-## 📁 Available Scripts
 
-### Dataset Preprocessing
+## 📁 Available Scripts — `src/data/data_prep/`
 
-```bash
-dataprep/
-├── negative_sampling.py                # BM25-based hard negative sampling (MS MARCO, NQ)
-├── generate_doc_embeddings.py          # Generate dense GTR-T5 embeddings
-├── sample_top300k_msmarco_documents.py         # Create top/random MS MARCO subsets
-├── convert_tsv_to_json_array.py        # Convert MS MARCO TSV to flat JSON
-├── convert_nq_to_msmarco_format.py     # Convert NQ to MS MARCO-style format
-├── process_nq_dataset.py               # Clean and extract NQ fields
-├── create_nq_triples.py                # Create BM25-based NQ triplets
-└── README.md                           # You're here!
-```
+This folder contains all core scripts for preprocessing datasets, generating document embeddings, encoding docids, and preparing training/evaluation instances for DDRO.
 
-### Instance Generation
+---
+
+### 🧼 Dataset Preprocessing
+
+Scripts for transforming and sampling datasets:
 
 ```bash
-dataprep/
-├── generate_encoded_docids.py          # Encode documents into docid formats
-├── generate_eval_data_wrapper.py       # Entry for evaluation data generation
-├── generate_eval_instances.py          # Core script for eval instance creation
-├── generate_train_data_wrapper.py      # Entry for training data generation
-├── generate_train_instances.py         # Core script for training instances
-├── nq_doc2query_query_generator.py     # Generate pseudo queries via doc2query-T5
-├── url_title_docid_demo.ipynb          # URL+title docid encoding demo
-├── pq_docid_demo.ipynb                 # Product Quantization (PQ) docid demo
+data_prep/
+├── convert_tsv_to_json_array.py        # Convert MS MARCO .tsv to flat JSONL format
+├── sample_top300k_msmarco_documents.py # Sample top or random 300K MS MARCO documents
+├── negative_sampling.py                # BM25-based hard negative mining
+├── doc2query_query_generator.py        # Generate pseudoqueries using doc2query-T5
+├── generate_doc_embeddings.py          # Generate GTR-T5 dense embeddings
 ```
 
 ---
+
+### 🧪 Natural Questions (NQ) Utilities
+
+Located under the `nq/` subdirectory:
+
+```bash
+nq/
+├── process_nq_dataset.py               # Clean, flatten and merge original NQ files
+├── convert_nq_to_msmarco_format.py     # Convert NQ format → MS MARCO query-passage format
+├── create_nq_triples.py                # Create BM25-based NQ training triples
+```
+
+---
+
+### 📦 Instance Generation
+
+Scripts for preparing model training and evaluation input instances:
+
+```bash
+data_prep/
+├── generate_encoded_docids.py          # Encode documents into docids (PQ, URL, etc.)
+├── generate_train_data_wrapper.py      # Wrapper to generate all training instances
+├── generate_train_instances.py         # Create pretrain, pseudoquery, and finetune inputs
+├── generate_eval_data_wrapper.py       # Wrapper for evaluation data preparation
+├── generate_eval_instances.py          # Format eval data for testing SFT/DDRO
+```
+
+---
+
+### 📓 Demos & Explorations
+
+Notebook demos for docid formats and encodings:
+
+```bash
+data_prep/
+├── pq_docid_demo.ipynb                 # Visualize PQ-based docid encoding
+├── rq_docid_demo.ipynb                 # Visualize ranking-quality based docid
+├── url_title_docid_demo.ipynb          # URL+title docid construction example
+```
+
+---
+
+### 🗂️ This README
+
+```bash
+data_prep/
+└── README.md                           # You’re here!
+```
+
 
 ## 📊 Data Preparation
 
@@ -105,107 +144,100 @@ sbatch src/scripts/preprocess/generate_encoded_ids.sh
 [d108472] 32211,32518,32782,33144,33382,...
 [d1842]   32177,32471,32844,33053,33163,...
 ```
-
----
-
-### ✅ Natural Questions (NQ)
-
-To prepare the **Natural Questions (NQ)** dataset in MS MARCO-style format and generate training-ready encodings, follow these steps:
-
-#### 1. Preprocess and convert the dataset:
-
-```bash
-bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
-bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO-style format
-```
-
-#### 2. Generate document IDs and training instances:
-
-> ✅ Make sure the dataset argument in each script is set to `"nq"`.
-
-```bash
-sbatch src/scripts/preprocess/generate_doc_embeddings.sh  # Step 1: Compute document embeddings (required for PQ assignment)
-bash scripts/preprocess/generate_encoded_ids.sh           # Step 2: Generate and save encoded doc IDs (URL, PQ, etc.)
-```
-> only pq and url IDs reported on our paper 
-
----
-### ✏️ Pseudo Query Generation (DocTTTTTQuery)
-
-To fine-tune on NQ:
-
-```bash
-bash ./scripts/run_finetune_docTTTTTquery.sh
-```
-
-To generate queries:
-
-```bash
-python ./src/data/dataprep/doc2query_query_generator.py
-```
-
-**Or download pre-generated queries from Hugging Face:**
-📥 [DDRO HF Collection](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5)
-
-
-Save under:
-
-```bash
-ddro/resources/datasets/processed/msmarco-data/msmarco_pseudo_query_10.txt
-ddro/resources/datasets/processed/nq-data/nq_pseudo_query_10.txt
-```
-
-Expected format:
-
-
-Each line should contain a document ID and one of its generated queries, tab-separated:
-
-```
-[d301595]	what age should a child know what they like to eat
-[d301595]	what age should a child know what they like to do
-[d301595]	what is the average age for a child to be independent
-[d301595]	what age should a child start writing letters
-[d301595]	what age should a child start playing with themselves
-[d301595]	what age should a child know what they like
-
-...
-```
-
-Your section is already clear and well-structured! Here's a lightly polished version to ensure consistency, flow, and professional tone—just a few minor edits to tighten phrasing, clarify script purposes, and improve formatting:
-
 ---
 
 ## 🛠 Training Instance Generation
 
-To train the reference model (**Phase 1: Supervised Fine-Tuning, SFT**), we generate three types of **supervised instances** for next-token prediction across the following stages:
-
-### 🎯 Training Stages
-
-1. **General Pretraining**
-   Train on raw document content to predict `docid`:
-   → `doc → docid`
-
-2. **Search Pretraining**
-   Train on synthetic pseudo queries to predict `docid`:
-   → `pseudoquery → docid`
-
-3. **Finetuning**
-   Train on real queries paired with gold documents from qrels:
-   → `query → docid`
-
-Each stage provides a progressively stronger retrieval signal to guide relevance generation.
+To train the **Phase 1: Supervised Fine-Tuning (SFT)** model, we generate three types of `input → docid` training instances. These follow a **curriculum-based progression** aligned with document relevance modeling.
 
 ---
 
-### ⚙️ Script: `generate_train_data_wrapper.py`
+### 🎯 SFT Training Stages
 
-This script supports all three training stages via the `--cur_data` flag:
+| Stage                     | Input → Target        | Purpose                             |
+| ------------------------- | --------------------- | ----------------------------------- |
+| **1. Pretraining**        | `doc → docid`         | General content understanding       |
+| **2. Search Pretraining** | `pseudoquery → docid` | Learn retrieval-like query behavior |
+| **3. Finetuning**         | `query → docid`       | Supervised learning from qrels      |
 
-| `--cur_data` Value | Input Source         | Purpose                        |
-| ------------------ | -------------------- | ------------------------------ |
-| `general_pretrain` | Document contents    | General language understanding |
-| `search_pretrain`  | Pseudo queries       | Search-aligned supervision     |
-| `finetune`         | Real queries + qrels | Final relevance optimization   |
+---
+
+### ✏️ Pseudo Query Generation (docTTTTTquery)
+
+To enable search pretraining, generate pseudo queries from raw documents using a docT5query model, producing 10 queries per document.
+
+#### 🧪 Finetune docTTTTTquery on NQ or MS MARCO:
+
+```bash
+bash scripts/run_finetune_docTTTTTquery.sh
+```
+
+#### 🛠 Generate queries:
+
+```bash
+python src/data/data_prep/doc2query_query_generator.py
+```
+
+#### 📥 Or download from Hugging Face:
+
+**[DDRO 🤗 Collection](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5)**
+
+Place the downloaded queries under:
+
+```
+ddro/resources/datasets/processed/msmarco-data/msmarco_pseudo_query_10.txt  
+ddro/resources/datasets/processed/nq-data/nq_pseudo_query_10.txt
+```
+
+Expected format (`[docid] <TAB> pseudo_query`):
+
+```
+[d301595]	what age should a child know what they like to eat  
+[d301595]	what is the average age for a child to be independent  
+...
+```
+
+---
+
+### ✅ Step 1: Generate Raw Supervision Signals
+
+Generate inputs for each supervision type:
+
+```bash
+sbatch src/scripts/preprocess/gen_t5_train_data.sh
+```
+
+Outputs:
+
+* `passage.jsonl` — raw document text
+* `sampled_terms.jsonl` — sampled key phrases
+* `fake_query.jsonl` — pseudo queries
+* `query.jsonl` — real queries from qrels
+
+---
+
+### ⚙️ Step 2: Merge into Curriculum Format
+
+Format into `input → docid` pairs for training:
+
+```bash
+sbatch ddro/src/scripts/preprocess/generate_t5_eval_and_train_data.sh
+```
+
+Produces:
+
+* `pretrain.t5_128_10.json`
+* `search_pretrain.t5_128_10.json`
+* `finetune.t5_128_1.json`
+
+Each corresponds to a curriculum stage.
+
+
+| Mode (`--cur_data`) | Input File         | Output File                      | Description                   |
+| ------------------- | ------------------ | -------------------------------- | ----------------------------- |
+| `general_pretrain`  | `passage.jsonl + sampled_terms.jsonl + enhanced_docid.jsonl`    | `pretrain.t5_128_10.json`        | Raw doc → docid               |
+| `search_pretrain`   | `fake_query.jsonl` | `search_pretrain.t5_128_10.json` | Pseudo query → docid          |
+| `finetune`          | `query.jsonl`      | `finetune.t5_128_1.json`         | Real query + qrel doc → docid |
 
 ---
 
@@ -213,17 +245,11 @@ This script supports all three training stages via the `--cur_data` flag:
 
 Use the following entry-point scripts to generate both **training** and **evaluation** instances for MS MARCO and NQ. These scripts internally invoke the wrapper and handle all required paths and configurations.
 
-#### 📘 MS MARCO
 
 ```bash
-bash ./src/scripts/preprocess/generate_msmarco_eval_and_train_data.sh
+bash src/scripts/preprocess/generate_nq_eval_and_train_data.sh
 ```
 
-#### 📗 Natural Questions (NQ)
-
-```bash
-bash ./src/scripts/preprocess/generate_nq_eval_and_train_data.sh
-```
 
 > These scripts automatically generate data for all three stages (`general_pretrain`, `search_pretrain`, and `finetune`) as well as the corresponding evaluation files.
 
@@ -265,6 +291,31 @@ python src/data/dataprep/generate_msmarco_triples.py
 ```
 
 You may also adapt the script to use your **own BM25 ranking outputs**.
+---
+
+### ✅ Natural Questions (NQ)
+
+
+To prepare the **Natural Questions (NQ)** dataset in MS MARCO-style format and generate training-ready encodings, follow these steps:
+
+#### 1. Preprocess and convert the dataset:
+
+```bash
+bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
+bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO-style format
+```
+
+after haing m,smarco style dataset follow the sem step as above replace data patrh and atatype  as 'nq'
+
+#### 2. Generate document IDs and training instances:
+
+> ✅ Make sure the dataset argument in each script is set to `"nq"`.
+
+```bash
+sbatch src/scripts/preprocess/generate_doc_embeddings.sh  # Step 1: Compute document embeddings (required for PQ assignment)
+bash scripts/preprocess/generate_encoded_ids.sh           # Step 2: Generate and save encoded doc IDs (URL, PQ, etc.)
+```
+> only pq and url IDs reported on our paper 
 
 ---
 
