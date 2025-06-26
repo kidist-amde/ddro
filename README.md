@@ -228,10 +228,11 @@ resources/
       <code>src/data/dataprep/README.md</code>
     </a> -->
 
- >  🔎  To process and sample both datasets, generate document IDs, and prepare training and evaluation instances, please check the repo and the README.
-     See: <a href="https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme">
-      <code>src/data/dataprep/README.md</code></a>
+> 🔎 To process and sample both datasets, generate document IDs, and prepare training/evaluation instances, please refer to the corresponding README:
 
+> 📁 [`src/data/dataprep/README.md`](https://github.com/kidist-amde/ddro/tree/main/src/data_prep/dataprep#readme)
+
+---
 
 ## Training Pipeline
 

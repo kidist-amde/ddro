@@ -1,4 +1,14 @@
 #!/bin/bash
+#SBATCH --job-name=sample_top_docs
+#SBATCH --time=1-00:00:00
+#SBATCH --mem=64gb
+#SBATCH -c 48
+#SBATCH --output=logs-slurm/sample_top_ms_docs-%j.out
+
+
+source /home/kmekonn/.bashrc
+conda activate ddro_env
+
 
 # Set paths to input files and output directory
 INPUT_DOC_PATH="/path/to/input_document_file.jsonl"

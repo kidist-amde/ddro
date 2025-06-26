@@ -56,35 +56,52 @@ sbatch src/scripts/preprocess/sample_top_docs.sh
 
 ---
 
-### 🔢 DocID Representations
+## 🔢 DocID Representations
 
-You can either **generate** docid representations locally or **download** pre-encoded files from 🤗 [Hugging Face](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5):
+You can either **generate** document ID (`docid`) representations locally or **download** pre-computed ones from 🤗 [Hugging Face](https://huggingface.co/collections/kiyam/ddro-generative-document-retrieval-680f63f2e9a72033598461c5).
 
-Place them under:
+Place downloaded files in:
 
 ```bash
 resources/datasets/processed/msmarco-data/encoded_docid/
 ```
 
-Example `url_docid` format:
+#### 📄 Example: `url_docid` format
 
-```
+```text
 [d108472] 594,858,7,17,4624,5,287,1
 [d1842]   3,89,9,1824,3105,4440,...,1677,1
 ```
 
 ---
 
-To generate **PQ docids**, first compute document embeddings:
+### 🛠️ Generating DocID Representations Locally
+
+To generate PQ-based docids (**used in this project**):
+
+#### 1️⃣ Generate T5 Document Embeddings
+
+⚠️ **Attention:** Ensure the script sets the dataset to `"msmarco"`:
 
 ```bash
-sbatch scripts/preprocess/generate_msmarco_t5_embeddings.sh
-sbatch scripts/preprocess/generate_msmarco_encoded_ids.sh
+sbatch src/scripts/preprocess/generate_t5_embeddings.sh
 ```
 
-Example `pq_docid` format:
+#### 2️⃣ Encode Document IDs
 
+Use the script below to generate `pq` docids (other types are also supported):
+
+```bash
+sbatch src/scripts/preprocess/generate_encoded_ids.sh
 ```
+
+⚠️ **Attention:** Ensure `--encoding pq` is passed (default in the script).
+
+---
+
+#### 📄 Example: `pq_docid` format
+
+```text
 [d108472] 32211,32518,32782,33144,33382,...
 [d1842]   32177,32471,32844,33053,33163,...
 ```
@@ -106,8 +123,9 @@ bash src/scripts/preprocess/convert_nq_to_msmarco_format.sh
 
 Then generate the document IDs and training instances:
 
+- make sure in the script you put the dataset as "nq" 
 ```bash
-bash scripts/preprocess/compute_nq_t5_embeddings.sh   # Compute document embeddings for NQ using TR-T5 (required for PQ ID assignment)
+sbatch src/scripts/preprocess/generate_t5_embeddings.sh # Compute document embeddings for NQ using TR-T5 (required for PQ ID assignment)
 bash scripts/preprocess/generate_nq_encoded_ids.sh    # Generate and save encoded document IDs (URL, PQ, Atomic, Summary formats)
 ```
 
