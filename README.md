@@ -13,8 +13,7 @@ This repository contains the official implementation of our SIGIR 2025 paper:
 - [Motivation](#motivation)
 - [What DDRO Does](#what-ddro-does)
 - [Learning Objectives](#learning-objectives-in-ddro)
-- [🛠️ Setup & Dependencies - Steps to Reproduce](#1-install-environment)
-- [Training Pipeline](#training-pipeline)
+- [🛠️ Setup & Dependencies - Steps to Reproduce 🎯](#1-install-environment)
 - [DDRO Training (Phase 2: Pairwise Optimization)](#ddro-training-phase-2-pairwise-optimization)
 - [Preprocessed Data & Model Checkpoints](#preprocessed-data--model-checkpoints)
 
@@ -170,15 +169,20 @@ src/
 
 ---
 
-## Setup & Dependencies
+## 🛠️ Setup & Dependencies
+
 ### 1. Install Environment
 
-Clone the repo and install dependencies:
-   ```bash
-   git clone https://github.com/kidist-amde/ddro.git
-   conda env create -f ddro.yml
-   conda activate ddro
-   ```
+Clone the repository and create the conda environment:
+
+```bash
+git clone https://github.com/kidist-amde/ddro.git
+cd ddro
+conda env create -f ddro_env.yml
+conda activate ddro_env
+```
+---
+
 ### 2. Download Datasets and Pretrained Model
 We use MS MARCO document (top-300k) and Natural Questions (NQ-320k) datasets, and a pretrained T5 model.
 
