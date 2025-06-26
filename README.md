@@ -14,9 +14,7 @@ This repository contains the official implementation of our SIGIR 2025 paper:
 - [What DDRO Does](#what-ddro-does)
 - [Learning Objectives](#learning-objectives-in-ddro)
 - [🛠️ Setup & Dependencies - Steps to Reproduce 🎯](#1-install-environment)
-- [DDRO Training (Phase 2: Pairwise Optimization)](#ddro-training-phase-2-pairwise-optimization)
 - [Preprocessed Data & Model Checkpoints](#preprocessed-data--model-checkpoints)
-
 - [Citation](#citation)
 
 
@@ -239,7 +237,9 @@ resources/
 
 ## Training Pipeline
 
-(Phase 1) We first train a **Supervised Fine-Tuning (SFT) model** using **next-token prediction** across three stages:
+### 📘 Phase 1: Supervised Fine-Tuning (SFT)
+
+We first train a **Supervised Fine-Tuning (SFT) model** using **next-token prediction** across three stages:
 
 1. **Pretraining** on document content (`doc → docid`)
 2. **Search Pretraining** on pseudo queries (`pseudoquery → docid`)
@@ -258,9 +258,9 @@ bash ddro/src/scripts/sft/launch_SFT_training.sh
 
 ---
 
-#### 🔍 BM25 Retrieval Setup (via Pyserini)
+### 🔍 BM25 Retrieval (via Pyserini)
 
-We use BM25 for two key purposes in DDRO:
+BM25 is used in DDRO for:
 
 1. **Sparse Baseline Comparison**  
 
@@ -269,9 +269,9 @@ We use BM25 for two key purposes in DDRO:
 
 ---
 
-##### ⚙️ Setup Instructions
+#### ⚙️ Setup Instructions
 
-To run BM25 retrieval using Pyserini:
+Install Pyserini and dependencies:
 
 ```bash
 conda env create -f pyserini.yml
@@ -305,19 +305,20 @@ This script prepares training triplets for Phase 2 model training by pairing eac
   </a> -->
 
 >  🔎 **To sample negatives for both datasets for Phase 2 training, see:**  
-> [`src/data/dataprep/README.md`](https://github.com/kidist-amde/ddro/tree/main/src/data/dataprep#readme)
 
----
+> 🔗 [`src/data/dataprep/README.md`](https://github.com/kidist-amde/ddro/tree/main/src/data/data_prep#readme)
 
-### DDRO Training (Phase 2: Pairwise Optimization)
 
-After training the SFT model (Phase 1), we apply **Phase 2: Direct Document Relevance Optimization**, which fine-tunes the model using a **pairwise ranking objective**.
+## 🔧 Phase 2: DDRO Training (Pairwise Optimization)
 
-This stage optimizes the model to **prefer relevant documents over non-relevant ones**, bridging the gap between autoregressive generation and ranking-based retrieval.
+After training the SFT model (Phase 1), we apply **Phase 2: Direct Document Relevance Optimization**, which fine-tunes the model using a **pairwise ranking objective**, that trains the model to prefer relevant documents over non-relevant ones.
 
-We implement this using [Hugging Face’s `DPOTrainer`](https://github.com/huggingface/trl), adapted for document ID generation.
 
-Run training and evaluation:
+This bridges the gap between **autoregressive generation** and **ranking-based retrieval**.
+
+We implement this using a custom version of Hugging Face's [`DPOTrainer`](https://github.com/huggingface/trl).
+
+Run DDRO training and evaluation:
 
 ```bash
 bash scripts/ddro/run_ddro_training.sh
@@ -384,3 +385,7 @@ This project is licensed under the [Apache 2.0 License](LICENSE).
 For questions, please open an [issue](https://github.com/kidist-amde/DDRO-Direct-Document-Relevance-Optimization/issues).
 
 
+
+© 2025 **Kidist Amde Mekonnen** · Made with ❤️ at [IRLab](https://irlab.science.uva.nl/), University of Amsterdam.
+
+---
