@@ -93,6 +93,7 @@ ddro/scripts/summrizer_and_eval/
 ddro/scripts/eval_scripts/run_msmarco_testing_oldckps.sh
 ddro/scripts/generate_instances_scripts/run_sft_inference.sh
 text.ipynb
+test.ipynb
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.

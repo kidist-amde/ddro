@@ -7,8 +7,14 @@ import pandas as pd
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 
-def smart_open(path, mode='rt', encoding='utf-8'):
-    return gzip.open(path, mode, encoding=encoding) if path.endswith('.gz') else open(path, mode, encoding=encoding)
+def smart_open(path, mode='r', encoding=None):
+    if path.endswith('.gz'):
+        if 'b' not in mode:
+            mode = mode.replace('r', 'rt').replace('w', 'wt')
+            return gzip.open(path, mode, encoding=encoding or 'utf-8')
+        return gzip.open(path, mode)
+    return open(path, mode, encoding=encoding or 'utf-8')
+
 
 def load_documents(input_path: str, is_nq: bool = False):
     if is_nq:
@@ -27,12 +33,14 @@ def load_documents(input_path: str, is_nq: bool = False):
                 texts.append(item['body'])
     return ids, texts
 
+
 def save_embeddings(output_path: str, doc_ids, embeddings):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with smart_open(output_path, 'w') as f:
         for docid, emb in zip(doc_ids, embeddings):
             emb_str = ','.join(map(str, emb))
             f.write(f"[{docid}]\t{emb_str}\n")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Generate T5 document embeddings.")
@@ -60,6 +68,7 @@ def main():
     )
     save_embeddings(args.output_path, doc_ids, embeddings)
     print(f"Embeddings saved to {args.output_path}")
+
 
 if __name__ == "__main__":
     main()

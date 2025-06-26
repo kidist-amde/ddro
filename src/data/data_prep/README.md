@@ -84,7 +84,7 @@ To generate PQ-based docids (**used in this project**):
 ⚠️ **Attention:** Ensure the script sets the dataset to `"msmarco"`:
 
 ```bash
-sbatch src/scripts/preprocess/generate_t5_embeddings.sh
+sbatch src/scripts/preprocess/generate_doc_embeddings.sh
 ```
 
 #### 2️⃣ Encode Document IDs
@@ -95,7 +95,7 @@ Use the script below to generate `pq` docids (other types are also supported):
 sbatch src/scripts/preprocess/generate_encoded_ids.sh
 ```
 
-⚠️ **Attention:** Ensure `--encoding pq` is passed (default in the script).
+⚠️  Pass --encoding pq (default) or --encoding url to specify the format.
 
 ---
 
@@ -107,27 +107,27 @@ sbatch src/scripts/preprocess/generate_encoded_ids.sh
 ```
 
 ---
-### ✅ Natural Questions
 
-To prepare NQ data for training and evaluation, run:
+### ✅ Natural Questions (NQ)
+
+To prepare the **Natural Questions (NQ)** dataset in MS MARCO-style format and generate training-ready encodings, follow these steps:
+
+#### 1. Preprocess and convert the dataset:
 
 ```bash
 bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
 bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO-style format
 ```
-First, convert the original NQ data to match the MS MARCO query-passage format:
+
+#### 2. Generate document IDs and training instances:
+
+> ✅ Make sure the dataset argument in each script is set to `"nq"`.
 
 ```bash
-bash src/scripts/preprocess/convert_nq_to_msmarco_format.sh
+sbatch src/scripts/preprocess/generate_doc_embeddings.sh  # Step 1: Compute document embeddings (required for PQ assignment)
+bash scripts/preprocess/generate_encoded_ids.sh           # Step 2: Generate and save encoded doc IDs (URL, PQ, etc.)
 ```
-
-Then generate the document IDs and training instances:
-
-- make sure in the script you put the dataset as "nq" 
-```bash
-sbatch src/scripts/preprocess/generate_t5_embeddings.sh # Compute document embeddings for NQ using TR-T5 (required for PQ ID assignment)
-bash scripts/preprocess/generate_nq_encoded_ids.sh    # Generate and save encoded document IDs (URL, PQ, Atomic, Summary formats)
-```
+> only pq and url IDs reported on our paper 
 
 ---
 ### ✏️ Pseudo Query Generation (DocTTTTTQuery)
