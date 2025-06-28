@@ -20,6 +20,14 @@ parser.add_argument("--output_path", default="output/instances.jsonl", type=str,
 parser.add_argument("--current_data", default=None, type=str, help="Task type, e.g., 'query_dev'")
 args = parser.parse_args()
 
+def smart_open(path, mode='r', encoding='utf-8'):
+    if path.endswith('.gz'):
+        if 'b' not in mode:
+            mode = mode.replace('r', 'rt').replace('w', 'wt')
+            return gzip.open(path, mode, encoding=encoding)
+        return gzip.open(path, mode)
+    return open(path, mode, encoding=encoding)
+
 def my_convert_tokens_to_ids(tokens, token_to_id):
     return [token_to_id.get(t, token_to_id['<unk>']) for t in tokens]
 
@@ -38,7 +46,7 @@ def add_docid_to_vocab(doc_file_path):
     tokenizer = T5Tokenizer.from_pretrained(args.pretrain_model_path)
     vocab = tokenizer.get_vocab()
     new_tokens = []
-    with open(doc_file_path) as fin:
+    with smart_open(doc_file_path) as fin:
         for line in tqdm(fin, desc='Loading document IDs'):
             data = json.loads(line)
             docid = data['docid'].lower()
@@ -57,7 +65,7 @@ def get_encoded_docid(docid_path, all_docid=None, token_to_id=None):
         for doc_id in all_docid:
             encoded_docid[doc_id] = str(token_to_id[doc_id])
     else:
-        with open(docid_path, "r") as fr:
+        with smart_open(docid_path, "r") as fr:
             for line in fr:
                 docid, encode = line.strip().split("\t")
                 docid = f"[{docid.lower().strip('[]')}]"
@@ -69,12 +77,12 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     qid_2_query = {}
     docid_2_qid = defaultdict(list)
 
-    with gzip.open(args.query_path, "rt") as fin:
+    with smart_open(args.query_path) as fin:
         for line in tqdm(fin, desc="Reading queries"):
             qid, query = line.strip().split("\t")
             qid_2_query[qid] = query
 
-    with gzip.open(args.qrels_path, "rt") as fin:
+    with smart_open(args.qrels_path) as fin:
         for line in tqdm(fin, desc="Reading qrels"):
             qid, _, docid, _ = line.strip().split()
             docid = f"[{docid.lower()}]"
@@ -86,7 +94,7 @@ def gen_query_instance(id_to_token, token_to_id, all_docid, encoded_docid):
     max_num_tokens = args.max_seq_length - 1
     os.makedirs(os.path.dirname(args.output_path), exist_ok=True)
 
-    with open(args.output_path, "w") as fw:
+    with smart_open(args.output_path, "w") as fw:
         for docid, qids in tqdm(docid_2_qid.items(), desc="Writing instances"):
             if docid not in encoded_docid:
                 print(f"Warning: Missing encoded docid for {docid}")

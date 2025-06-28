@@ -146,6 +146,7 @@ sbatch src/scripts/preprocess/generate_encoded_ids.sh
 ```
 ---
 
+
 ## 🛠 Training Instance Generation
 
 To train the **Phase 1: Supervised Fine-Tuning (SFT)** model, we generate three types of `input → docid` training instances. These follow a **curriculum-based progression** aligned with document relevance modeling.
@@ -154,19 +155,19 @@ To train the **Phase 1: Supervised Fine-Tuning (SFT)** model, we generate three 
 
 ### 🎯 SFT Training Stages
 
-| Stage                     | Input → Target        | Purpose                             |
-| ------------------------- | --------------------- | ----------------------------------- |
-| **1. Pretraining**        | `doc → docid`         | General content understanding       |
-| **2. Search Pretraining** | `pseudoquery → docid` | Learn retrieval-like query behavior |
-| **3. Finetuning**         | `query → docid`       | Supervised learning from qrels      |
+| Stage                     | Input → Target        | Purpose                              |
+| ------------------------- | --------------------- | ------------------------------------ |
+| **1. Pretraining**        | `doc → docid`         | General content understanding        |
+| **2. Search Pretraining** | `pseudoquery → docid` | Learn retrieval-style query behavior |
+| **3. Finetuning**         | `query → docid`       | Supervised learning from qrels       |
 
 ---
 
 ### ✏️ Pseudo Query Generation (docTTTTTquery)
 
-To enable search pretraining, generate pseudo queries from raw documents using a docT5query model, producing 10 queries per document.
+To enable search pretraining, generate pseudo queries from raw documents using a `docT5query` model, producing 10 queries per document.
 
-#### 🧪 Finetune docTTTTTquery on NQ or MS MARCO:
+#### 🧪 Finetune `docTTTTTquery` on NQ or MS MARCO:
 
 ```bash
 bash scripts/run_finetune_docTTTTTquery.sh
@@ -201,59 +202,50 @@ Expected format (`[docid] <TAB> pseudo_query`):
 
 ### ✅ Step 1: Generate Raw Supervision Signals
 
-Generate inputs for each supervision type:
+Use the following entry-point script to generate both **training** and **evaluation** instances for MS MARCO and NQ. 
 
 ```bash
-sbatch src/scripts/preprocess/gen_t5_train_data.sh
+sbatch src/scripts/preprocess/generate_train_and_eval_instances.sh
 ```
 
-Outputs:
+**Outputs:**
 
 * `passage.jsonl` — raw document text
 * `sampled_terms.jsonl` — sampled key phrases
 * `fake_query.jsonl` — pseudo queries
 * `query.jsonl` — real queries from qrels
+* `eval_data_top_300k/query_dev.jsonl` — development evaluation data
 
 ---
 
 ### ⚙️ Step 2: Merge into Curriculum Format
 
-Format into `input → docid` pairs for training:
+Format data into `input → docid` pairs for training.
+
+Make sure your `--cur_data` argument is one of the following stages:
+
+* `general_pretrain`
+* `search_pretrain`
+* `finetune`
 
 ```bash
-sbatch ddro/src/scripts/preprocess/generate_t5_eval_and_train_data.sh
+sbatch src/scripts/preprocess/generate_3stage_train_data.sh
 ```
 
-Produces:
+**Produces:**
 
-* `pretrain.t5_128_10.json`
-* `search_pretrain.t5_128_10.json`
-* `finetune.t5_128_1.json`
+* `general_pretrain.t5_128_10.{encoding}.300k.json`
+* `search_pretrain.t5_128_10.{encoding}.300k.json`
+* `finetune.t5_128_10.{encoding}.300k.json` <br>*(where `{encoding}` can be `pq`, `url`, etc.)*
 
-Each corresponds to a curriculum stage.
-
-
-| Mode (`--cur_data`) | Input File         | Output File                      | Description                   |
-| ------------------- | ------------------ | -------------------------------- | ----------------------------- |
-| `general_pretrain`  | `passage.jsonl + sampled_terms.jsonl + enhanced_docid.jsonl`    | `pretrain.t5_128_10.json`        | Raw doc → docid               |
-| `search_pretrain`   | `fake_query.jsonl` | `search_pretrain.t5_128_10.json` | Pseudo query → docid          |
-| `finetune`          | `query.jsonl`      | `finetune.t5_128_1.json`         | Real query + qrel doc → docid |
+| Mode (`--cur_data`) | Input Files                                                  | Output File                       | Description                     |
+| ------------------- | ------------------------------------------------------------ | --------------------------------- | ------------------------------- |
+| `general_pretrain`  | `passage.jsonl + sampled_terms.jsonl + enhanced_docid.jsonl` | `general_pretrain.t5_128_10.json` | Raw document → docid            |
+| `search_pretrain`   | `fake_query.jsonl`                                           | `search_pretrain.t5_128_10.json`  | Pseudo query → docid            |
+| `finetune`          | `query.jsonl`                                                | `finetune.t5_128_10.json`         | Real query → docid (from qrels) |
 
 ---
 
-### 🚀 Generating Training + Evaluation Data
-
-Use the following entry-point scripts to generate both **training** and **evaluation** instances for MS MARCO and NQ. These scripts internally invoke the wrapper and handle all required paths and configurations.
-
-
-```bash
-bash src/scripts/preprocess/generate_nq_eval_and_train_data.sh
-```
-
-
-> These scripts automatically generate data for all three stages (`general_pretrain`, `search_pretrain`, and `finetune`) as well as the corresponding evaluation files.
-
----
 
 ## 🧲 Contrastive Triplets (For Phase 2: DDRO)
 
@@ -290,33 +282,43 @@ python ddro/src/data/dataprep/create_nq_triples.py
 python src/data/dataprep/generate_msmarco_triples.py
 ```
 
-You may also adapt the script to use your **own BM25 ranking outputs**.
+> You may also adapt the script to use your **own BM25 ranking outputs**.
 ---
 
 ### ✅ Natural Questions (NQ)
 
+To prepare the **Natural Questions (NQ)** dataset in MS MARCO-style format and generate training-ready encodings, follow the steps below.
 
-To prepare the **Natural Questions (NQ)** dataset in MS MARCO-style format and generate training-ready encodings, follow these steps:
+---
 
-#### 1. Preprocess and convert the dataset:
+#### 🧹 Step 1: Preprocess and Convert to MS MARCO Format
+
+Run the following scripts to clean and reformat NQ into MS MARCO-style layout:
 
 ```bash
-bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges NQ
+bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges raw NQ data
 bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO-style format
 ```
 
-after haing m,smarco style dataset follow the sem step as above replace data patrh and atatype  as 'nq'
+> After generating the MS MARCO-style dataset, follow the same steps described for MS MARCO above.
+> Be sure to **replace the data paths** and **set the dataset type to `nq`** in all relevant scripts.
 
-#### 2. Generate document IDs and training instances:
+---
 
-> ✅ Make sure the dataset argument in each script is set to `"nq"`.
+#### ⚙️ Step 2: Generate Document IDs and Training Instances
+
+Make sure that the `--dataset` or `--data_type` argument in each script is set to `"nq"`.
 
 ```bash
-sbatch src/scripts/preprocess/generate_doc_embeddings.sh  # Step 1: Compute document embeddings (required for PQ assignment)
-bash scripts/preprocess/generate_encoded_ids.sh           # Step 2: Generate and save encoded doc IDs (URL, PQ, etc.)
+sbatch src/scripts/preprocess/generate_doc_embeddings.sh    # Step 1: Compute document embeddings (for PQ)
+bash scripts/preprocess/generate_encoded_ids.sh             # Step 2: Generate and save encoded doc IDs (PQ, URL, etc.)
 ```
-> only pq and url IDs reported on our paper 
+
+> 📝 Only **PQ** and **URL-based docid encodings** are reported in our paper.
 
 ---
 
 Maintained with ❤️ by the DDRO authors.
+*This repo is under active development — thanks for your patience!*
+
+---
