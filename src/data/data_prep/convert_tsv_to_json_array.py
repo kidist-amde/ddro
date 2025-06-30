@@ -22,7 +22,7 @@ def convert_tsv_to_json(tsv_path, output_json_path):
     # Count lines for progress
     with gzip.open(tsv_path, 'rt') as file:
         total_lines = sum(1 for _ in file)
-
+    os.makedirs(os.path.dirname(output_json_path), exist_ok=True)  # Ensure output dir exists
     with gzip.open(tsv_path, 'rt') as file, open(output_json_path, 'w') as json_out:
         reader = csv.DictReader(file, delimiter='\t', fieldnames=['id', 'url', 'title', 'content'])
         json_out.write('[')

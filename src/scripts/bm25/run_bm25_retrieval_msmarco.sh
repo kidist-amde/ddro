@@ -8,7 +8,7 @@
 # Set up environment
 source ~/.bashrc
 conda activate pyserini
-cd ddro  # Assumes script is run from project root
+
 
 # Path configurations
 input_dir="resources/datasets/processed/msmarco-data/msmarco-json-sents"
@@ -24,23 +24,23 @@ qrels_train="resources/datasets/raw/msmarco-data/msmarco-doctrain-qrels.tsv.gz"
 qrels_dev="resources/datasets/raw/msmarco-data/msmarco-docdev-qrels.tsv.gz"
 
 # Indexing (uncomment if needed)
-# python -m pyserini.index.lucene \
-#   --collection JsonCollection \
-#   --input "$input_dir" \
-#   --index "$index_dir" \
-#   --generator DefaultLuceneDocumentGenerator \
-#   --threads 16 \
-#   --storePositions --storeDocvectors --storeRaw
+python -m pyserini.index.lucene \
+  --collection JsonCollection \
+  --input "$input_dir" \
+  --index "$index_dir" \
+  --generator DefaultLuceneDocumentGenerator \
+  --threads 16 \
+  --storePositions --storeDocvectors --storeRaw
 
 # BM25 retrieval - Train set (uncomment to run)
-# python -m pyserini.search.lucene \
-#   --index "$index_dir" \
-#   --topics "$train_queries" \
-#   --output "$train_output" \
-#   --output-format msmarco \
-#   --hits 1000 \
-#   --bm25 --k1 0.82 --b 0.68 \
-#   --threads 16 --batch-size 16
+python -m pyserini.search.lucene \
+  --index "$index_dir" \
+  --topics "$train_queries" \
+  --output "$train_output" \
+  --output-format msmarco \
+  --hits 1000 \
+  --bm25 --k1 0.82 --b 0.68 \
+  --threads 16 --batch-size 16
 
 # BM25 retrieval - Dev set
 python -m pyserini.search.lucene \

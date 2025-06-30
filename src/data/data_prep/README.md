@@ -273,44 +273,82 @@ sbatch src/scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts 
 
 ---
 
-## 🧲 Contrastive Triplets (For Phase 2: DDRO)
+## 🔍 BM25 Retrieval (via Pyserini)
 
-After training the SFT model, we move to **Phase 2: Direct Document Relevance Optimization (DDRO)**, which fine-tunes the model with a **pairwise ranking objective** using contrastive triplets.
+BM25 is used in this project for:
 
-Each triplet contains:
-
-* A query
-* A **positive** document ID
-* One or more **negative** document IDs
+1. **Sparse baseline evaluation**
+2. **Hard negative mining** for contrastive and pairwise training (e.g., DDRO)
 
 ---
 
-### 📦 Triplet Generation
-
-To create these contrastive training triplets:
-
-#### 🔹 Natural Questions (NQ)
+### ⚙️ Environment Setup
 
 ```bash
-python ddro/src/data/dataprep/create_nq_triples.py
+conda env create -f pyserini.yml
+conda activate pyserini
+pip install -r pyserini.txt
 ```
 
 ---
 
-#### 🔹 MS MARCO
+### 🔄 Convert MS MARCO TSV → JSONL
 
-1. Download the official top-100 BM25 retrievals:
-   📥 [msmarco-doctrain-top100.gz](https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-top100.gz)
+Convert MS MARCO `.tsv.gz` corpus into a Pyserini-compatible JSONL format:
 
-2. Run the triplet generation script:
+```bash
+python src/data/data_prep/convert_tsv_to_json_array.py
+```
+
+* **Input:** `msmarco-docs.tsv.gz`
+* **Output:** `msmarco-docs.jsonl`
+
+  ```json
+  {"id": "docid", "contents": "title + body"}
+  ```
+
+---
+
+### 📦 Index & Retrieve with Pyserini
+
+Use SLURM scripts to index and retrieve:
+
+```bash
+sbatch src/scripts/bm25/run_bm25_retrieval_msmarco.sh
+```
+run: src/data/data_prep/nq/convert_json_array_to_jsonl.ipynb
+
+```bash 
+sbatch src/scripts/bm25/run_bm25_retrieval_nq.sh
+```
+
+Each script:
+
+* Indexes the document corpus using Pyserini
+* Performs BM25 retrieval with optimized hyperparameters (`k1`, `b`)
+* Saves output in MS MARCO format
+
+---
+
+## 🔁 Negative Sampling for Triplet Generation
+
+BM25 top-k runs are used to sample **hard negatives** for training.
+
+Generate training triplets:
 
 ```bash
 python src/data/dataprep/generate_msmarco_triples.py
 ```
 
-> You may also adapt the script to use your **own BM25 ranking outputs**.
----
-Maintained with ❤️ by the DDRO authors.
-*This repo is under active development — thanks for your patience!*
+Alternatively, for MS MARCO download the official 100 negatives per query:
+
+📥 [msmarco-doctrain-top100.gz](https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-top100.gz)
+
+Then generate triplets using the original script from the Microsoft repo:
+[msmarco-doctriples.py](https://github.com/microsoft/TREC-2019-Deep-Learning/blob/master/utils/msmarco-doctriples.py)
 
 ---
+
+Maintained with ❤️ by the **DDRO authors**
+*This repo is under active development — thank you for your support!*
+
