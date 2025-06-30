@@ -163,21 +163,29 @@ To train the **Phase 1: Supervised Fine-Tuning (SFT)** model, we generate three 
 
 ---
 
-### ✏️ Pseudo Query Generation (docTTTTTquery)
+### ✏️ Pseudo Query Generation with `docTTTTTquery`
 
-To enable search pretraining, generate pseudo queries from raw documents using a `docT5query` model, producing 10 queries per document.
+To enable search pretraining, generate pseudo queries from raw documents using a `docT5query` model. The model generates **10 queries per document** to enhance document-query pair coverage for retrieval tasks.
 
-#### 🧪 Finetune `docTTTTTquery` on NQ or MS MARCO:
+---
 
-```bash
-bash scripts/run_finetune_docTTTTTquery.sh
-```
+#### 🔧 Finetune `docTTTTTquery` on NQ or MS MARCO
 
-#### 🛠 Generate queries:
+Use the following script to finetune `docT5query` on the **Natural Questions (NQ)** dataset. You can apply the same procedure for **MS MARCO** document ranking:
 
 ```bash
-python src/data/data_prep/doc2query_query_generator.py
+bash src/scripts/preprocess/finetune_docTTTTTTquery.sh
 ```
+
+
+#### 🛠 Generate Pseudo Queries
+
+Once the model is finetuned, generate 10 pseudo-queries per document using:
+
+```bash
+python src/scripts/preprocess/pseudo_queries_generator.sh
+```
+
 
 #### 📥 Or download from Hugging Face:
 
@@ -200,7 +208,7 @@ Expected format (`[docid] <TAB> pseudo_query`):
 
 ---
 
-### ✅ Step 1: Generate Raw Supervision Signals
+### ⚙️ Step 1: Generate Raw Supervision Signals
 
 Use the following entry-point script to generate both **training** and **evaluation** instances for MS MARCO and NQ. 
 
@@ -246,6 +254,24 @@ sbatch src/scripts/preprocess/generate_3stage_train_data.sh
 
 ---
 
+### 📚 Natural Questions (NQ)
+
+To prepare the **Natural Questions (NQ)** dataset in MS MARCO-style format and generate training-ready encodings, follow the steps below.
+
+---
+
+#### 🧹 Step 1: Preprocess and Convert to MS MARCO Format
+
+Run the following scripts to clean and reformat NQ into MS MARCO-style layout:
+
+```bash
+sbatch src/scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges raw NQ data
+sbatch src/scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO-style format
+```
+
+> 📝 After generating the MS MARCO-style dataset, follow the same steps described for MS MARCO above. Be sure to **replace the data paths** and **set the dataset type to `nq`** in all relevant scripts.
+
+---
 
 ## 🧲 Contrastive Triplets (For Phase 2: DDRO)
 
@@ -284,40 +310,6 @@ python src/data/dataprep/generate_msmarco_triples.py
 
 > You may also adapt the script to use your **own BM25 ranking outputs**.
 ---
-
-### ✅ Natural Questions (NQ)
-
-To prepare the **Natural Questions (NQ)** dataset in MS MARCO-style format and generate training-ready encodings, follow the steps below.
-
----
-
-#### 🧹 Step 1: Preprocess and Convert to MS MARCO Format
-
-Run the following scripts to clean and reformat NQ into MS MARCO-style layout:
-
-```bash
-bash scripts/preprocess/preprocess_nq_dataset.sh               # Cleans and merges raw NQ data
-bash scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts to MS MARCO-style format
-```
-
-> After generating the MS MARCO-style dataset, follow the same steps described for MS MARCO above.
-> Be sure to **replace the data paths** and **set the dataset type to `nq`** in all relevant scripts.
-
----
-
-#### ⚙️ Step 2: Generate Document IDs and Training Instances
-
-Make sure that the `--dataset` or `--data_type` argument in each script is set to `"nq"`.
-
-```bash
-sbatch src/scripts/preprocess/generate_doc_embeddings.sh    # Step 1: Compute document embeddings (for PQ)
-bash scripts/preprocess/generate_encoded_ids.sh             # Step 2: Generate and save encoded doc IDs (PQ, URL, etc.)
-```
-
-> 📝 Only **PQ** and **URL-based docid encodings** are reported in our paper.
-
----
-
 Maintained with ❤️ by the DDRO authors.
 *This repo is under active development — thanks for your patience!*
 

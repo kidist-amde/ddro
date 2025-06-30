@@ -1,18 +1,25 @@
 #!/bin/bash
+#SBATCH --job-name=nq_to_msmarco
+#SBATCH --time=01:00:00
+#SBATCH --mem=64gb
+#SBATCH -c 16
+#SBATCH --output=logs-slurm/nq_to_msmarco-%j.out
 
-# Set paths to input files and output directory
-NQ_TRAIN_FILE="/path/to/nq_train_file.gz"
-NQ_DEV_FILE="/path/to/nq_dev_file.gz"
-OUTPUT_DIR="/path/to/output_directory"
+set -e
 
-# Activate the Python environment if needed
-# source /path/to/venv/bin/activate
+source /home/kmekonn/.bashrc
+conda activate ddro_env
 
-# Run the Python script
-python ./src/data/preprocessing/convert_nq_to_msmarco_format.py \
-  --nq_train_file "$NQ_TRAIN_FILE" \
-  --nq_dev_file "$NQ_DEV_FILE" \
+# Input NQ train/dev TSV.gz files (created from previous preprocessing)
+TRAIN_FILE="resources/datasets/processed/nq-data/nq_train.gz"
+DEV_FILE="resources/datasets/processed/nq-data/nq_val.gz"
+
+# Output directory
+OUTPUT_DIR="resources/datasets/processed/nq-msmarco"
+mkdir -p "$OUTPUT_DIR"
+
+# Run conversion
+python src/data/data_prep/nq/convert_nq_to_msmarco_format.py \
+  --nq_train_file "$TRAIN_FILE" \
+  --nq_dev_file "$DEV_FILE" \
   --output_dir "$OUTPUT_DIR"
-
-# Deactivate the Python environment if activated earlier
-# deactivate

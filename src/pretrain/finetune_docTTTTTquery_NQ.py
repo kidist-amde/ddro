@@ -1,7 +1,7 @@
 import argparse
 import gzip
+import os
 import pandas as pd
-import torch
 from datasets import Dataset
 from transformers import (
     T5ForConditionalGeneration,
@@ -17,6 +17,7 @@ def extract_query_doc_pairs(input_path: str, output_path: str):
             'abstract', 'content', 'document_url', 'doc_tac', 'language'
         ])
     df_extracted = df[['id', 'query', 'doc_tac']].fillna('')
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df_extracted.to_csv(output_path, sep='\t', index=False, header=False, compression='gzip')
 
 def prepare_dataset(data_path: str, tokenizer, max_length: int = 512):
@@ -47,6 +48,7 @@ def split_dataset(dataset, test_size: float = 0.2):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, required=True)
+    parser.add_argument("--dataset_name", type=str, required=True)
     parser.add_argument("--output_file", type=str, required=True)
     parser.add_argument("--cache_dir", type=str, default="cache")
     args = parser.parse_args()
@@ -66,8 +68,11 @@ def main():
     dataset = prepare_dataset(args.output_file, tokenizer)
     train_dataset, eval_dataset = split_dataset(dataset)
 
+    output_dir = f"resources/checkpoints/finetuned_docTTTTTquery_on_{args.dataset_name}"
+    os.makedirs(output_dir, exist_ok=True)
+
     training_args = TrainingArguments(
-        output_dir="resources/transformer_models",
+        output_dir=output_dir,
         evaluation_strategy="steps",
         per_device_train_batch_size=4,
         per_device_eval_batch_size=4,
@@ -90,7 +95,7 @@ def main():
     )
 
     trainer.train()
-    trainer.save_model("resources/transformer_models/finetuned_doc2query_t5_large_msmarco")
+    trainer.save_model(output_dir)
 
 if __name__ == "__main__":
     main()
