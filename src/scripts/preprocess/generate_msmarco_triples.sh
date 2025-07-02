@@ -11,11 +11,11 @@ source ~/.bashrc
 conda activate ddro_env
 
 # Inputs
-QUERIES_FILE="resources/datasets/processed/msmarco-data/msmarco-json-sents/msmarco-docs.json"
+QUERIES_FILE="resources/datasets/raw/msmarco-data/msmarco-doctrain-queries.tsv.gz"
 QRELS_FILE="resources/datasets/raw/msmarco-data/msmarco-doctrain-qrels.tsv.gz"
 PYSERINI_FILE="resources/datasets/processed/msmarco-data/pyserini_data/msmarco_train_bm25tuned.txt"
 DOCS_FILE="resources/datasets/processed/msmarco-data/msmarco-docs-sents.top.300k.json.gz"
-DOC_OFFSETS_FILE="resources/datasets/processed/msmarco-data/msmarco-docs-sents.offsets.tsv.gz"
+DOC_OFFSETS_FILE="resources/datasets/raw/msmarco-data/msmarco-docs-lookup.tsv.gz"
 
 # Output
 OUTFILE="resources/datasets/processed/msmarco-data/triples/msmarco_hard_negatives.txt"

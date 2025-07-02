@@ -20,12 +20,12 @@ wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docdev-qre
 
 # # Download the lookup files
 # echo "Downloading the lookup files"
-# wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docs-lookup.tsv.gz"
+wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docs-lookup.tsv.gz"
 
-# # Download the top100 files
-# echo "Downloading the top100 files"
-# wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-top100.gz"
-# wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docdev-top100.gz"
+# Download the top100 files
+echo "Downloading the top100 files"
+wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-top100.gz"
+wget "https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-docdev-top100.gz"
 
 # Download the document files
 echo "Downloading the document files"

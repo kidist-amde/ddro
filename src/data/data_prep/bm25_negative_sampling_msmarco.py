@@ -31,15 +31,24 @@ def ensure_directory_exists(filepath: str):
     if directory and not os.path.exists(directory):
         os.makedirs(directory)
 
+
 def load_querystring(queries_file: str) -> Dict[str, str]:
-    """Load query strings from a gzipped file."""
+    """Load query strings from a .tsv(.gz) file."""
     querystring = {}
-    with gzip.open(queries_file, 'rt', encoding='utf8') as f:
+
+    open_fn = gzip.open if queries_file.endswith('.gz') else open
+    with open_fn(queries_file, 'rt', encoding='utf-8') as f:
         print(f"Loading queries from {queries_file}")
-        tsvreader = csv.reader(f, delimiter="\t")
-        for topicid, querystring_of_topicid in tsvreader:
-            querystring[topicid] = querystring_of_topicid
+        for lineno, line in enumerate(f, 1):
+            parts = line.strip().split("\t")
+            if len(parts) != 2:
+                print(f"[Warning] Skipping malformed line {lineno}: {line.strip()}")
+                continue
+            topicid, query = parts
+            querystring[topicid] = query
     return querystring
+
+
 
 def load_docoffset(doc_offsets_file: str) -> Dict[str, int]:
     """Load document offsets from a gzipped file."""
