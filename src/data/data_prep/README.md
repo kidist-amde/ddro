@@ -337,14 +337,19 @@ BM25 top-k runs are used to sample **hard negatives** for training.
 Generate training triplets:
 
 ```bash
-python src/data/dataprep/generate_msmarco_triples.py
+sbatch src/scripts/preprocess/generate_msmarco_triples.sh
+sbatch src/scripts/preprocess/create_nq_triples.sh
 ```
 
 Alternatively, for MS MARCO download the official 100 negatives per query:
 
 📥 [msmarco-doctrain-top100.gz](https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-doctrain-top100.gz)
 
-Then generate triplets using the original script from the Microsoft repo:
+Then generate triplets using 
+```bash
+python src/data/data_prep/generate_msmarco_triples.py
+``` 
+Which was adopted from the the original script from the Microsoft repo:
 [msmarco-doctriples.py](https://github.com/microsoft/TREC-2019-Deep-Learning/blob/master/utils/msmarco-doctriples.py)
 
 ---

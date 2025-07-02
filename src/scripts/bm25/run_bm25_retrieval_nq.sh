@@ -17,7 +17,7 @@ OUTPUT_DEV=resources/datasets/processed/nq-data/pyserini_data/nq_dev_bm25tuned.t
 OUTPUT_TRAIN=resources/datasets/processed/nq-data/pyserini_data/nq_train_bm25tuned.txt
 QRELS_DEV=resources/datasets/processed/nq-data/nq_msmarco_format/nq_qrels_dev.tsv.gz
 QRELS_TRAIN=resources/datasets/processed/nq-data/nq_msmarco_format/nq_qrels_train.tsv.gz
-s
+
 python -m pyserini.index.lucene \
   --collection JsonCollection \
   --input $INPUT \
