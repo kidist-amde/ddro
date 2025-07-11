@@ -1,17 +1,20 @@
+from __future__ import annotations
+
 import argparse
+import gzip
+import os
+import time
+from pathlib import Path
+from typing import Tuple
 import jsonlines
+import pandas as pd
 import re
 from tqdm.auto import tqdm
-import gzip
-import pandas as pd
 from transformers import BertTokenizer
-import os
-import json
-import time
-import swifter  # for fast parallel apply
+import swifter  # for parallel title lower‑casing
 
-DEV_SET_SIZE = 7830
-TRAIN_SET_SIZE = 307373
+DEV_SET_SIZE = 7_830
+TRAIN_SET_SIZE = 307_373
 
 
 def process_nq_devdataset(input_file_path, sample_size=None):
@@ -148,52 +151,91 @@ def process_nq_traindataset(input_file_path, sample_size=None):
 
 
 # global tokenizer load
-_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-def lower(x):
-    text = _tokenizer.tokenize(x)
-    id_ = _tokenizer.convert_tokens_to_ids(text)
-    return _tokenizer.decode(id_)
+
+_tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", trust_remote_code=True)
+
+def lower(text: str) -> str:
+    tokens = _tokenizer.tokenize(text)
+    ids = _tokenizer.convert_tokens_to_ids(tokens)
+    return _tokenizer.decode(ids)
+
+def _apply_split_policy(
+    nq_train: pd.DataFrame,
+    nq_dev: pd.DataFrame,
+    strict: bool,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Return (train, dev) after optional strict filtering.
+
+    If strict is True → remove any query whose example_id did not survive the
+    title‑based de‑duplication, guaranteeing 0 page overlap across splits.
+    """
+    if not strict:
+        print("[split] --strict_split false → keeping canonical 7_830‑query dev")
+        return nq_train, nq_dev
+
+    # strict mode: filter by id
+    dev_before = len(nq_dev)
+    valid_ids = set(pd.concat([nq_train, nq_dev]).drop_duplicates("title")['id'])
+
+    nq_train_f = nq_train[nq_train['id'].isin(valid_ids)]
+    nq_dev_f = nq_dev[nq_dev['id'].isin(valid_ids)]
+
+    dev_after = len(nq_dev_f)
+    removed = dev_before - dev_after
+    pct = removed / dev_before * 100 if dev_before else 0
+    print("[split‑stats] dev before filter : {:,}".format(dev_before))
+    print("[split‑stats] dev after  filter : {:,}".format(dev_after))
+    print("[split‑stats] removed {:,} ({:.2f} %)".format(removed, pct))
+    return nq_train_f, nq_dev_f
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dev_file", type=str, required=True)
-    parser.add_argument("--train_file", type=str, required=True)
-    parser.add_argument("--output_merged_file", type=str, required=True)
-    parser.add_argument("--output_train_file", type=str, required=True)
-    parser.add_argument("--output_val_file", type=str, required=True)
-    parser.add_argument("--output_json_dir", type=str, required=True)
+def main() -> None:
+    parser = argparse.ArgumentParser("NQ preprocessing (DDRO edition)")
+    parser.add_argument("--dev_file", required=True)
+    parser.add_argument("--train_file", required=True)
+    parser.add_argument("--output_merged_file", required=True)
+    parser.add_argument("--output_train_file", required=True)
+    parser.add_argument("--output_val_file", required=True)
+    parser.add_argument("--output_json_dir", required=True)
     parser.add_argument("--sample_size", type=int, default=None)
+    parser.add_argument(
+        "--strict_split",
+        type=lambda s: s.lower() in {"true", "1", "yes"},
+        default=True,
+        help="Enforce document‑level isolation (default=true).",
+    )
     args = parser.parse_args()
 
-    start = time.time()
+    t0 = time.time()
+    print("[load] reading NQ jsonl …")
     nq_dev = process_nq_devdataset(args.dev_file, args.sample_size)
     nq_train = process_nq_traindataset(args.train_file, args.sample_size)
 
-    print("Lowercasing titles...")
+    # lower‑case titles for stable duplicate detection
+    print("[tokenizer] lower‑casing titles …")
     nq_dev['title'] = nq_dev['title'].swifter.apply(lower)
     nq_train['title'] = nq_train['title'].swifter.apply(lower)
 
-    nq_all_doc = pd.concat([nq_train, nq_dev], ignore_index=True).drop_duplicates('title').reset_index(drop=True)
-    print("Total number of documents:", len(nq_all_doc))
+    # apply chosen split policy
+    nq_train, nq_dev = _apply_split_policy(nq_train, nq_dev, args.strict_split)
 
-    valid_ids = set(nq_all_doc['id'])
-    nq_train = nq_train[nq_train['id'].isin(valid_ids)]
-    nq_dev = nq_dev[nq_dev['id'].isin(valid_ids)]
+    # merged doc collection after title de‑dup (train first gives tie‑break)
+    nq_all_doc = pd.concat([nq_train, nq_dev], ignore_index=True).drop_duplicates("title")
+    print("[stats] total unique documents : {:,}".format(len(nq_all_doc)))
 
-    os.makedirs(args.output_json_dir, exist_ok=True)
+    Path(args.output_json_dir).mkdir(parents=True, exist_ok=True)
 
-    nq_train.to_csv(args.output_train_file + '.gz', sep='\t', index=False, header=False, compression='gzip')
-    nq_dev.to_csv(args.output_val_file + '.gz', sep='\t', index=False, header=False, compression='gzip')
-    nq_all_doc.to_csv(args.output_merged_file + '.gz', sep='\t', index=False, header=False, compression='gzip')
-    nq_all_doc.to_json(args.output_merged_file + '.json', orient='records', lines=True)
+    nq_train.to_csv(f"{args.output_train_file}.gz", sep="\t", index=False, header=False, compression="gzip")
+    nq_dev.to_csv(f"{args.output_val_file}.gz", sep="\t", index=False, header=False, compression="gzip")
+    nq_all_doc.to_csv(f"{args.output_merged_file}.gz", sep="\t", index=False, header=False, compression="gzip")
 
-    nq_all_doc[['id', 'doc_tac']].rename(columns={'id': 'id', 'doc_tac': 'contents'}).to_json(
-        os.path.join(args.output_json_dir, 'msmarco_sents_pyserni_format.json'), orient='records', lines=True)
+    nq_all_doc.to_json(f"{args.output_merged_file}.json", orient="records", lines=True)
+    nq_all_doc[["id", "doc_tac"]].rename(columns={"doc_tac": "contents"}).to_json(
+        Path(args.output_json_dir) / "msmarco_sents_pyserni_format.json", orient="records", lines=True
+    )
+    nq_all_doc.to_json(Path(args.output_json_dir) / "msmarco_sents_all_columns.json", orient="records", lines=True)
 
-    nq_all_doc.to_json(os.path.join(args.output_json_dir, 'msmarco_sents_all_columns.json'), orient='records', lines=True)
-
-    print("Done in", time.time() - start, "seconds")
+    print("[done] completed in {:.1f} s".format(time.time() - t0))
 
 
 if __name__ == "__main__":
