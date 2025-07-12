@@ -272,6 +272,19 @@ sbatch src/scripts/preprocess/convert_nq_to_msmarco_format.sh        # Converts 
 > 📝 After generating the MS MARCO-style dataset, follow the same steps described for MS MARCO above. Be sure to **replace the data paths** and **set the dataset type to `nq`** in all relevant scripts.
 
 ---
+### ⚠️ NQ dev-split clarification  
+We ship **two ways** to build the NQ train / dev files:
+
+| Mode | Flag | Dev queries | Page overlap |
+|------|------|-------------|--------------|
+| **Strict isolation** (default) | `--strict_split true` | ~1.7 k | none |
+| **Canonical NQ** (original) | `--strict_split false` | 7 830 | allowed |
+
+Use the strict mode when you need zero document leakage between train and dev (closed-book QA, retrieval).  
+Use the canonical mode to match scores reported in most NQ papers.  
+Both options are produced by `process_nq_dataset.py`; the script now logs how many dev queries are removed when `--strict_split` is `true`.
+
+---
 
 ## 🔍 BM25 Retrieval (via Pyserini)
 

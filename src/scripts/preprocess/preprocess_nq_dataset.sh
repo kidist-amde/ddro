@@ -30,4 +30,5 @@ python src/data/data_prep/nq/process_nq_dataset.py \
   --output_merged_file "$MERGED_FILE" \
   --output_train_file "$TRAIN_FILE_OUT" \
   --output_val_file "$VAL_FILE_OUT" \
-  --output_json_dir "$OUTPUT_DIR"
+  --output_json_dir "$OUTPUT_DIR" \
+  --strict_split  false # Set to True if you want strict split policy
