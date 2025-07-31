@@ -177,9 +177,12 @@ def main():
     nq_all_doc = pd.concat([nq_train, nq_dev], ignore_index=True).drop_duplicates('title').reset_index(drop=True)
     print("Total number of documents:", len(nq_all_doc))
 
-    valid_ids = set(nq_all_doc['id'])
-    nq_train = nq_train[nq_train['id'].isin(valid_ids)]
-    nq_dev = nq_dev[nq_dev['id'].isin(valid_ids)]
+    valid_title = set(nq_all_doc['title'])
+    nq_train = nq_train[nq_train['title'].isin(valid_title)]
+    nq_dev = nq_dev[nq_dev['title'].isin(valid_title)]
+
+    nq_train['id'] = nq_train['title'].map(title_to_id)
+    nq_dev['id'] = nq_dev['title'].map(title_to_id)
 
     os.makedirs(args.output_json_dir, exist_ok=True)
 
