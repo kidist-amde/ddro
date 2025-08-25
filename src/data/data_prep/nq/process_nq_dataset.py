@@ -154,7 +154,8 @@ def lower(x):
     id_ = _tokenizer.convert_tokens_to_ids(text)
     return _tokenizer.decode(id_)
 
-def title_to_id(nq_all_doc):
+def create_title_to_id_mapping(nq_all_doc):
+    """Create a mapping from titles to unique IDs"""
     title_to_id_map = {title: idx for idx, title in enumerate(nq_all_doc['title'].unique())}
     return title_to_id_map
 
@@ -184,8 +185,15 @@ def main():
     nq_train = nq_train[nq_train['title'].isin(valid_title)]
     nq_dev = nq_dev[nq_dev['title'].isin(valid_title)]
 
-    nq_train['id'] = nq_train['title'].map(title_to_id)
-    nq_dev['id'] = nq_dev['title'].map(title_to_id)
+    # FIXED: Create the mapping first, then use it
+    title_to_id_mapping = create_title_to_id_mapping(nq_all_doc)
+    
+    # Now map the titles to IDs
+    nq_train['id'] = nq_train['title'].map(title_to_id_mapping)
+    nq_dev['id'] = nq_dev['title'].map(title_to_id_mapping)
+    
+    # Also add IDs to the combined document dataset
+    nq_all_doc['id'] = nq_all_doc['title'].map(title_to_id_mapping)
 
     os.makedirs(args.output_json_dir, exist_ok=True)
 

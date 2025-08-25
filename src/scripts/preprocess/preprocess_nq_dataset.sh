@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=nq_preprocess
-#SBATCH --time=1-00:00:00
-#SBATCH --mem=256gb
+#SBATCH --time=2:00:00
+#SBATCH --mem=256gb # Required for full NQ dataset processing
 #SBATCH -c 48
 #SBATCH --output=logs-slurm/nq_preprocess-%j.out
 
