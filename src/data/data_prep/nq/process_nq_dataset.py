@@ -154,6 +154,9 @@ def lower(x):
     id_ = _tokenizer.convert_tokens_to_ids(text)
     return _tokenizer.decode(id_)
 
+def title_to_id(nq_all_doc):
+    title_to_id_map = {title: idx for idx, title in enumerate(nq_all_doc['title'].unique())}
+    return title_to_id_map
 
 def main():
     parser = argparse.ArgumentParser()
