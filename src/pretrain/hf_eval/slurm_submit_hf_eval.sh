@@ -29,7 +29,7 @@ python src/pretrain/hf_eval/eval_hf_docid_ranking.py \
   --log_path logs/msmarco/dpo_HF_url.log \
   --pretrain_model_path kiyam/ddro-msmarco-tu \
   --docid_path resources/datasets/processed/msmarco-data/encoded_docid/url_title_docid.txt \
-  --test_file_path resources/datasets/processed/msmarco-data/eval_data/query_dev.jsonl \
+  --test_file_path resources/datasets/processed/msmarco-data/eval_data/query_dev_url_title.jsonl \
   --dataset_script_dir src/data/data_scripts \
   --dataset_cache_dir ./cache \
   --num_beams 15 \

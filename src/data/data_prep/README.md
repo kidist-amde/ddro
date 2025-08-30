@@ -4,79 +4,42 @@ This directory contains unified scripts for preparing and transforming data for 
 
 * Preprocessing MS MARCO and Natural Questions datasets
 * Generating dense document embeddings
-* DocID encoding (URL, PQ, Atomic)
+* DocID encoding (URL_TITLE, PQ)
 * Creating training and evaluation instances
 
 ---
 
 
-## 📁 Available Scripts — `src/data/data_prep/`
+## 📁 Layout — `src/data/`
 
 This folder contains all core scripts for preprocessing datasets, generating document embeddings, encoding docids, and preparing training/evaluation instances for DDRO.
 
----
-
-### 🧼 Dataset Preprocessing
-
-Scripts for transforming and sampling datasets:
-
-```bash
-data_prep/
-├── convert_tsv_to_json_array.py        # Convert MS MARCO .tsv to flat JSONL format
-├── sample_top300k_msmarco_documents.py # Sample top or random 300K MS MARCO documents
-├── negative_sampling.py                # BM25-based hard negative mining
-├── doc2query_query_generator.py        # Generate pseudoqueries using doc2query-T5
-├── generate_doc_embeddings.py          # Generate GTR-T5 dense embeddings
 ```
-
----
-
-### 🧪 Natural Questions (NQ) Utilities
-
-Located under the `nq/` subdirectory:
-
-```bash
-nq/
-├── process_nq_dataset.py               # Clean, flatten and merge original NQ files
-├── convert_nq_to_msmarco_format.py     # Convert NQ format → MS MARCO query-passage format
-├── create_nq_triples.py                # Create BM25-based NQ training triples
-```
-
----
-
-### 📦 Instance Generation
-
-Scripts for preparing model training and evaluation input instances:
-
-```bash
-data_prep/
-├── generate_encoded_docids.py          # Encode documents into docids (PQ, URL, etc.)
-├── generate_train_data_wrapper.py      # Wrapper to generate all training instances
-├── generate_train_instances.py         # Create pretrain, pseudoquery, and finetune inputs
-├── generate_eval_data_wrapper.py       # Wrapper for evaluation data preparation
-├── generate_eval_instances.py          # Format eval data for testing SFT/DDRO
-```
-
----
-
-### 📓 Demos & Explorations
-
-Notebook demos for docid formats and encodings:
-
-```bash
-data_prep/
-├── pq_docid_demo.ipynb                 # Visualize PQ-based docid encoding
-├── rq_docid_demo.ipynb                 # Visualize ranking-quality based docid
-├── url_title_docid_demo.ipynb          # URL+title docid construction example
-```
-
----
-
-### 🗂️ This README
-
-```bash
-data_prep/
-└── README.md                           # You’re here!
+src/data/
+├─ data_prep/
+│  ├─ bm25_negative_sampling_msmarco.py      # BM25 hard negatives for MS MARCO
+│  ├─ build_t5_data/
+│  │  ├─ generate_train_instances.py         # Pretrain / pseudoquery / finetune builders
+│  │  ├─ generate_eval_instances.py          # Eval builders for SFT / DDRO
+│  │  ├─ gen_train_data_pipline.py           # Wrapper: full training-data build
+│  │  └─ gen_eval_data_pipline.py            # Wrapper: full eval-data build
+│  ├─ convert_tsv_to_json_array.py           # MS MARCO .tsv → JSON array (see notes)
+│  ├─ generate_doc_embeddings.py             # Dense doc embeddings (e.g., for PQ)
+│  ├─ generate_encoded_docids.py             # DocID encoders (PQ, URL‑title, …)
+│  ├─ generate_msmarco_triples.py            # (q, pos, neg) triples for MS MARCO
+│  ├─ generate_pseudo_queries.py             # docTTTTTquery‑style pseudo‑queries
+│  ├─ negative_sampling.py                   # Generic negative sampling utilities
+│  ├─ nq/
+│  │  ├─ bm25_negative_Sampling_NQ.py        # BM25 hard negatives for NQ
+│  │  ├─ convert_json_array_to_jsonl.ipynb   # JSON array → JSONL helper
+│  │  ├─ convert_nq_to_msmarco_format.py     # Map NQ → MS MARCO‑like schema (optional)
+│  │  └─ process_nq_dataset.py               # Clean / flatten / merge NQ
+│  ├─ pq_docid_demo.ipynb                    # PQ encoding demo
+│  ├─ rq_docid_demo.ipynb                    # Ranking‑quality docID demo
+│  └─ url_title_docid_demo.ipynb             # URL+title docID demo
+└─ data_scripts/
+   ├─ csv_builder.py                         # Helpers used by builders
+   └─ json_builder.py                        # Helpers used by builders
 ```
 
 
@@ -208,49 +171,90 @@ Expected format (`[docid] <TAB> pseudo_query`):
 
 ---
 
-### ⚙️ Step 1: Generate Raw Supervision Signals
+### ⚙️ Step 1: Generate Training Data by Stage
 
-Use the following entry-point script to generate both **training** and **evaluation** instances for MS MARCO and NQ. 
-
-```bash
-sbatch src/scripts/preprocess/generate_train_and_eval_instances.sh
-```
-
-**Outputs:**
-
-* `passage.jsonl` — raw document text
-* `sampled_terms.jsonl` — sampled key phrases
-* `fake_query.jsonl` — pseudo queries
-* `query.jsonl` — real queries from qrels
-* `eval_data_top_300k/query_dev.jsonl` — development evaluation data
-
----
-
-### ⚙️ Step 2: Merge into Curriculum Format
-
-Format data into `input → docid` pairs for training.
-
-Make sure your `--cur_data` argument is one of the following stages:
-
-* `general_pretrain`
-* `search_pretrain`
-* `finetune`
-
+**Option 1: Use the batch script (recommended for SLURM clusters):**
 ```bash
 sbatch src/scripts/preprocess/generate_3stage_train_data.sh
 ```
 
-**Produces:**
+**Option 2: Run individual commands directly:**
 
-* `general_pretrain.t5_128_10.{encoding}.300k.json`
-* `search_pretrain.t5_128_10.{encoding}.300k.json`
-* `finetune.t5_128_10.{encoding}.300k.json` <br>*(where `{encoding}` can be `pq`, `url`, etc.)*
+Make sure to specify your encoding type (`url_title` or `pq`) for each stage:
 
-| Mode (`--cur_data`) | Input Files                                                  | Output File                       | Description                     |
-| ------------------- | ------------------------------------------------------------ | --------------------------------- | ------------------------------- |
-| `general_pretrain`  | `passage.jsonl + sampled_terms.jsonl + enhanced_docid.jsonl` | `general_pretrain.t5_128_10.json` | Raw document → docid            |
-| `search_pretrain`   | `fake_query.jsonl`                                           | `search_pretrain.t5_128_10.json`  | Pseudo query → docid            |
-| `finetune`          | `query.jsonl`                                                | `finetune.t5_128_10.json`         | Real query → docid (from qrels) |
+**Stage 1 - General Pretraining:**
+```bash
+python src/data/data_prep/build_t5_data/gen_train_data_pipline.py --cur_data general_pretrain --encoding "url_title"
+```
+
+**Stage 2 - Search Pretraining:**
+```bash
+python src/data/data_prep/build_t5_data/gen_train_data_pipline.py --cur_data search_pretrain --encoding "url_title"
+```
+
+**Stage 3 - Fine-tuning:**
+```bash
+python src/data/data_prep/build_t5_data/gen_train_data_pipline.py --cur_data finetune --encoding "url_title"
+```
+
+⚠️ **Important**: Make sure to use the same `--encoding` type across all stages. Change `"url_title"` to `"pq"` if using PQ encoding.
+
+---
+
+### ⚙️ Step 2: Generate Evaluation Data
+
+**Option 1: Use the batch script (recommended for SLURM clusters):**
+```bash
+sbatch src/scripts/preprocess/generate_eval_data.sh
+```
+
+**Option 2: Run the command directly:**
+```bash
+python src/data/data_prep/build_t5_data/gen_eval_data_pipline.py --encoding "url_title"
+```
+
+⚠️ **Important**: Use the same `--encoding` type as used in Step 1. Change `"url_title"` to `"pq"` if using PQ encoding.
+
+---
+
+### 📁 Output Structure
+
+**Training Data Outputs:**
+* `resources/datasets/processed/msmarco-data/train_data_top_300k/`
+  * `pretrain.t5_128_10.{encoding}.json` — General pretraining data (passages + sampled terms + enhanced docids)
+  * `search_pretrain.t5_128_10.{encoding}.json` — Search pretraining data (pseudo queries)
+  * `finetune.t5_128_1.{encoding}.json` — Fine-tuning data (real queries from qrels)
+
+**Evaluation Data Outputs:**
+* `resources/datasets/processed/msmarco-data/eval_data_top_300k/`
+  * `query_dev.{encoding}.jsonl` — Development evaluation data
+
+---
+
+### 🔧 Configuration Options
+
+| Parameter | Description | Options |
+|-----------|-------------|---------|
+| `--encoding` | Document ID encoding method | `pq`, `url_title` |
+| `--cur_data` | Training stage to generate | `general_pretrain`, `search_pretrain`, `finetune` |
+| `--max_seq_length` | Maximum sequence length | Default: 128 |
+
+---
+
+### 📋 Data Generation Details
+
+**General Pretraining** combines three data types:
+- **Passages**: Raw document text chunked into passages → docid
+- **Sampled Terms**: TF-IDF selected terms from documents → docid  
+- **Enhanced DocIDs**: Document ID transformations → docid
+
+**Search Pretraining** uses:
+- **Pseudo Queries**: Artificially generated queries → docid
+
+**Fine-tuning** uses:
+- **Real Queries**: Actual user queries from qrels → docid
+
+All data is formatted as `input → docid` pairs for training the model to map inputs to document identifiers.
 
 ---
 

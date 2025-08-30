@@ -34,7 +34,7 @@ def main():
         --log_path logs/{args.dataset}/dpo_{model_name}_{encoding}.log \
         --pretrain_model_path t5-base \
         --docid_path resources/datasets/processed/{args.dataset}-data/encoded_docid/{"pq_docid.txt" if encoding == "pq" else "url_title_docid.txt" if encoding == "url" else f"{encoding}_docid.txt"} \
-        --test_file_path resources/datasets/processed/{args.dataset}-data/eval_data/{cur_data}.jsonl \
+        --test_file_path resources/datasets/processed/{args.dataset}-data/eval_data/{cur_data}_{encoding}.jsonl \
         --dataset_script_dir src/data/data_scripts \
         --dataset_cache_dir ./cache \
         --num_beams {num_beams} \

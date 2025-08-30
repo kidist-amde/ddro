@@ -1,36 +1,18 @@
-#!/bin/shAdd commentMore actions
-#SBATCH --job-name=gen_3stage_train_data_pq
-#SBATCH --time=1-00:00:00 
-#SBATCH --mem=128gb
-#SBATCH -c 48
-#SBATCH --output=logs-slurm/gen_3stage_train_data_pq-%j.out
+#!/bin/bash
+#SBATCH --job-name=gen_3stage_data
+#SBATCH --time=8:00:00 # d-h:m:s
+#SBATCH --mem=128gb 
+#SBATCH -c 48 
+#SBATCH --output=logs-slurm/%x_%j.out  
 
-set -e
 
 source /home/kmekonn/.bashrc
 conda activate ddro_env
 
-ENCODING_METHOD="pq" # Options: "pq", "url", ...
-MAX_SEQ_LENGTH=128
-SCALE="300k"
 
-echo "Generating general_pretrain data..."
-python src/data/data_prep/generate_train_data_wrapper.py \
-  --encoding "$ENCODING_METHOD" \
-  --scale "$SCALE" \
-  --cur_data "general_pretrain" \
-  --max_seq_length "$MAX_SEQ_LENGTH"
+# make sure to change the encoding to either "url_title" or "pq"
 
-echo "Generating search_pretrain training data..."
-python src/data/data_prep/generate_train_data_wrapper.py \
-  --encoding "$ENCODING_METHOD" \
-  --scale "$SCALE" \
-  --cur_data "search_pretrain" \
-  --max_seq_length "$MAX_SEQ_LENGTH"
-
-echo "Generating finetune training data..."
-python src/data/data_prep/generate_train_data_wrapper.py \
-  --encoding "$ENCODING_METHOD" \
-  --scale "$SCALE" \
-  --cur_data "finetune" \
-  --max_seq_length "$MAX_SEQ_LENGTH"
+echo "generating 3-stage training data"
+python src/data/data_prep/build_t5_data/gen_train_data_pipline.py --cur_data general_pretrain --encoding "url_title" 
+python src/data/data_prep/build_t5_data/gen_train_data_pipline.py --cur_data search_pretrain --encoding "url_title"
+python src/data/data_prep/build_t5_data/gen_train_data_pipline.py --cur_data finetune --encoding "url_title"
