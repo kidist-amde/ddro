@@ -21,6 +21,8 @@ This repository is actively under development. Thanks for your patience, changes
 - [Learning Objectives](#learning-objectives-in-ddro)
 - [🛠️ Setup & Dependencies - Steps to Reproduce 🎯](#1-install-environment)
 - [Preprocessed Data & Model Checkpoints](#preprocessed-data--model-checkpoints)
+- [🔬 Evaluate Pre-trained Models from HuggingFace
+](#quick-evaluation)
 - [Citation](#citation)
 
 
