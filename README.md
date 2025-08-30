@@ -277,6 +277,51 @@ bash scripts/ddro/slurm_submit_ddro_eval.sh
 ```
 
 ---
+## Model Evaluation
+
+### 🔬 Evaluate Pre-trained Models from HuggingFace
+
+You can directly evaluate our published models without training from scratch:
+
+#### Available Models:
+- `kiyam/ddro-msmarco-pq` - MS MARCO with PQ encoding
+- `kiyam/ddro-msmarco-tu` - MS MARCO with Title+URL encoding  
+- `kiyam/ddro-nq-pq` - Natural Questions with PQ encoding
+- `kiyam/ddro-nq-tu` - Natural Questions with Title+URL encoding
+
+#### Quick Evaluation:
+```bash
+# For SLURM clusters:
+sbatch src/pretrain/hf_eval/slurm_submit_hf_eval.sh
+
+# Or run directly:
+encoding="url_title" # Choose from: "url_title", "pq"
+
+python src/pretrain/hf_eval/eval_hf_docid_ranking.py \
+  --per_gpu_batch_size 4 \
+  --log_path logs/msmarco/dpo_HF_url.log \
+  --pretrain_model_path kiyam/ddro-msmarco-tu \
+  --docid_path resources/datasets/processed/msmarco-data/encoded_docid/${encoding}_docid.txt \
+  --test_file_path resources/datasets/processed/msmarco-data/eval_data/query_dev.${encoding}.jsonl \
+  --dataset_script_dir src/data/data_scripts \
+  --dataset_cache_dir ./cache \
+  --num_beams 15 \
+  --add_doc_num 6144 \
+  --max_seq_length 64 \
+  --max_docid_length 100 \
+  --use_docid_rank True \
+  --docid_format msmarco \
+  --lookup_fallback True \
+  --device cuda:0
+```
+
+#### Key Parameters:
+- `--encoding`: Use `"url_title"` or `"pq"` to match your model type
+- `--docid_format`: Use `"msmarco"` or `"nq"` depending on the dataset
+- `--pretrain_model_path`: Specify the HuggingFace model you want to evaluate
+
+#### Pre-generated Resources:
+You can use our pre-generated encoded document IDs from [HuggingFace Datasets](https://huggingface.co/datasets/kiyam/ddro-docids) to skip the data preparation step.
 
 
 📂 Evaluation logs and metrics are saved to:
