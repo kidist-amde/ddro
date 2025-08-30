@@ -20,16 +20,15 @@ conda activate ddro_env
 export PYTHONPATH="${PYTHONPATH}:$(pwd):$(pwd)/src"
 
 nvidia-smi 
-
-
+encoding="url_title" # Choose from: "url_title", "pq"
 
 # Launch the dataset-aware HF evaluator
 python src/pretrain/hf_eval/eval_hf_docid_ranking.py \
   --per_gpu_batch_size 4 \
   --log_path logs/msmarco/dpo_HF_url.log \
   --pretrain_model_path kiyam/ddro-msmarco-tu \
-  --docid_path resources/datasets/processed/msmarco-data/encoded_docid/url_title_docid.txt \
-  --test_file_path resources/datasets/processed/msmarco-data/eval_data/query_dev_url_title.jsonl \
+  --docid_path resources/datasets/processed/msmarco-data/encoded_docid/${encoding}_docid.txt \
+  --test_file_path resources/datasets/processed/msmarco-data/eval_data/query_dev.${encoding}.jsonl \
   --dataset_script_dir src/data/data_scripts \
   --dataset_cache_dir ./cache \
   --num_beams 15 \
