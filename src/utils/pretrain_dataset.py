@@ -10,23 +10,24 @@ class PretrainDataForT5(Dataset):
         self._max_seq_length = max_seq_length
         self._max_docid_length = max_docid_length
         self._tokenizer = tokenizer
+
         self.nlp_dataset = datasets.load_dataset(
-            f'{dataset_script_dir}/json_builder.py',
-            data_files = self._filename,
-            # ignore_verifications=False,
+            path="json",
+            data_files=self._filename,
             cache_dir=dataset_cache_dir,
-            trust_remote_code=True,
+            split="train",
             features=datasets.Features({
                 'query_id': datasets.Value("string"),
                 'doc_id': datasets.Value("string"),
                 'input_ids': [datasets.Value("int32")],
-            })
-        )['train']
-        self.total_len = len(self.nlp_dataset)  
-      
+            }),
+        )
+
+        self.total_len = len(self.nlp_dataset)
+
     def __len__(self):
         return self.total_len
-    
+
     def __getitem__(self, item):
         data = self.nlp_dataset[item]
         data = self.add_padding(data)
@@ -38,10 +39,10 @@ class PretrainDataForT5(Dataset):
         }
 
     def add_padding(self, training_instance):
-        padded_input_ids = [0 for i in range(self._max_seq_length)]
-        padded_attention_mask = [0 for i in range(self._max_seq_length)]
-        padded_docid_labels = [0 for i in range(self._max_docid_length)]
-        
+        padded_input_ids = [0] * self._max_seq_length
+        padded_attention_mask = [0] * self._max_seq_length
+        padded_docid_labels = [0] * self._max_docid_length
+
         input_ids = training_instance["input_ids"][:self._max_seq_length]
 
         for i, iid in enumerate(input_ids):
@@ -51,10 +52,9 @@ class PretrainDataForT5(Dataset):
         encoded_docid = [int(x) for x in training_instance["doc_id"].split(",")][:self._max_docid_length]
         padded_docid_labels[:len(encoded_docid)] = encoded_docid
 
-        new_instance = {
+        return {
             "input_ids": padded_input_ids,
             "attention_mask": padded_attention_mask,
             "query_id": training_instance["query_id"],
             "docid_labels": padded_docid_labels,
         }
-        return new_instance

@@ -28,7 +28,8 @@ MANIFEST
 BASELINES/
 logs-slurm-BM25/
 logs-slurm-summaries/
-
+test.py/
+test.py
 #My repos
 resources/
 logs/

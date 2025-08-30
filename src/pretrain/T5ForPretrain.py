@@ -1,10 +1,8 @@
 import torch
 import torch.nn as nn
-from transformers import (
-    T5ForConditionalGeneration,
-    Seq2SeqLMOutput,
-    BaseModelOutput
-)
+from transformers import T5ForConditionalGeneration
+from transformers.modeling_outputs import BaseModelOutput
+from transformers.modeling_outputs import Seq2SeqLMOutput
 
 
 class T5ForPretrain(T5ForConditionalGeneration):

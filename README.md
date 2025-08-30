@@ -272,8 +272,8 @@ We implement this using a custom version of Hugging Face's [`DPOTrainer`](https:
 Run DDRO training and evaluation:
 
 ```bash
-bash scripts/ddro/run_ddro_training.sh
-bash scripts/ddro/run_test_ddro.sh
+bash scripts/ddro/slurm_submit_ddro_training.sh
+bash scripts/ddro/slurm_submit_ddro_eval.sh
 ```
 
 ---
@@ -322,11 +322,13 @@ This project is licensed under the [Apache 2.0 License](LICENSE).
 ## Citation
 
 ```bibtex
-@article{mekonnen2025lightweight,
+@inproceedings{mekonnen2025lightweight,
   title={Lightweight and Direct Document Relevance Optimization for Generative Information Retrieval},
   author={Mekonnen, Kidist Amde and Tang, Yubao and de Rijke, Maarten},
-  journal={arXiv preprint arXiv:2504.05181},
+  booktitle={Proceedings of the 48th International ACM SIGIR Conference on Research and Development in Information Retrieval},
+  pages={1327--1338},
   year={2025}
+}
 }
 ```
 ---

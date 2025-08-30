@@ -16,7 +16,7 @@ cd /path/to/DDRO-Direct-Document-Relevance-Optimization/ddro
 
 nvidia-smi
 
-# 📍 The --encoding flag supports formats like pq, url, atomic, summary.
+#  The --encoding flag supports formats like pq, url, atomic, summary.
 
 # Run DDRO training pipeline
 python utils/run_training_pipeline.py \
