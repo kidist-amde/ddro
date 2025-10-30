@@ -298,13 +298,15 @@ sbatch src/pretrain/hf_eval/slurm_submit_hf_eval.sh
 
 # Or run directly:
 encoding="url_title" # Choose from: "url_title", "pq"
+dataset="msmarco" # Choose from: "msmarco", "nq"
+model_suffix="tu" # Choose from: "tu", "pq"
 
 python src/pretrain/hf_eval/eval_hf_docid_ranking.py \
   --per_gpu_batch_size 4 \
-  --log_path logs/msmarco/dpo_HF_url.log \
-  --pretrain_model_path kiyam/ddro-msmarco-tu \
-  --docid_path resources/datasets/processed/msmarco-data/encoded_docid/${encoding}_docid.txt \
-  --test_file_path resources/datasets/processed/msmarco-data/eval_data/query_dev.${encoding}.jsonl \
+  --log_path logs/${dataset}/dpo_HF_url.log \
+  --pretrain_model_path kiyam/ddro-${dataset}-${model_suffix} \
+  --docid_path resources/datasets/processed/${dataset}-data/encoded_docid/${encoding}_docid.txt \
+  --test_file_path resources/datasets/processed/${dataset}-data/eval_data/query_dev.${encoding}.jsonl \
   --dataset_script_dir src/data/data_scripts \
   --dataset_cache_dir ./cache \
   --num_beams 15 \
@@ -312,7 +314,7 @@ python src/pretrain/hf_eval/eval_hf_docid_ranking.py \
   --max_seq_length 64 \
   --max_docid_length 100 \
   --use_docid_rank True \
-  --docid_format msmarco \
+  --docid_format ${dataset} \
   --lookup_fallback True \
   --device cuda:0
 ```

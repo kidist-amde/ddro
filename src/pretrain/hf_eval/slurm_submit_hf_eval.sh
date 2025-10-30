@@ -1,41 +1,48 @@
-#!/bin/bash
-#SBATCH --job-name=Eval_HF
+#!/bin/sh
+#SBATCH --job-name=EVal_ddro
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:nvidia_rtx_a6000:8
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=8:00:00 # d-h:m:s
-#SBATCH --mem=128gb 
-#SBATCH -c 48 
-#SBATCH --output=logs-slurm-eval/%x_%j.out  # ensure dir exists *before* sbatch
-
+#SBATCH --time=8:00:00
+#SBATCH --mem=128gb
+#SBATCH -c 48
+#SBATCH --output=logs-slurm-eval/Eval_HF_NQ_URL_%j.out
 
 # ----------------------------
-# Environment
+# Environment Setup
 # ----------------------------
 source ~/.bashrc
 conda activate ddro_env
 
-# Add repo + src to PYTHONPATH (why: import utils/* modules)
+# Set Python path to include the src directory
 export PYTHONPATH="${PYTHONPATH}:$(pwd):$(pwd)/src"
 
-nvidia-smi 
-encoding="url_title" # Choose from: "url_title", "pq"
+# Display GPU info
+echo "=== GPU Information ==="
+nvidia-smi
+echo "======================="
 
-# Launch the dataset-aware HF evaluator
-python src/pretrain/hf_eval/eval_hf_docid_ranking.py \
-  --per_gpu_batch_size 4 \
-  --log_path logs/msmarco/dpo_HF_url.log \
-  --pretrain_model_path kiyam/ddro-msmarco-tu \
-  --docid_path resources/datasets/processed/msmarco-data/encoded_docid/${encoding}_docid.txt \
-  --test_file_path resources/datasets/processed/msmarco-data/eval_data/query_dev.${encoding}.jsonl \
-  --dataset_script_dir src/data/data_scripts \
-  --dataset_cache_dir ./cache \
-  --num_beams 15 \
-  --add_doc_num 6144 \
-  --max_seq_length 64 \
-  --max_docid_length 100 \
-  --use_docid_rank True \
-  --docid_format msmarco \
-  --lookup_fallback True \
-  --device cuda:0
+# ----------------------------
+# Configuration
+# ----------------------------
+ENCODING="url"        # encoding: 'pq', 'url'
+DATASET="nq"    # dataset: 'msmarco' or 'nq'
+SCALE="top_300k"     # scale: 'top_300k'
+
+echo "=== Evaluation Configuration ==="
+echo "Dataset: $DATASET"
+
+echo "Encoding: $ENCODING"
+echo "Scale: $SCALE"
+echo "================================"
+
+# ----------------------------
+# Run Evaluation
+# ----------------------------
+python src/pretrain/hf_eval/launch_hf_eval_from_config.py \
+  --dataset "$DATASET" \
+  --encoding "$ENCODING" \
+  --scale "$SCALE"
+
+echo "=== Evaluation Completed ==="

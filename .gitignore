@@ -119,10 +119,21 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-
+ddro/pq_tokenizer_fixed/
+tools/
+hf_models/
 # Translations
 *.mo
 *.pot
+fix_and_upload_msmarco_pq.ipynb
+fix_and_upload_nq_pq.ipynb
+fix_export_ddro_nq_tu.ipynb
+fixed_architecture_nq_tu/
+fixed_ddro_nq_tu/
+tmp_ddro_nq_tu/
+tmp_msmarco_pq/
+tmp_nq_pq/
+upload_fixed_nq_tu.py
 
 # Django stuff:
 *.log
