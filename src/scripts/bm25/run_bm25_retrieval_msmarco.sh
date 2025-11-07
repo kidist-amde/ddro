@@ -1,14 +1,4 @@
 #!/bin/sh
-#SBATCH --job-name=bm25_tuning_msmarco
-#SBATCH --time=4-00:00:00
-#SBATCH --mem=128gb
-#SBATCH -c 32
-#SBATCH --output=logs-slurm-BM25/msmarco_eval_train_top1000k-%j.out
-
-# Set up environment
-source ~/.bashrc
-conda activate pyserini
-
 
 # Path configurations
 input_dir="resources/datasets/processed/msmarco-data/msmarco-json-sents"

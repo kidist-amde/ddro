@@ -1,14 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name=generate_encoded_ids
-#SBATCH --time=1-00:00:00
-#SBATCH --mem=256gb
-#SBATCH -c 48
-#SBATCH --output=logs-slurm/generate_MSDOC_pq_encoded_ids-%j.out
-
-
-source /home/kmekonn/.bashrc
-conda activate ddro_env
-
 
 
 # Encoding method: choose from (atomic, pq, url, or summary) only pq and url reported on our paper 

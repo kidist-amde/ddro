@@ -1,18 +1,4 @@
 #!/bin/sh
-#SBATCH --job-name=ddro-pq          # Job name
-#SBATCH --partition=gpu_a100
-#SBATCH --gres=gpu:1                  # One GPU (A100)
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=5-00:00:00             # Max time (D-HH:MM:SS)
-#SBATCH --mem=64gb                    # Memory per node
-#SBATCH -c 4                          # Number of CPU cores
-#SBATCH --output=logs/ddro_pq_run-%j.out  # Log output with job ID
-
-# Activate environment
-source ~/.bashrc
-conda activate ddro_env
-nvidia-smi
 
 # Move to project directory
 cd /path/to/DDRO-Direct-Document-Relevance-Optimization/ddro

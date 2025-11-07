@@ -1,14 +1,5 @@
-#!/bin/bashAdd commentMore actions
-#SBATCH --job-name=nq_to_msmarco
-#SBATCH --time=01:00:00
-#SBATCH --mem=64gb
-#SBATCH -c 16
-#SBATCH --output=logs-slurm/nq_to_msmarco-%j.out
+#!/bin/bash
 
-set -e
-
-source /home/kmekonn/.bashrc
-conda activate ddro_env
 
 # Input NQ train/dev TSV.gz files (created from previous preprocessing)
 TRAIN_FILE="resources/datasets/processed/nq-data/nq_train.gz"

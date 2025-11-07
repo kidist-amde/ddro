@@ -1,9 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name=sample_top_docs
-#SBATCH --time=1-00:00:00
-#SBATCH --mem=64gb
-#SBATCH -c 48
-#SBATCH --output=logs-slurm/sample_top_ms_docs-%j.out
 
 # Paths to input files and output locations
 DOC_FILE="resources/datasets/raw/msmarco-data/msmarco-docs.tsv.gz"

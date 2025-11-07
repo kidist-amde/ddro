@@ -1,20 +1,5 @@
 #!/bin/sh
-#SBATCH --job-name=ddro-nq-pq                   # Job name
-#SBATCH --partition=gpu 
-#SBATCH --gres=gpu:nvidia_rtx_a6000:1
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=5-00:00:00                       # d-h:m:s
-#SBATCH --mem=64gb                              # Memory per GPU
-#SBATCH -c 4                                     # Number of CPUs
-#SBATCH --output=logs/ddro_nq_pq_train-%j.out   # Log output with job ID
 
-# Environment setup
-source ~/.bashrc
-conda activate ddro_env
-nvidia-smi
-
-cd ddro  # Ensure working directory is set correctly
 
 # Configurable paths
 FILE_PATH=resources/datasets/processed/nq-data

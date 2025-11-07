@@ -1,18 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name=create_nq_triples
-#SBATCH --time=1-00:00:00
-#SBATCH --mem=64gb
-#SBATCH -c 48
-#SBATCH --output=logs-slurm/create_nq_triples-%j.out
-
-set -e  # Exit on error
-
-# Activate environment if needed
-source ~/.bashrc
-conda activate ddro_env  
-
-
-
 
 # Paths to your relevance, qrel, queries, and document files
 RELEVANCE_PATH="resources/datasets/processed/msmarco-data/pyserini_data/nq_train_bm25tuned.txt"

@@ -1,14 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name=nq_preprocess
-#SBATCH --time=2:00:00
-#SBATCH --mem=256gb # Required for full NQ dataset processing
-#SBATCH -c 48
-#SBATCH --output=logs-slurm/nq_preprocess-%j.out
-
-set -e
-
-source /home/kmekonn/.bashrc
-conda activate ddro_env
 
 # Input files
 DEV_FILE="resources/datasets/raw/nq-data/nq-dev-all.jsonl.gz"

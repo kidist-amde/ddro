@@ -1,17 +1,4 @@
 #!/bin/sh
-#SBATCH --job-name=psuedo_query_gen
-#SBATCH --partition=gpu 
-#SBATCH --gres=gpu:1
-#SBATCH --nodes=1
-#SBATCH --nodelist=ilps-cn117,ilps-cn120,ilps-cn116,ilps-cn118,ilps-cn119
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=5-00:00:00
-#SBATCH --mem=128gb
-#SBATCH -c 48
-#SBATCH --output=logs-slurm/psuedo_query_gen_ms-%j.out
-
-source /home/kmekonn/.bashrc
-conda activate ddro_env
 
 dataset_name="nq"
 

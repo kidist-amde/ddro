@@ -134,7 +134,9 @@ tmp_ddro_nq_tu/
 tmp_msmarco_pq/
 tmp_nq_pq/
 upload_fixed_nq_tu.py
-
+ssh_config.sh
+ddro/ssh_config.sh
+ddro/ddro
 # Django stuff:
 *.log
 local_settings.py

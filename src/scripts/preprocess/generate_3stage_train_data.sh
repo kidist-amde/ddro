@@ -1,13 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name=gen_3stage_data
-#SBATCH --time=8:00:00 # d-h:m:s
-#SBATCH --mem=128gb 
-#SBATCH -c 48 
-#SBATCH --output=logs-slurm/%x_%j.out  
-
-
-source /home/kmekonn/.bashrc
-conda activate ddro_env
 
 
 # make sure to change the encoding to either "url_title" or "pq"

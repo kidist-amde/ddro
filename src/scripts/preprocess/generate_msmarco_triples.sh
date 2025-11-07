@@ -1,14 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name=triples_msmarco
-#SBATCH --time=1-00:00:00
-#SBATCH --mem=64G
-#SBATCH -c 48
-#SBATCH --output=logs-slurm/triples_msmarco-%j.out
-
-set -e
-
-source ~/.bashrc
-conda activate ddro_env
 
 # Inputs
 QUERIES_FILE="resources/datasets/raw/msmarco-data/msmarco-doctrain-queries.tsv.gz"
