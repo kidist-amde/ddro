@@ -22,7 +22,7 @@ This repository is actively under development. Thanks for your patience, changes
 - [🛠️ Setup & Dependencies - Steps to Reproduce 🎯](#1-install-environment)
 - [Preprocessed Data & Model Checkpoints](#preprocessed-data--model-checkpoints)
 - [🔬 Evaluate Pre-trained Models from HuggingFace
-](#quick-evaluation)
+](#model-evaluation)
 - [Citation](#citation)
 
 
@@ -238,7 +238,7 @@ resources/
 
 > 🔎 To process and sample both datasets, generate document IDs, and prepare training/evaluation instances, please refer to the corresponding README:
 
-> 🔗 [`src/data/dataprep/README.md`](https://github.com/kidist-amde/ddro/tree/main/src/data/data_prep#readme)
+> 🔗 [`src/data/data_prep/README.md`](https://github.com/kidist-amde/ddro/tree/main/src/data/data_prep#readme)
 ---
 
 ## Training Pipeline
@@ -279,59 +279,112 @@ bash scripts/ddro/slurm_submit_ddro_eval.sh
 ```
 
 ---
+**TL;DR:** Here’s a drop-in replacement for your README “Model Evaluation” section that uses the new HF artifacts + launcher, no local files.
+
+---
+
 ## Model Evaluation
 
-### 🔬 Evaluate Pre-trained Models from HuggingFace
+### 🔬 Evaluate Pre-trained Models from Hugging Face
 
-You can directly evaluate our published models without training from scratch:
+You can evaluate our published models **directly from HF** (no local preprocessing).
 
-#### Available Models:
-- `kiyam/ddro-msmarco-pq` - MS MARCO with PQ encoding
-- `kiyam/ddro-msmarco-tu` - MS MARCO with Title+URL encoding  
-- `kiyam/ddro-nq-pq` - Natural Questions with PQ encoding
-- `kiyam/ddro-nq-tu` - Natural Questions with Title+URL encoding
+#### Available Models
 
-#### Quick Evaluation:
+* `kiyam/ddro-msmarco-pq` — MS MARCO (PQ)
+* `kiyam/ddro-msmarco-tu` — MS MARCO (Title+URL)
+* `kiyam/ddro-nq-pq` — Natural Questions (PQ)
+* `kiyam/ddro-nq-tu` — Natural Questions (Title+URL)
+
+#### Required HF datasets (ready-made)
+
+* **DocID tables:** [https://huggingface.co/datasets/kiyam/ddro-docids](https://huggingface.co/datasets/kiyam/ddro-docids/tree/main)
+
+  * `pq_msmarco_docids.txt`, `tu_msmarco_docids.txt`
+  * `pq_nq_docids.txt`, `tu_nq_docids.txt`
+* **Eval test sets:** [https://huggingface.co/datasets/kiyam/ddro-testsets](https://huggingface.co/datasets/kiyam/ddro-testsets/tree/main)
+
+  * `msmarco/test_data_top_300k/query_dev.t5_128_1.{pq|url}.top_300k.json`
+  * `nq/test_data/query_dev.t5_128_1.{pq_nq|url_title_nq}.json`
+
+> These pairs are mutually consistent; mixing assets across sources will cause ID mismatches.
+
+---
+
+### ⚡ Quick Evaluation (recommended)
+
+**A) Use the launcher (builds HF URIs for you)**
+
 ```bash
-# For SLURM clusters:
+# SLURM
 sbatch src/pretrain/hf_eval/slurm_submit_hf_eval.sh
 
 # Or run directly:
-encoding="url_title" # Choose from: "url_title", "pq"
-dataset="msmarco" # Choose from: "msmarco", "nq"
-model_suffix="tu" # Choose from: "tu", "pq"
+python src/pretrain/hf_eval/launch_hf_eval_from_config.py \
+  --dataset msmarco \            # msmarco | nq
+  --encoding pq \                # pq | url 
+  --scale top_300k \             # matches filenames on HF
+  --hf_docids_repo kiyam/ddro-docids \
+  --hf_tests_repo  kiyam/ddro-testsets
+```
 
+**B) Call the evaluator with HF URIs (no local files)**
+
+```bash
+# Example: NQ + Title+URL (tu)
 python src/pretrain/hf_eval/eval_hf_docid_ranking.py \
   --per_gpu_batch_size 4 \
-  --log_path logs/${dataset}/dpo_HF_url.log \
-  --pretrain_model_path kiyam/ddro-${dataset}-${model_suffix} \
-  --docid_path resources/datasets/processed/${dataset}-data/encoded_docid/${encoding}_docid.txt \
-  --test_file_path resources/datasets/processed/${dataset}-data/eval_data/query_dev.${encoding}.jsonl \
+  --log_path logs/nq/dpo_DDRO_url_title.log \
+  --pretrain_model_path kiyam/ddro-nq-tu \
+  --docid_path "hf:dataset:kiyam/ddro-docids:tu_nq_docids.txt" \
+  --test_file_path "hf:dataset:kiyam/ddro-testsets:nq/test_data/query_dev.t5_128_1.url_title_nq.json" \
   --dataset_script_dir src/data/data_scripts \
   --dataset_cache_dir ./cache \
-  --num_beams 15 \
+  --num_beams 50 \
   --add_doc_num 6144 \
   --max_seq_length 64 \
   --max_docid_length 100 \
   --use_docid_rank True \
-  --docid_format ${dataset} \
+  --docid_format nq \
+  --lookup_fallback True \
+  --device cuda:0
+
+# Example: MS MARCO + PQ
+python src/pretrain/hf_eval/eval_hf_docid_ranking.py \
+  --per_gpu_batch_size 4 \
+  --log_path logs/msmarco/dpo_DDRO_pq.log \
+  --pretrain_model_path kiyam/ddro-msmarco-pq \
+  --docid_path "hf:dataset:kiyam/ddro-docids:pq_msmarco_docids.txt" \
+  --test_file_path "hf:dataset:kiyam/ddro-testsets:msmarco/test_data_top_300k/query_dev.t5_128_1.pq.top_300k.json" \
+  --dataset_script_dir src/data/data_scripts \
+  --dataset_cache_dir ./cache \
+  --num_beams 80 \
+  --add_doc_num 6144 \
+  --max_seq_length 64 \
+  --max_docid_length 24 \
+  --use_docid_rank True \
+  --docid_format msmarco \
   --lookup_fallback True \
   --device cuda:0
 ```
 
-#### Key Parameters:
-- `--encoding`: Use `"url_title"` or `"pq"` to match your model type
-- `--docid_format`: Use `"msmarco"` or `"nq"` depending on the dataset
-- `--pretrain_model_path`: Specify the HuggingFace model you want to evaluate
+---
 
-#### Pre-generated Resources:
-You can use our pre-generated encoded document IDs from [HuggingFace Datasets](https://huggingface.co/datasets/kiyam/ddro-docids) to skip the data preparation step.
+### 🔧 Notes & tips
+
+* **Tokenizer stack:** we recommend `transformers==4.37.2`, `tokenizers==0.15.2`.
+* **DocID namespace:**
+
+  * NQ–PQ uses **canonical integer docids** (`pq_nq_docids.txt`).
+  * NQ–TU uses **lowercased url_title strings** (`tu_nq_docids.txt`).
+    Ensure the test set `query_id` matches the DocID table’s LHS namespace.
+* **Beams:** NQ-PQ (100), NQ-TU (50), MS MARCO-PQ (80) are good defaults (the launcher sets these).
 
 
 📂 Evaluation logs and metrics are saved to:
 ```
-logs/
-outputs/
+logs/<dataset>/dpo_*.log
+logs/<dataset>/dpo_*.csv
 ```
 ---
 
@@ -377,7 +430,6 @@ This project is licensed under the [Apache 2.0 License](LICENSE).
   booktitle={Proceedings of the 48th International ACM SIGIR Conference on Research and Development in Information Retrieval},
   pages={1327--1338},
   year={2025}
-}
 }
 ```
 ---

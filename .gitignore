@@ -122,6 +122,8 @@ cover/
 ddro/pq_tokenizer_fixed/
 tools/
 hf_models/
+ddro-testsets/
+ddro/ddro
 # Translations
 *.mo
 *.pot

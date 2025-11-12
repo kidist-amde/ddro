@@ -136,6 +136,10 @@ def metrics(truth, pred, metrics_map):
         res = recall_at_k(truth, pred[:1000])
         out[metrics_map.index('R@1000')] = res
     
+    if "R@5" in metrics_map:
+        res = recall_at_k(truth, pred[:5])
+        out[metrics_map.index('R@5')] = res
+
     if "MRR" in metrics_map:
         score = 0.0
         for rank, item in enumerate(pred):
@@ -181,6 +185,9 @@ def metrics(truth, pred, metrics_map):
 
     if "Hit@100" in metrics_map:
         out[metrics_map.index('Hit@100')] = hit_at_k(truth, pred, 100)
+
+    if "Hit@1000" in metrics_map:
+        out[metrics_map.index('Hit@1000')] = hit_at_k(truth, pred, 1000)
     
     return out
 
@@ -189,8 +196,8 @@ class evaluator:
     def __init__(self):
         self.METRICS_MAP = [
             'MRR@10', 'MRR', 'NDCG@10', 'NDCG@20', 'NDCG@100', 'MAP@20', 
-            'P@1', 'P@10', 'P@20', 'P@100', 'R@1', 'R@10', 'R@100', 'R@1000',
-            'Hit@1', 'Hit@5', 'Hit@10', 'Hit@100'  # Added Hit metrics here
+            'P@1', 'P@10', 'P@20', 'P@100', 'R@1', 'R@10', 'R@100', 'R@1000', 'R@5',
+            'Hit@1', 'Hit@5', 'Hit@10', 'Hit@100', 'Hit@1000'
         ]
     
     def evaluate_ranking(self, docid_truth, all_doc_probs, doc_idxs=None, query_ids=None, match_scores=None):
@@ -198,15 +205,15 @@ class evaluator:
         mrr_list, mrr_10_list = [], []
         ndcg_10_list, ndcg_20_list, ndcg_100_list = [], [], []
         p_1_list, p_10_list, p_20_list ,p_100_list = [], [], [], []
-        r_1_list, r_10_list, r_100_list, r_1000_list = [], [], [], []
-        hit_1_list, hit_5_list, hit_10_list, hit_100_list = [], [], [], []  # Added lists for hits
+        r_1_list, r_10_list, r_100_list, r_1000_list, r_5_list = [], [], [], [], []
+        hit_1_list, hit_5_list, hit_10_list, hit_100_list, hit_1000_list = [], [], [], [], []  # Added lists for hits
 
         for docid, probability in tqdm(zip(docid_truth, all_doc_probs)):
             click_doc = set(docid)
             sorted_docs = probability
             metrics_results = metrics(truth=click_doc, pred=sorted_docs, metrics_map=self.METRICS_MAP)
 
-            _mrr10, _mrr, _ndcg10, _ndcg20, _ndcg100, _map20, _p1, _p10, _p20, _p100, _r1, _r10, _r100, _r1000, _hit1, _hit5, _hit10, _hit100 = metrics_results
+            _mrr10, _mrr, _ndcg10, _ndcg20, _ndcg100, _map20, _p1, _p10, _p20, _p100, _r1, _r10, _r100, _r1000, _r5, _hit1, _hit5, _hit10, _hit100, _hit1000 = metrics_results
                 
             mrr_10_list.append(_mrr10)
             mrr_list.append(_mrr)
@@ -224,11 +231,13 @@ class evaluator:
             r_10_list.append(_r10)
             r_100_list.append(_r100)
             r_1000_list.append(_r1000)
+            r_5_list.append(_r5)
 
             hit_1_list.append(_hit1)
             hit_5_list.append(_hit5)
             hit_10_list.append(_hit10)
             hit_100_list.append(_hit100)
+            hit_1000_list.append(_hit1000)
 
             map_list.append(_map20)
 
@@ -240,9 +249,9 @@ class evaluator:
             'P@1': np.mean(p_1_list), 'P@10': np.mean(p_10_list), 
             'P@20': np.mean(p_20_list), 'P@100': np.mean(p_100_list),
             'R@1': np.mean(r_1_list), 'R@10': np.mean(r_10_list), 
-            'R@100': np.mean(r_100_list), 'R@1000': np.mean(r_1000_list),
+            'R@100': np.mean(r_100_list), 'R@1000': np.mean(r_1000_list), 'R@5': np.mean(r_5_list),
             'Hit@1': np.mean(hit_1_list), 'Hit@5': np.mean(hit_5_list),
-            'Hit@10': np.mean(hit_10_list), 'Hit@100': np.mean(hit_100_list)
+            'Hit@10': np.mean(hit_10_list), 'Hit@100': np.mean(hit_100_list), 'Hit@1000': np.mean(hit_1000_list)
         }
 
         # Convert the results dictionary into a pandas DataFrame for better visualization
