@@ -6,7 +6,7 @@ import subprocess
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--encoding", default="pq", type=str, help="DocID encoding method: atomic, pq, or url")
+    parser.add_argument("--encoding", default="pq", type=str, help="DocID encoding method: pq or url")
     parser.add_argument("--scale", default="top_300k", type=str, help="Dataset scale: top_300k or rand_300k")
     return parser.parse_args()
 
@@ -16,9 +16,8 @@ def load_config(encoding: str, scale: str):
     with open(config_file_path, "r") as file:
         config_data = json.load(file)
 
-    config_data["atomic"]["add_doc_num"] = config_data["doc_num"][scale]
     config = config_data[encoding]
-    return config, config_data["doc_num"][scale]
+    return config, config["add_doc_num"]
 
 
 def run_stage(stage_name: str, model: str, load_model: str, all_data: str, cur_data: str,
