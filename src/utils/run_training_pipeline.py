@@ -18,7 +18,7 @@ def load_config(encoding: str, scale: str):
 
     config_data["atomic"]["add_doc_num"] = config_data["doc_num"][scale]
     config = config_data[encoding]
-    return config, config_data["doc_num"][scale]
+    return config, config["add_doc_num"][scale]
 
 
 def run_stage(stage_name: str, model: str, load_model: str, all_data: str, cur_data: str,
