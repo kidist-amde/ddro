@@ -12,7 +12,7 @@ def parse_arguments():
 
 
 def load_config(encoding: str, scale: str):
-    config_file_path = "scripts/config.json"
+    config_file_path = "src/scripts/configs/config.json"
     with open(config_file_path, "r") as file:
         config_data = json.load(file)
 
