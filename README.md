@@ -440,6 +440,6 @@ For questions, please open an [issue](https://github.com/kidist-amde/DDRO-Direct
 
 
 
-© 2025 **Kidist Amde Mekonnen** · Made with ❤️ at [IRLab](https://irlab.science.uva.nl/), University of Amsterdam.
+© 2025 **Kidist Amde Mekonnen** · [IRLab](https://irlab.science.uva.nl/), University of Amsterdam.
 
 ---
